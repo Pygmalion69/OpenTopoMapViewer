@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">OpenTopoMap</string>
+    <string name="location">Location</string>
+    <string name="follow">Follow</string>
+    <string name="follow_enabled">Follow enabled</string>
+    <string name="follow_disabled">Follow disabled</string>
+    <string name="gpx">GPX</string>
+    <string name="discard_current_gpx">The current GPX will be discarded</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
