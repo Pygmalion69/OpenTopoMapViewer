@@ -29,7 +29,7 @@ before_deploy:
   - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/.keystore -storepass $storepass -keypass $keypass app-release-unsigned.apk prisoner
   # Verification
   - jarsigner -verify app-release-unsigned.apk 
-  - "${ANDROID_HOME}/build-tools/26.0.2/zipalign -v 4 app-release-unsigned.apk Gauge.apk" 
+  - "${ANDROID_HOME}/build-tools/26.0.2/zipalign -v 4 app-release-unsigned.apk OpenTopoMapViewer.apk"
 
 deploy:
   provider: releases
