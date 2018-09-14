@@ -21,9 +21,9 @@ before_script:
 - android-wait-for-emulator
 - adb shell input keyevent 82 &
 before_deploy:
-- cp $TRAVIS_BUILD_DIR/.keystore $HOME
+- cp $TRAVIS_BUILD_DIR/keystore $HOME
 - cd app/build/outputs/apk/release/
-- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/.keystore
+- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/keystore
   -storepass $storepass -keypass $keypass app-release-unsigned.apk prisoner
 - jarsigner -verify app-release-unsigned.apk
 - "${ANDROID_HOME}/build-tools/26.0.2/zipalign -v 4 app-release-unsigned.apk OpenTopoMapViewer.apk"
