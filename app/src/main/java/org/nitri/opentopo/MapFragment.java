@@ -3,6 +3,9 @@ package org.nitri.opentopo;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.VectorDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -11,10 +14,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -32,7 +37,9 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
@@ -118,6 +125,12 @@ public class MapFragment extends Fragment implements LocationListener {
         mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getActivity()),
                 mMapView);
 
+        Bitmap bmCrosshairs = BitmapFactory.decodeResource(getResources(),
+                R.drawable.ic_crosshairs);
+
+        mLocationOverlay.setPersonIcon(bmCrosshairs);
+        mLocationOverlay.setPersonHotspot(bmCrosshairs.getWidth() / 2, bmCrosshairs.getHeight() / 2);
+
         mScaleBarOverlay = new ScaleBarOverlay(mMapView);
         mScaleBarOverlay.setCentred(true);
         mScaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10);
@@ -136,6 +149,12 @@ public class MapFragment extends Fragment implements LocationListener {
         mMapView.getOverlays().add(this.mScaleBarOverlay);
 
         mMapView.setTileSource(TileSourceFactory.OpenTopo);
+
+        /*
+        final OnlineTileSourceBase localTopo = new XYTileSource("OpenTopoMap", 0, 19, 256, ".png",
+                new String[]{"http://192.168.2.109/hot/"}, "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)");
+        mMapView.setTileSource(localTopo);
+        */
 
         String copyRightNotice = mMapView.getTileProvider().getTileSource().getCopyrightNotice();
         TextView copyRightView = view.findViewById(R.id.copyrighView);
