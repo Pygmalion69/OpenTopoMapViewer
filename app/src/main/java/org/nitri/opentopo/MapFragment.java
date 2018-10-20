@@ -150,11 +150,9 @@ public class MapFragment extends Fragment implements LocationListener {
 
         mMapView.setTileSource(TileSourceFactory.OpenTopo);
 
-        /*
-        final OnlineTileSourceBase localTopo = new XYTileSource("OpenTopoMap", 0, 19, 256, ".png",
-                new String[]{"http://192.168.2.109/hot/"}, "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)");
-        mMapView.setTileSource(localTopo);
-        */
+        //final OnlineTileSourceBase localTopo = new XYTileSource("OpenTopoMap", 0, 19, 256, ".png",
+        //        new String[]{"http://192.168.2.108/hot/"}, "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)");
+        //mMapView.setTileSource(localTopo);
 
         String copyRightNotice = mMapView.getTileProvider().getTileSource().getCopyrightNotice();
         TextView copyRightView = view.findViewById(R.id.copyrighView);
