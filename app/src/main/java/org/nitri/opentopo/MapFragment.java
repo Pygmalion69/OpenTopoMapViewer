@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.VectorDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -14,12 +13,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -32,14 +29,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.nitri.opentopo.overlay.OverlayHelper;
-import org.osmdroid.config.Configuration;
 import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
-import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
@@ -49,7 +43,6 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-import java.io.File;
 import java.util.Objects;
 
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -102,8 +95,7 @@ public class MapFragment extends Fragment implements LocationListener {
     }
 
     public static MapFragment newInstance() {
-        MapFragment fragment = new MapFragment();
-        return fragment;
+        return new MapFragment();
     }
 
     @Override
@@ -113,65 +105,69 @@ public class MapFragment extends Fragment implements LocationListener {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         mMapView = view.findViewById(R.id.mapview);
 
         final DisplayMetrics dm = this.getResources().getDisplayMetrics();
 
-        mCompassOverlay = new CompassOverlay(getActivity(), new InternalCompassOrientationProvider(getActivity()),
-                mMapView);
-        mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getActivity()),
-                mMapView);
+        FragmentActivity activity = getActivity();
 
-        Bitmap bmCrosshairs = BitmapFactory.decodeResource(getResources(),
-                R.drawable.ic_crosshairs);
+        if (activity != null) {
+            mCompassOverlay = new CompassOverlay(getActivity(), new InternalCompassOrientationProvider(getActivity()),
+                    mMapView);
+            mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getActivity()),
+                    mMapView);
 
-        mLocationOverlay.setPersonIcon(bmCrosshairs);
-        mLocationOverlay.setPersonHotspot(bmCrosshairs.getWidth() / 2, bmCrosshairs.getHeight() / 2);
+            Bitmap bmCrosshairs = BitmapFactory.decodeResource(getResources(),
+                    R.drawable.ic_crosshairs);
 
-        mScaleBarOverlay = new ScaleBarOverlay(mMapView);
-        mScaleBarOverlay.setCentred(true);
-        mScaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10);
+            mLocationOverlay.setPersonIcon(bmCrosshairs);
+            mLocationOverlay.setPersonHotspot(bmCrosshairs.getWidth() / 2, bmCrosshairs.getHeight() / 2);
 
-        mRotationGestureOverlay = new RotationGestureOverlay(mMapView);
-        mRotationGestureOverlay.setEnabled(true);
+            mScaleBarOverlay = new ScaleBarOverlay(mMapView);
+            mScaleBarOverlay.setCentred(true);
+            mScaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10);
 
-        mMapView.getController().setZoom(15d);
-        mMapView.setMaxZoomLevel(17d);
-        mMapView.setTilesScaledToDpi(true);
-        mMapView.setBuiltInZoomControls(true);
-        mMapView.setMultiTouchControls(true);
-        mMapView.setFlingEnabled(true);
-        mMapView.getOverlays().add(this.mLocationOverlay);
-        mMapView.getOverlays().add(this.mCompassOverlay);
-        mMapView.getOverlays().add(this.mScaleBarOverlay);
+            mRotationGestureOverlay = new RotationGestureOverlay(mMapView);
+            mRotationGestureOverlay.setEnabled(true);
 
-        mMapView.setTileSource(TileSourceFactory.OpenTopo);
+            mMapView.getController().setZoom(15d);
+            mMapView.setMaxZoomLevel(17d);
+            mMapView.setTilesScaledToDpi(true);
+            mMapView.setBuiltInZoomControls(true);
+            mMapView.setMultiTouchControls(true);
+            mMapView.setFlingEnabled(true);
+            mMapView.getOverlays().add(this.mLocationOverlay);
+            mMapView.getOverlays().add(this.mCompassOverlay);
+            mMapView.getOverlays().add(this.mScaleBarOverlay);
 
-        //final OnlineTileSourceBase localTopo = new XYTileSource("OpenTopoMap", 0, 19, 256, ".png",
-        //        new String[]{"http://192.168.2.108/hot/"}, "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)");
-        //mMapView.setTileSource(localTopo);
+            mMapView.setTileSource(TileSourceFactory.OpenTopo);
 
-        String copyRightNotice = mMapView.getTileProvider().getTileSource().getCopyrightNotice();
-        TextView copyRightView = view.findViewById(R.id.copyrighView);
+            //final OnlineTileSourceBase localTopo = new XYTileSource("OpenTopoMap", 0, 19, 256, ".png",
+            //        new String[]{"http://192.168.2.108/hot/"}, "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)");
+            //mMapView.setTileSource(localTopo);
 
-        if (!TextUtils.isEmpty(copyRightNotice)) {
-            copyRightView.setText(copyRightNotice);
-            copyRightView.setVisibility(View.VISIBLE);
-        } else {
-            copyRightView.setVisibility(View.GONE);
+            String copyRightNotice = mMapView.getTileProvider().getTileSource().getCopyrightNotice();
+            TextView copyRightView = view.findViewById(R.id.copyrighView);
+
+            if (!TextUtils.isEmpty(copyRightNotice)) {
+                copyRightView.setText(copyRightNotice);
+                copyRightView.setVisibility(View.VISIBLE);
+            } else {
+                copyRightView.setVisibility(View.GONE);
+            }
+
+            mMapView.addMapListener(new DelayedMapListener(mDragListener));
+
+            mLocationOverlay.enableMyLocation();
+            mLocationOverlay.enableFollowLocation();
+            mLocationOverlay.setOptionsMenuEnabled(true);
+            mCompassOverlay.enableCompass();
+            mMapView.setVisibility(View.VISIBLE);
+            mOverlayHelper = new OverlayHelper(getActivity(), mMapView);
         }
-
-        mMapView.addMapListener(new DelayedMapListener(mDragListener));
-
-        mLocationOverlay.enableMyLocation();
-        mLocationOverlay.enableFollowLocation();
-        mLocationOverlay.setOptionsMenuEnabled(true);
-        mCompassOverlay.enableCompass();
-        mMapView.setVisibility(View.VISIBLE);
-        mOverlayHelper = new OverlayHelper(getActivity(), mMapView);
 
         return view;
     }
@@ -221,6 +217,7 @@ public class MapFragment extends Fragment implements LocationListener {
         try {
             mLocationManager.removeUpdates(this);
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         mMapHandler.removeCallbacks(mCenterRunnable);
@@ -242,13 +239,13 @@ public class MapFragment extends Fragment implements LocationListener {
             mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
             if (mLocationManager != null) {
                 try {
-                    mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0l, 0f, this);
+                    mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
                 } catch (Exception ex) {
                     ex.printStackTrace();
 
                 }
                 try {
-                    mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0l, 0f, this);
+                    mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

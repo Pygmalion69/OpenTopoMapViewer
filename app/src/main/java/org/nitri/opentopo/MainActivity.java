@@ -1,6 +1,7 @@
 package org.nitri.opentopo;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.util.Log;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -38,6 +40,14 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (savedInstanceState != null) {
             mGpxUri = savedInstanceState.getString(GPX_URI_STATE);
         }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
+        } else if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
+        } else {
+            addMapFragment();
+        }
     }
 
     private void addMapFragment() {
@@ -52,19 +62,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     private boolean mapFragmentAdded() {
         return getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG) != null;
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
-        } else if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
-        } else {
-            addMapFragment();
-        }
     }
 
     @Override
@@ -110,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                                  Intent resultData) {
 
         if (requestCode == READ_REQUEST_CODE && resultCode == AppCompatActivity.RESULT_OK) {
-            Uri uri = null;
+            Uri uri;
             if (resultData != null) {
                 uri = resultData.getData();
                 if (uri != null) {
@@ -131,16 +128,20 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     private void parseGpx(Uri uri) {
         GPXParser parser = new GPXParser();
-        try {
-            Gpx gpx = parser.parse(getContentResolver().openInputStream(uri));
-            MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
-            if (mapFragment != null && gpx != null) {
-                mapFragment.setGpx(gpx);
-                mGpxUri = uri.toString();
-            }
+        ContentResolver contentResolver = getContentResolver();
+        if (contentResolver != null) {
+            try {
+                InputStream inputStream = contentResolver.openInputStream(uri);
+                Gpx gpx = parser.parse(inputStream);
+                MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+                if (mapFragment != null && gpx != null) {
+                    mapFragment.setGpx(gpx);
+                    mGpxUri = uri.toString();
+                }
 
-        } catch (XmlPullParserException | IOException e) {
-            e.printStackTrace();
+            } catch (XmlPullParserException | IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
