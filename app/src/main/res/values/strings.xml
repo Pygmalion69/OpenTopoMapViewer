@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OpenTopoMapViewer</string>
+    <string name="app_name">OpenTopoMap</string>
     <string name="location">Location</string>
     <string name="follow">Follow</string>
     <string name="follow_enabled">Follow enabled</string>
