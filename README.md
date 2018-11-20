@@ -10,3 +10,5 @@ OpenTopoMap viewer for Android
 ![Wageningen](screen_wag.png "Wageningen") ![WUR](screen_wur.png "WUR")
 
 ![GPX](screen_gpx.png "GPX") ![POI](screen_poi.png "POI")
+
+<a href="https://f-droid.org/en/packages/org.nitri.opentopo/"><img src="https://f-droid.org/badge/get-it-on.png" height="75"></a>
