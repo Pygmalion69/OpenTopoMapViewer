@@ -90,6 +90,8 @@ public class MapFragment extends Fragment implements LocationListener {
 
     private OnFragmentInteractionListener mListener;
 
+    private static final String TAG = MapFragment.class.getSimpleName();
+
     public MapFragment() {
         // Required empty public constructor
     }
@@ -150,7 +152,7 @@ public class MapFragment extends Fragment implements LocationListener {
             //mMapView.setTileSource(localTopo);
 
             String copyRightNotice = mMapView.getTileProvider().getTileSource().getCopyrightNotice();
-            TextView copyRightView = view.findViewById(R.id.copyrighView);
+            TextView copyRightView = view.findViewById(R.id.copyrightView);
 
             if (!TextUtils.isEmpty(copyRightNotice)) {
                 copyRightView.setText(copyRightNotice);

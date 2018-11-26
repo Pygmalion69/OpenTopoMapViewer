@@ -12,6 +12,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 
+import net.danlew.android.joda.JodaTimeAndroid;
+
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -40,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (savedInstanceState != null) {
             mGpxUri = savedInstanceState.getString(GPX_URI_STATE);
         }
+
+        JodaTimeAndroid.init(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
