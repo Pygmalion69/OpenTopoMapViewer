@@ -261,11 +261,7 @@ public class MapFragment extends Fragment implements LocationListener {
 
     private void showGpxdialog() {
         final AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()), android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
-        }
+        builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
         builder.setTitle(getString(R.string.gpx))
                 .setMessage(getString(R.string.discard_current_gpx))
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -388,7 +384,7 @@ public class MapFragment extends Fragment implements LocationListener {
         void selectGpx();
 
         /**
-         *  Request to set a GPX layer, e.g. after a configuration change
+         * Request to set a GPX layer, e.g. after a configuration change
          */
         void setGpx();
     }
