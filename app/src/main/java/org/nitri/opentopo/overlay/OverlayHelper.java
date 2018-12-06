@@ -24,7 +24,6 @@ public class OverlayHelper {
 
     private ItemizedIconInfoOverlay mWayPointOverlay;
 
-
     private ItemizedIconOverlay.OnItemGestureListener<OverlayItem> mWayPointItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
 
         @Override

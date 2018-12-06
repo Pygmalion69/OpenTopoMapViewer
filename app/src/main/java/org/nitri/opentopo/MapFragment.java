@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -90,6 +89,9 @@ public class MapFragment extends Fragment implements LocationListener {
 
     private OnFragmentInteractionListener mListener;
 
+    final static String PARAM_LATITUDE = "latitude";
+    final static String PARAM_LONGITUDE = "longitude";
+
     private static final String TAG = MapFragment.class.getSimpleName();
 
     public MapFragment() {
@@ -98,6 +100,15 @@ public class MapFragment extends Fragment implements LocationListener {
 
     public static MapFragment newInstance() {
         return new MapFragment();
+    }
+
+    public static MapFragment newInstance(double lat, double lon) {
+        MapFragment mapFragment = new MapFragment();
+        Bundle arguments = new Bundle();
+        arguments.putDouble(PARAM_LATITUDE, lat);
+        arguments.putDouble(PARAM_LONGITUDE, lon);
+        mapFragment.setArguments(arguments);
+        return mapFragment;
     }
 
     @Override
@@ -179,6 +190,22 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mListener.setGpx();
+        Bundle arguments = getArguments();
+        // Move to received geo intent coordinates
+        if (arguments != null && arguments.containsKey(PARAM_LATITUDE) && arguments.containsKey(PARAM_LONGITUDE)) {
+            final double lat = arguments.getDouble(PARAM_LATITUDE);
+            final double lon = arguments.getDouble(PARAM_LONGITUDE);
+            mMapHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mMapView != null) {
+                        disableFollow();
+                        mMapView.getController().animateTo(new GeoPoint(lat, lon));
+                    }
+                }
+            }, 500);
+
+        }
     }
 
     @SuppressLint("MissingPermission")

@@ -19,6 +19,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import de.k3b.geo.api.GeoPointDto;
+import de.k3b.geo.io.GeoUri;
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private String mGpxUri;
 
     private static final String GPX_URI_STATE = "gpx_uri";
+    private GeoPointDto mGeoPointFromIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (savedInstanceState != null) {
             mGpxUri = savedInstanceState.getString(GPX_URI_STATE);
         }
+
+        Intent intent = getIntent();
+
+        mGeoPointFromIntent = getGeoPointDtoFromIntent(intent);
 
         JodaTimeAndroid.init(this);
 
@@ -58,7 +65,11 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (mapFragmentAdded()) {
             return;
         }
-        MapFragment mapFragment = MapFragment.newInstance();
+        MapFragment mapFragment;
+        if (mGeoPointFromIntent == null)
+            mapFragment = MapFragment.newInstance();
+        else
+            mapFragment = MapFragment.newInstance(mGeoPointFromIntent.getLatitude(), mGeoPointFromIntent.getLongitude());
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG)
                 .commit();
@@ -147,5 +158,16 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                 e.printStackTrace();
             }
         }
+    }
+
+    private GeoPointDto getGeoPointDtoFromIntent(Intent intent) {
+        final Uri uri = (intent != null) ? intent.getData() : null;
+        String uriAsString = (uri != null) ? uri.toString() : null;
+        GeoPointDto pointFromIntent = null;
+        if (uriAsString != null) {
+            GeoUri parser = new GeoUri(GeoUri.OPT_PARSE_INFER_MISSING);
+            pointFromIntent = parser.fromUri(uriAsString, new GeoPointDto());
+        }
+        return pointFromIntent;
     }
 }
