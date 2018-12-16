@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.nitri.opentopo.overlay.OverlayHelper;
+import org.osmdroid.config.Configuration;
 import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
@@ -115,6 +116,7 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
     }
 
     @Override
