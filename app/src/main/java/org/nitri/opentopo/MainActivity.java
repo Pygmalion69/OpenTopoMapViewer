@@ -8,9 +8,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MenuItem;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -24,7 +26,7 @@ import de.k3b.geo.io.GeoUri;
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 
-public class MainActivity extends AppCompatActivity implements MapFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements MapFragment.OnFragmentInteractionListener, GpxDetailFragment.OnFragmentInteractionListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     private static final String GPX_URI_STATE = "gpx_uri";
     private GeoPointDto mGeoPointFromIntent;
+    private Gpx mGpx;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,10 +76,27 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG)
                 .commit();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getSupportActionBar().setDisplayShowHomeEnabled(false);
+        }
     }
 
     private boolean mapFragmentAdded() {
         return getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG) != null;
+    }
+
+    @Override
+    public void addGpxDetailFragment() {
+        GpxDetailFragment gpxDetailFragment = GpxDetailFragment.newInstance();
+        getSupportFragmentManager().beginTransaction().addToBackStack(null)
+                .replace(R.id.map_container, gpxDetailFragment, MAP_FRAGMENT_TAG)
+                .commit();
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
     }
 
     @Override
@@ -117,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         }
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
@@ -134,11 +155,28 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         if (!TextUtils.isEmpty(mGpxUri)) {
             outState.putString(GPX_URI_STATE, mGpxUri);
         }
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (getSupportFragmentManager() != null && getSupportFragmentManager().getBackStackEntryCount() == 0 && getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getSupportActionBar().setDisplayShowHomeEnabled(false);
+        }
     }
 
     private void parseGpx(Uri uri) {
@@ -147,10 +185,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (contentResolver != null) {
             try {
                 InputStream inputStream = contentResolver.openInputStream(uri);
-                Gpx gpx = parser.parse(inputStream);
+                mGpx = parser.parse(inputStream);
                 MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
-                if (mapFragment != null && gpx != null) {
-                    mapFragment.setGpx(gpx);
+                if (mapFragment != null && mGpx != null) {
+                    mapFragment.setGpx(mGpx);
                     mGpxUri = uri.toString();
                 }
 
@@ -169,5 +207,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             pointFromIntent = parser.fromUri(uriAsString, new GeoPointDto());
         }
         return pointFromIntent;
+    }
+
+    @Override
+    public Gpx getGpx() {
+        return mGpx;
     }
 }

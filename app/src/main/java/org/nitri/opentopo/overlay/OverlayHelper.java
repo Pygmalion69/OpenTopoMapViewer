@@ -64,23 +64,27 @@ public class OverlayHelper {
 
         clearGpx();
 
-        for (Track track : gpx.getTracks()) {
-            mTrackOverlay = new TrackOverlay(mContext, track);
-            mMapView.getOverlays().add(mTrackOverlay);
+        if (gpx.getTracks() != null) {
+            for (Track track : gpx.getTracks()) {
+                mTrackOverlay = new TrackOverlay(mContext, track);
+                mMapView.getOverlays().add(mTrackOverlay);
+            }
         }
 
         List<OverlayItem> wayPointItems = new ArrayList<>();
 
-        for (WayPoint wayPoint : gpx.getWayPoints()) {
-            GeoPoint gp = new GeoPoint(wayPoint.getLatitude(), wayPoint.getLongitude());
-            OverlayItem item = new OverlayItem(wayPoint.getName(), wayPoint.getDesc(), gp);
-            wayPointItems.add(item);
+        if (gpx.getWayPoints() != null) {
+            for (WayPoint wayPoint : gpx.getWayPoints()) {
+                GeoPoint gp = new GeoPoint(wayPoint.getLatitude(), wayPoint.getLongitude());
+                OverlayItem item = new OverlayItem(wayPoint.getName(), wayPoint.getDesc(), gp);
+                wayPointItems.add(item);
+            }
+
+            mWayPointOverlay = new ItemizedIconInfoOverlay(wayPointItems, ContextCompat.getDrawable(mContext, R.drawable.ic_default_marker),
+                    mWayPointItemGestureListener, mContext);
+
+            mMapView.getOverlays().add(mWayPointOverlay);
         }
-
-        mWayPointOverlay = new ItemizedIconInfoOverlay(wayPointItems, ContextCompat.getDrawable(mContext, R.drawable.ic_default_marker),
-                mWayPointItemGestureListener, mContext);
-
-        mMapView.getOverlays().add(mWayPointOverlay);
 
         mMapView.invalidate();
 

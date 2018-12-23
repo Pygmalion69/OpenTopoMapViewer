@@ -6,4 +6,8 @@
     <string name="follow_disabled">Follow disabled</string>
     <string name="gpx">GPX</string>
     <string name="discard_current_gpx">The current GPX will be discarded.</string>
+    <string name="gpx_details">GPX details</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

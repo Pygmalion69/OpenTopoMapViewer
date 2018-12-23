@@ -14,12 +14,18 @@
     <item
         android:id="@+id/action_follow"
         android:icon="@drawable/ic_action_follow"
-        android:title="@string/location"
+        android:title="@string/follow"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_no_follow"
         android:icon="@drawable/ic_action_follow_active"
-        android:title="@string/location"
+        android:title="@string/follow"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_gpx_details"
+        android:icon="@drawable/ic_action_gpx_details"
+        android:title="@string/gpx_details"
+        android:visible="false"
+        app:showAsAction="never"/>
 
 </menu>

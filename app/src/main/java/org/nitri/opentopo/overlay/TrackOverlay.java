@@ -55,25 +55,25 @@ public class TrackOverlay extends Overlay {
         routePaint.setStrokeCap(Paint.Cap.ROUND);
         routePaint.setStrokeWidth(12);
 
-        for (TrackSegment trackSegment: mTrack.getTrackSegments()) {
-            Path path = new Path();
-            createPointsSegments(osmv, trackSegment);
-            //Log.d(TAG, "Point segments: " + mPointsSegments.size());
-            if (mPointsSegments.size() > 0) {
-                for (List<Point> pointSegment : mPointsSegments) {
-                    Point firstPoint = pointSegment.get(0);
-                    path.moveTo(firstPoint.x, firstPoint.y);
-                    Point prevPoint = firstPoint;
-                    for (Point point : pointSegment) {
-                        path.quadTo(prevPoint.x, prevPoint.y, point.x, point.y);
-                        prevPoint = point;
+        if (mTrack.getTrackSegments() != null) {
+            for (TrackSegment trackSegment : mTrack.getTrackSegments()) {
+                Path path = new Path();
+                createPointsSegments(osmv, trackSegment);
+                //Log.d(TAG, "Point segments: " + mPointsSegments.size());
+                if (mPointsSegments.size() > 0) {
+                    for (List<Point> pointSegment : mPointsSegments) {
+                        Point firstPoint = pointSegment.get(0);
+                        path.moveTo(firstPoint.x, firstPoint.y);
+                        Point prevPoint = firstPoint;
+                        for (Point point : pointSegment) {
+                            path.quadTo(prevPoint.x, prevPoint.y, point.x, point.y);
+                            prevPoint = point;
+                        }
+                        canvas.drawPath(path, routePaint);
                     }
-                    canvas.drawPath(path, routePaint);
                 }
             }
-
         }
-
     }
 
     /**
@@ -94,7 +94,7 @@ public class TrackOverlay extends Overlay {
         boolean adding = false;
         List<Point> pointsSegment = new ArrayList<>();
 
-        for (TrackPoint trackPoint: trackSegment.getTrackPoints()) {
+        for (TrackPoint trackPoint : trackSegment.getTrackPoints()) {
             GeoPoint gp = new GeoPoint(trackPoint.getLatitude(), trackPoint.getLongitude());
             Point point = projection.toPixels(gp, null);
             if (pixelDistance(mapCenter, point) < offCenterLimit) {

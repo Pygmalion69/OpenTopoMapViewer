@@ -286,6 +286,8 @@ public class MapFragment extends Fragment implements LocationListener {
 
     void setGpx(Gpx gpx) {
         mOverlayHelper.setGpx(gpx);
+        if (getActivity() != null)
+            getActivity().invalidateOptionsMenu();
     }
 
     private void showGpxdialog() {
@@ -328,6 +330,11 @@ public class MapFragment extends Fragment implements LocationListener {
             menu.findItem(R.id.action_follow).setVisible(true);
             menu.findItem(R.id.action_no_follow).setVisible(false);
         }
+        if (mOverlayHelper != null && mOverlayHelper.hasGpx()) {
+            menu.findItem(R.id.action_gpx_details).setVisible(true);
+        } else {
+            menu.findItem(R.id.action_gpx_details).setVisible(false);
+        }
     }
 
     @Override
@@ -352,6 +359,10 @@ public class MapFragment extends Fragment implements LocationListener {
             case R.id.action_no_follow:
                 disableFollow();
                 Toast.makeText(getActivity(), R.string.follow_disabled, Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.action_gpx_details:
+                if (mListener != null)
+                    mListener.addGpxDetailFragment();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -416,5 +427,10 @@ public class MapFragment extends Fragment implements LocationListener {
          * Request to set a GPX layer, e.g. after a configuration change
          */
         void setGpx();
+
+        /**
+         * Present GPX details
+         */
+        void addGpxDetailFragment();
     }
 }
