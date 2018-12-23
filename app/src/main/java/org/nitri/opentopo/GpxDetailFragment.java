@@ -30,7 +30,7 @@ public class GpxDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mGpx = mListener.getGpx();
-        if (mGpx.getTracks() != null) {
+        if (mGpx != null && mGpx.getTracks() != null) {
             for (Track track : mGpx.getTracks()) {
                 buildTrackDistanceLine(track);
             }
@@ -63,8 +63,7 @@ public class GpxDetailFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
-
-
+    
     public interface OnFragmentInteractionListener {
         Gpx getGpx();
     }
