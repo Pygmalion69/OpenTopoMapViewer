@@ -33,22 +33,25 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_STORAGE_PERMISSION = 2;
     private static final int READ_REQUEST_CODE = 69;
-    private String mGpxUri;
 
     private static final String GPX_URI_STATE = "gpx_uri";
     private GeoPointDto mGeoPointFromIntent;
+    private String mGpxUriString;
+    private Uri mGpxUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (savedInstanceState != null) {
-            mGpxUri = savedInstanceState.getString(GPX_URI_STATE);
+            mGpxUriString = savedInstanceState.getString(GPX_URI_STATE);
         }
 
         Intent intent = getIntent();
 
-        mGeoPointFromIntent = getGeoPointDtoFromIntent(intent);
+        if (intent != null && intent.getData() != null) {
+            handleIntent(intent);
+        }
 
         JodaTimeAndroid.init(this);
 
@@ -58,6 +61,22 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
         } else {
             addMapFragment();
+        }
+    }
+
+    private void handleIntent(Intent intent) {
+        String scheme = intent.getData().getScheme();
+        if (scheme != null) {
+            switch (scheme) {
+                case "geo":
+                    mGeoPointFromIntent = getGeoPointDtoFromIntent(intent);
+                    break;
+                case "file":
+                    mGpxUri = intent.getData();
+                    mGpxUriString = mGpxUri.toString();
+                    Log.i(TAG, "Uri: " + mGpxUriString);
+                    break;
+            }
         }
     }
 
@@ -73,6 +92,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG)
                 .commit();
+        if (mGpxUri != null) {
+            parseGpx(mGpxUri);
+        }
     }
 
     private boolean mapFragmentAdded() {
@@ -112,8 +134,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     @Override
     public void setGpx() {
-        if (!TextUtils.isEmpty(mGpxUri)) {
-            parseGpx(Uri.parse(mGpxUri));
+        if (!TextUtils.isEmpty(mGpxUriString)) {
+            parseGpx(Uri.parse(mGpxUriString));
         }
     }
 
@@ -122,12 +144,11 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                                  Intent resultData) {
 
         if (requestCode == READ_REQUEST_CODE && resultCode == AppCompatActivity.RESULT_OK) {
-            Uri uri;
             if (resultData != null) {
-                uri = resultData.getData();
-                if (uri != null) {
-                    Log.i(TAG, "Uri: " + uri.toString());
-                    parseGpx(uri);
+                mGpxUri = resultData.getData();
+                if (mGpxUri != null) {
+                    Log.i(TAG, "Uri: " + mGpxUri.toString());
+                    parseGpx(mGpxUri);
                 }
             }
         }
@@ -135,8 +156,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        if (!TextUtils.isEmpty(mGpxUri)) {
-            outState.putString(GPX_URI_STATE, mGpxUri);
+        if (!TextUtils.isEmpty(mGpxUriString)) {
+            outState.putString(GPX_URI_STATE, mGpxUriString);
         }
         super.onSaveInstanceState(outState);
     }
@@ -151,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                 MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
                 if (mapFragment != null && gpx != null) {
                     mapFragment.setGpx(gpx);
-                    mGpxUri = uri.toString();
+                    mGpxUriString = uri.toString();
                 }
 
             } catch (XmlPullParserException | IOException e) {
