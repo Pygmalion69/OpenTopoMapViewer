@@ -7,8 +7,8 @@ android {
         applicationId "org.nitri.opentopo"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 5
-        versionName "1.1"
+        versionCode 6
+        versionName "1.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
