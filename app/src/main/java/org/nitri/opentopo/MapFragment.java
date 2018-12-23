@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -24,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +36,7 @@ import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
@@ -286,6 +289,8 @@ public class MapFragment extends Fragment implements LocationListener {
 
     void setGpx(Gpx gpx) {
         mOverlayHelper.setGpx(gpx);
+        disableFollow();
+        zoomToBounds(Util.area(gpx));
     }
 
     private void showGpxdialog() {
@@ -311,6 +316,22 @@ public class MapFragment extends Fragment implements LocationListener {
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
+    }
+
+    public void zoomToBounds(final BoundingBox box) {
+        if (mMapView.getHeight() > 0) {
+            mMapView.zoomToBoundingBox(box, true);
+        } else {
+            ViewTreeObserver vto = mMapView.getViewTreeObserver();
+            vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    mMapView.zoomToBoundingBox(box, true);
+                    ViewTreeObserver vto = mMapView.getViewTreeObserver();
+                    vto.removeOnGlobalLayoutListener(this);
+                }
+            });
+        }
     }
 
     @Override
