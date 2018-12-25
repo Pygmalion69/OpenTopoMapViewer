@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private GeoPointDto mGeoPointFromIntent;
     private String mGpxUriString;
     private Uri mGpxUri;
+    private boolean mZoomToGpx;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                     mGpxUri = intent.getData();
                     mGpxUriString = mGpxUri.toString();
                     Log.i(TAG, "Uri: " + mGpxUriString);
+                    mZoomToGpx = true;
                     break;
             }
         }
@@ -149,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                 if (mGpxUri != null) {
                     Log.i(TAG, "Uri: " + mGpxUri.toString());
                     parseGpx(mGpxUri);
+                    mZoomToGpx = true;
                 }
             }
         }
@@ -171,8 +174,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                 Gpx gpx = parser.parse(inputStream);
                 MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
                 if (mapFragment != null && gpx != null) {
-                    mapFragment.setGpx(gpx);
+                    mapFragment.setGpx(gpx, mZoomToGpx);
                     mGpxUriString = uri.toString();
+                    mZoomToGpx = false;
                 }
 
             } catch (XmlPullParserException | IOException e) {

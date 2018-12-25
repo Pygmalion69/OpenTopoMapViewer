@@ -287,10 +287,12 @@ public class MapFragment extends Fragment implements LocationListener {
         }
     }
 
-    void setGpx(Gpx gpx) {
+    void setGpx(Gpx gpx, boolean zoom) {
         mOverlayHelper.setGpx(gpx);
-        disableFollow();
-        zoomToBounds(Util.area(gpx));
+        if (zoom) {
+            disableFollow();
+            zoomToBounds(Util.area(gpx));
+        }
     }
 
     private void showGpxdialog() {
