@@ -119,6 +119,7 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        setRetainInstance(true);
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
     }
 
