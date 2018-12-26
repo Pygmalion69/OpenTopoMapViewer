@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -119,6 +118,7 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        setRetainInstance(true);
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
     }
 
@@ -287,12 +287,14 @@ public class MapFragment extends Fragment implements LocationListener {
         }
     }
 
-    void setGpx(Gpx gpx) {
+    void setGpx(Gpx gpx, boolean zoom) {
         mOverlayHelper.setGpx(gpx);
         if (getActivity() != null)
             ((AppCompatActivity) getActivity()).supportInvalidateOptionsMenu();
-        disableFollow();
-        zoomToBounds(Util.area(gpx));
+        if (zoom) {
+            disableFollow();
+            zoomToBounds(Util.area(gpx));
+        }
     }
 
     private void showGpxdialog() {

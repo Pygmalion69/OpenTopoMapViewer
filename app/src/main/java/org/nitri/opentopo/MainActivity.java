@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private String mGpxUriString;
     private Uri mGpxUri;
     private Gpx mGpx;
+    private boolean mZoomToGpx;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                         mGpxUri = intent.getData();
                         mGpxUriString = mGpxUri.toString();
                         Log.i(TAG, "Uri: " + mGpxUriString);
+                        mZoomToGpx = true;
                         break;
                 }
             }
@@ -89,10 +91,14 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             return;
         }
         MapFragment mapFragment;
-        if (mGeoPointFromIntent == null)
-            mapFragment = MapFragment.newInstance();
-        else
+        if (mGeoPointFromIntent == null) {
+            mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+            if (mapFragment == null) {
+                mapFragment = MapFragment.newInstance();
+            }
+        } else {
             mapFragment = MapFragment.newInstance(mGeoPointFromIntent.getLatitude(), mGeoPointFromIntent.getLongitude());
+        }
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG)
                 .commit();
@@ -168,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (requestCode == READ_REQUEST_CODE && resultCode == AppCompatActivity.RESULT_OK) {
             if (resultData != null) {
                 mGpxUri = resultData.getData();
+                mZoomToGpx = true;
                 if (mGpxUri != null) {
                     Log.i(TAG, "Uri: " + mGpxUri.toString());
                     parseGpx(mGpxUri);
@@ -211,8 +218,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                     mGpx = parser.parse(inputStream);
                     MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
                     if (mapFragment != null && mGpx != null) {
-                        mapFragment.setGpx(mGpx);
+                        mapFragment.setGpx(mGpx, mZoomToGpx);
                         mGpxUriString = uri.toString();
+                        mZoomToGpx = false;
                     }
                 }
 
