@@ -2,30 +2,30 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_gpx"
-        android:icon="@drawable/ic_action_gpx"
-        android:title="@string/gpx"
-        app:showAsAction="ifRoom"/>
-    <item
         android:id="@+id/action_location"
         android:icon="@drawable/ic_action_location"
         android:title="@string/location"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/action_follow"
         android:icon="@drawable/ic_action_follow"
         android:title="@string/follow"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/action_no_follow"
         android:icon="@drawable/ic_action_follow_active"
         android:title="@string/follow"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_gpx"
+        android:icon="@drawable/ic_action_gpx"
+        android:title="@string/gpx"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_gpx_details"
         android:icon="@drawable/ic_action_gpx_details"
         android:title="@string/gpx_details"
         android:visible="false"
-        app:showAsAction="never"/>
+        app:showAsAction="ifRoom"/>
 
 </menu>

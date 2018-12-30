@@ -341,6 +341,7 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        mListener.setUpNavigation(false);
         inflater.inflate(R.menu.menu_main, menu);
     }
 
@@ -455,5 +456,10 @@ public class MapFragment extends Fragment implements LocationListener {
          * Present GPX details
          */
         void addGpxDetailFragment();
+
+        /**
+         * Set up navigation arrow
+         */
+        void setUpNavigation(boolean upNavigation);
     }
 }

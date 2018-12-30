@@ -102,10 +102,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG)
                 .commit();
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            getSupportActionBar().setDisplayShowHomeEnabled(false);
-        }
         if (mGpxUri != null) {
             parseGpx(mGpxUri);
         }
@@ -121,11 +117,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         getSupportFragmentManager().beginTransaction().addToBackStack(null)
                 .replace(R.id.map_container, gpxDetailFragment, MAP_FRAGMENT_TAG)
                 .commit();
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-        }
-
     }
 
     @Override
@@ -200,11 +191,15 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     }
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        if (getSupportFragmentManager() != null && getSupportFragmentManager().getBackStackEntryCount() == 0 && getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            getSupportActionBar().setDisplayShowHomeEnabled(false);
+    public void setUpNavigation(boolean upNavigation) {
+        if (getSupportFragmentManager() != null && getSupportActionBar() != null) {
+            if (upNavigation) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+                getSupportActionBar().setDisplayShowHomeEnabled(true);
+            } else {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                getSupportActionBar().setDisplayShowHomeEnabled(false);
+            }
         }
     }
 
