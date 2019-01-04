@@ -11,4 +11,5 @@
     <string name="elevation">Elevation</string>
     <string name="unit_m">m</string>
     <string name="unit_km">km</string>
+    <string name="poi">POI</string>
 </resources>

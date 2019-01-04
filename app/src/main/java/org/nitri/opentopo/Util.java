@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.support.annotation.AttrRes;
 import android.support.annotation.ColorInt;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.TypedValue;
 
 import org.osmdroid.util.BoundingBox;
@@ -18,6 +19,7 @@ import io.ticofab.androidgpxparser.parser.domain.Gpx;
 import io.ticofab.androidgpxparser.parser.domain.Track;
 import io.ticofab.androidgpxparser.parser.domain.TrackPoint;
 import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
+import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
 public class Util {
 
@@ -107,6 +109,40 @@ public class Util {
         return geoPoints;
     }
 
+    /**
+     * Get way point types (categories) from GPX
+     *
+     * @param gpx
+     * @param defaultType
+     * @return
+     */
+    public static List<String> getWayPointTypes(Gpx gpx, String defaultType) {
+        List<String> types = new ArrayList<>();
+        if (gpx.getWayPoints() != null) {
+            for (WayPoint wayPoint: gpx.getWayPoints()) {
+                String type = defaultType;
+                if (!TextUtils.isEmpty(wayPoint.getType()))
+                    type = wayPoint.getType();
+                if (!types.contains(type))
+                    types.add(type);
+            }
+        }
+        return types;
+    }
+
+    public static List<WayPoint> getWayPointsByType(Gpx gpx, String type) {
+        List wayPoints = new ArrayList();
+        if (gpx.getWayPoints() != null) {
+            for (WayPoint wayPoint: gpx.getWayPoints()) {
+                if (!TextUtils.isEmpty(wayPoint.getType()) && wayPoint.getType().equals(type))
+                    wayPoints.add(wayPoint);
+                else if (TextUtils.isEmpty(wayPoint.getType()) && TextUtils.isEmpty(type))
+                    wayPoints.add(wayPoint);
+            }
+        }
+        return wayPoints;
+    }
+
     private static TypedValue resolveThemeAttr(Context context, @AttrRes int attrRes) {
         Resources.Theme theme = context.getTheme();
         TypedValue typedValue = new TypedValue();
@@ -116,7 +152,7 @@ public class Util {
 
     /**
      * Get color integer by attribute
-     * 
+     *
      * @param context
      * @param colorAttr
      * @return

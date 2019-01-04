@@ -9,8 +9,8 @@ import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,7 +29,11 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
+import org.nitri.opentopo.adapter.WayPointListAdapter;
 import org.nitri.opentopo.domain.DistancePoint;
+import org.nitri.opentopo.model.WayPointHeaderItem;
+import org.nitri.opentopo.model.WayPointItem;
+import org.nitri.opentopo.model.WayPointListItem;
 import org.nitri.opentopo.view.ChartValueMarkerView;
 
 import java.util.ArrayList;
@@ -40,6 +44,7 @@ import io.ticofab.androidgpxparser.parser.domain.Gpx;
 import io.ticofab.androidgpxparser.parser.domain.Track;
 import io.ticofab.androidgpxparser.parser.domain.TrackPoint;
 import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
+import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
 public class GpxDetailFragment extends Fragment {
 
@@ -57,6 +62,10 @@ public class GpxDetailFragment extends Fragment {
 
     private double mMinElevation = 0;
     private double mMaxElevation = 0;
+    private RecyclerView mWayPointRecyclerView;
+    List<WayPointListItem> mWayPointListItems = new ArrayList<>();
+    private WayPointListAdapter mWayPointListAdapter;
+
 
     public GpxDetailFragment() {
         // Required empty public constructor
@@ -83,13 +92,7 @@ public class GpxDetailFragment extends Fragment {
                 mTfLight = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf");
             }
         }
-        if (getActivity() != null) {
-            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
-                actionBar.setDisplayShowHomeEnabled(true);
-            }
-        }
+        mWayPointListAdapter = new WayPointListAdapter(mWayPointListItems);
     }
 
     @Override
@@ -101,6 +104,13 @@ public class GpxDetailFragment extends Fragment {
         tvLength = rootView.findViewById(R.id.tvLength);
         ConstraintLayout chartContainer = rootView.findViewById(R.id.chartContainer);
         mElevationChart = rootView.findViewById(R.id.elevationChart);
+        mWayPointRecyclerView = rootView.findViewById(R.id.way_point_recycler_view);
+        mWayPointRecyclerView.setHasFixedSize(true);
+        mWayPointRecyclerView.setNestedScrollingEnabled(false);
+        mWayPointRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mWayPointRecyclerView.setAdapter(mWayPointListAdapter);
+
+
         if (mElevation) {
             setUpElevationChart();
 
@@ -137,6 +147,11 @@ public class GpxDetailFragment extends Fragment {
         } else {
             tvLength.setVisibility(View.GONE);
         }
+
+        if (mGpx != null && mGpx.getWayPoints() != null) {
+            buildWayPointList();
+            mWayPointListAdapter.notifyDataSetChanged();
+        }
     }
 
     private void buildTrackDistanceLine(Track track) {
@@ -166,6 +181,25 @@ public class GpxDetailFragment extends Fragment {
                         }
                         prevTrackPoint = trackPoint;
                     }
+                }
+            }
+        }
+    }
+
+    private void buildWayPointList() {
+        String defaultType = getString(R.string.poi);
+        List<WayPoint> wayPoints;
+        mWayPointListItems.clear();
+        for (String type : Util.getWayPointTypes(mGpx, defaultType)) {
+            if (type.equals(defaultType)) {
+                wayPoints = Util.getWayPointsByType(mGpx, null);
+            } else {
+                wayPoints = Util.getWayPointsByType(mGpx, type);
+            }
+            if (wayPoints.size() > 0) {
+                mWayPointListItems.add(new WayPointHeaderItem(type));
+                for (WayPoint wayPoint : wayPoints) {
+                    mWayPointListItems.add(new WayPointItem(wayPoint));
                 }
             }
         }
