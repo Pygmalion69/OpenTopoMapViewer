@@ -7,9 +7,12 @@
     <string name="gpx">GPX</string>
     <string name="discard_current_gpx">The current GPX will be discarded.</string>
     <string name="gpx_details">GPX details</string>
+    <string name="gpx_zoom">Zoom to GPX</string>
 
     <string name="elevation">Elevation</string>
     <string name="unit_m">m</string>
     <string name="unit_km">km</string>
     <string name="poi">POI</string>
+
+    <string name="invalid_gpx">Invalid GPX</string>
 </resources>

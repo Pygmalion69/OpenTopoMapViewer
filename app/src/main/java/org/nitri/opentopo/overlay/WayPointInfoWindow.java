@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import org.nitri.opentopo.Util;
 import org.osmdroid.api.IMapView;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.OverlayItem;
@@ -93,7 +94,7 @@ public class WayPointInfoWindow extends BasicInfoWindow {
 
         TextView subDescText = mView.findViewById(mSubDescriptionId);
         if (mSubDescription != null && !("".equals(mSubDescription))) {
-            subDescText.setText(Html.fromHtml(mSubDescription));
+            subDescText.setText(Util.fromHtml(mSubDescription));
             subDescText.setVisibility(View.VISIBLE);
             subDescText.setMovementMethod(LinkMovementMethod.getInstance());
         } else {

@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -221,6 +222,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
             } catch (XmlPullParserException | IOException e) {
                 e.printStackTrace();
+                Toast.makeText(this, getString(R.string.invalid_gpx) + ": " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         }
     }

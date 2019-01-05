@@ -7,8 +7,8 @@ package org.nitri.opentopo.domain;
  */
 public class DistancePoint {
 
-    private final double mDistance;
-    private final double mElevation;
+    private final Double mDistance;
+    private final Double mElevation;
 
     DistancePoint(Builder builder) {
         mDistance = builder.mDistance;
@@ -18,28 +18,28 @@ public class DistancePoint {
     /**
      * @return the distance in meters
      */
-    public double getDistance() {
+    public Double getDistance() {
         return mDistance;
     }
 
     /**
      * @return the elevation in meters
      */
-    public double getElevation() {
+    public Double getElevation() {
         return mElevation;
     }
 
     public static class Builder {
 
-        private double mDistance;
-        private double mElevation;
+        private Double mDistance;
+        private Double mElevation;
 
-        public Builder setDistance(double distance) {
+        public Builder setDistance(Double distance) {
             mDistance = distance;
             return this;
         }
 
-        public Builder setElevation(double elevation) {
+        public Builder setElevation(Double elevation) {
             mElevation = elevation;
             return this;
         }

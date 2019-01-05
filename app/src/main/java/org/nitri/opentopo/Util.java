@@ -2,9 +2,12 @@ package org.nitri.opentopo;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.support.annotation.AttrRes;
 import android.support.annotation.ColorInt;
 import android.support.v4.content.ContextCompat;
+import android.text.Html;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.TypedValue;
 
@@ -13,6 +16,7 @@ import org.osmdroid.util.GeoPoint;
 
 import io.ticofab.androidgpxparser.parser.domain.Point;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -127,11 +131,19 @@ public class Util {
                     types.add(type);
             }
         }
+        Collections.sort(types);
         return types;
     }
 
+    /**
+     * Get a list of way points by type (categpry)
+     *
+     * @param gpx
+     * @param type
+     * @return
+     */
     public static List<WayPoint> getWayPointsByType(Gpx gpx, String type) {
-        List wayPoints = new ArrayList();
+        List<WayPoint> wayPoints = new ArrayList();
         if (gpx.getWayPoints() != null) {
             for (WayPoint wayPoint: gpx.getWayPoints()) {
                 if (!TextUtils.isEmpty(wayPoint.getType()) && wayPoint.getType().equals(type))
@@ -163,6 +175,21 @@ public class Util {
         // resourceId is used if it's a ColorStateList, and data if it's a color reference or a hex color
         int colorRes = resolvedAttr.resourceId != 0 ? resolvedAttr.resourceId : resolvedAttr.data;
         return ContextCompat.getColor(context, colorRes);
+    }
+
+    /**
+     * Spanned text from HTML (compat)
+     *
+     * @param source
+     * @return
+     */
+    @SuppressWarnings("deprecation")
+    public static Spanned fromHtml(String source) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            return Html.fromHtml(source);
+        }
     }
 
 }

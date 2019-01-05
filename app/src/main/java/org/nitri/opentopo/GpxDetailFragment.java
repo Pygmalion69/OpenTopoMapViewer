@@ -12,11 +12,13 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -65,6 +67,7 @@ public class GpxDetailFragment extends Fragment {
     private RecyclerView mWayPointRecyclerView;
     List<WayPointListItem> mWayPointListItems = new ArrayList<>();
     private WayPointListAdapter mWayPointListAdapter;
+    private WebView wvDescription;
 
 
     public GpxDetailFragment() {
@@ -101,6 +104,8 @@ public class GpxDetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_gpx_detail, container, false);
         tvName = rootView.findViewById(R.id.tvName);
         tvDescription = rootView.findViewById(R.id.tvDescription);
+        wvDescription = rootView.findViewById(R.id.wvDescription);
+        wvDescription.setBackgroundColor(Color.TRANSPARENT);
         tvLength = rootView.findViewById(R.id.tvLength);
         ConstraintLayout chartContainer = rootView.findViewById(R.id.chartContainer);
         mElevationChart = rootView.findViewById(R.id.elevationChart);
@@ -113,16 +118,12 @@ public class GpxDetailFragment extends Fragment {
 
         if (mElevation) {
             setUpElevationChart();
-
-            setData();
-
+            setChartData();
         } else {
             chartContainer.setVisibility(View.GONE);
-
         }
         return rootView;
     }
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -135,10 +136,21 @@ public class GpxDetailFragment extends Fragment {
             } else {
                 tvName.setText(mGpx.getTracks().get(0).getTrackName());
             }
-            if (TextUtils.isEmpty(mGpx.getTracks().get(0).getTrackDesc())) {
+            String description = mGpx.getTracks().get(0).getTrackDesc();
+            if (TextUtils.isEmpty(description)) {
                 tvDescription.setVisibility(View.GONE);
+                wvDescription.setVisibility(View.GONE);
             } else {
-                tvDescription.setText(mGpx.getTracks().get(0).getTrackDesc());
+                if (description.matches(".*<\\s*img\\s.*>.*")) {
+                    tvDescription.setVisibility(View.GONE);
+                    wvDescription.setVisibility(View.VISIBLE);
+                    wvDescription.loadData(description, "text/html; charset=utf-8", "UTF-8");
+                } else {
+                    tvDescription.setVisibility(View.VISIBLE);
+                    wvDescription.setVisibility(View.GONE);
+                    tvDescription.setText(Util.fromHtml(description));
+                    tvDescription.setMovementMethod(LinkMovementMethod.getInstance());
+                }
             }
         }
 
@@ -165,18 +177,20 @@ public class GpxDetailFragment extends Fragment {
                     mMinElevation = mMaxElevation = segment.getTrackPoints().get(0).getElevation();
                     for (TrackPoint trackPoint : segment.getTrackPoints()) {
                         if (prevTrackPoint != null) {
-                            DistancePoint.Builder builder = new DistancePoint.Builder();
                             mDistance += Util.distance(prevTrackPoint, trackPoint);
-                            builder.setDistance(mDistance);
-                            if (trackPoint.getElevation() != null) {
-                                double elevation = trackPoint.getElevation();
-                                if (elevation < mMinElevation)
-                                    mMinElevation = elevation;
-                                if (elevation > mMaxElevation)
-                                    mMaxElevation = elevation;
-                                builder.setElevation(elevation);
-                                mElevation = true;
-                            }
+                        }
+
+                        DistancePoint.Builder builder = new DistancePoint.Builder();
+                        builder.setDistance(mDistance);
+                        if (trackPoint.getElevation() != null) {
+                            double elevation = trackPoint.getElevation();
+                            if (elevation < mMinElevation)
+                                mMinElevation = elevation;
+                            if (elevation > mMaxElevation)
+                                mMaxElevation = elevation;
+                            builder.setElevation(elevation);
+                            mElevation = true;
+
                             mTrackDistanceLine.add(builder.build());
                         }
                         prevTrackPoint = trackPoint;
@@ -191,11 +205,9 @@ public class GpxDetailFragment extends Fragment {
         List<WayPoint> wayPoints;
         mWayPointListItems.clear();
         for (String type : Util.getWayPointTypes(mGpx, defaultType)) {
-            if (type.equals(defaultType)) {
-                wayPoints = Util.getWayPointsByType(mGpx, null);
-            } else {
-                wayPoints = Util.getWayPointsByType(mGpx, type);
-            }
+            wayPoints = Util.getWayPointsByType(mGpx, type);
+            if (type.equals(defaultType))
+                wayPoints.addAll(Util.getWayPointsByType(mGpx, null));
             if (wayPoints.size() > 0) {
                 mWayPointListItems.add(new WayPointHeaderItem(type));
                 for (WayPoint wayPoint : wayPoints) {
@@ -228,9 +240,12 @@ public class GpxDetailFragment extends Fragment {
         xAxis.setValueFormatter(new IAxisValueFormatter() {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-                return String.valueOf((int) (value / 1000));
+                return String.format(Locale.getDefault(), "%.1f", value / 1000);
             }
         });
+
+        xAxis.setAxisMinimum(0);
+        xAxis.setAxisMaximum((float) mDistance);
 
         YAxis yAxis = mElevationChart.getAxisLeft();
         yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
@@ -250,12 +265,15 @@ public class GpxDetailFragment extends Fragment {
 
         mElevationChart.getAxisRight().setDrawLabels(false);
 
+        mElevationChart.getViewPortHandler().setMaximumScaleX(2f);
+        mElevationChart.getViewPortHandler().setMaximumScaleY(2f);
     }
 
-    private void setData() {
+    private void setChartData() {
         ArrayList<Entry> elevationValues = new ArrayList<>();
         for (DistancePoint point : mTrackDistanceLine) {
-            elevationValues.add(new Entry((float) point.getDistance(), (float) point.getElevation()));
+            if (point.getElevation() != null)
+            elevationValues.add(new Entry(point.getDistance().floatValue(), point.getElevation().floatValue()));
         }
         LineDataSet elevationDataSet = new LineDataSet(elevationValues, getString(R.string.elevation));
         elevationDataSet.setDrawValues(false);

@@ -299,13 +299,15 @@ public class MapFragment extends Fragment implements LocationListener {
 
     private void showGpxdialog() {
         final AlertDialog.Builder builder;
-        builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()));
+        builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()), R.style.AlertDialogTheme);
         builder.setTitle(getString(R.string.gpx))
                 .setMessage(getString(R.string.discard_current_gpx))
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         if (mOverlayHelper != null) {
                             mOverlayHelper.clearGpx();
+                            if (getActivity() != null)
+                                ((AppCompatActivity) getActivity()).supportInvalidateOptionsMenu();
                         }
                         if (mListener != null) {
                             mListener.selectGpx();
@@ -318,19 +320,19 @@ public class MapFragment extends Fragment implements LocationListener {
                         dialog.cancel();
                     }
                 })
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(R.drawable.ic_alert)
                 .show();
     }
 
     public void zoomToBounds(final BoundingBox box) {
         if (mMapView.getHeight() > 0) {
-            mMapView.zoomToBoundingBox(box, true);
+            mMapView.zoomToBoundingBox(box, true, 64);
         } else {
             ViewTreeObserver vto = mMapView.getViewTreeObserver();
             vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
                 public void onGlobalLayout() {
-                    mMapView.zoomToBoundingBox(box, true);
+                    mMapView.zoomToBoundingBox(box, true, 64);
                     ViewTreeObserver vto = mMapView.getViewTreeObserver();
                     vto.removeOnGlobalLayoutListener(this);
                 }
@@ -356,8 +358,10 @@ public class MapFragment extends Fragment implements LocationListener {
         }
         if (mOverlayHelper != null && mOverlayHelper.hasGpx()) {
             menu.findItem(R.id.action_gpx_details).setVisible(true);
+            menu.findItem(R.id.action_gpx_zoom).setVisible(true);
         } else {
             menu.findItem(R.id.action_gpx_details).setVisible(false);
+            menu.findItem(R.id.action_gpx_zoom).setVisible(false);
         }
     }
 
@@ -387,6 +391,10 @@ public class MapFragment extends Fragment implements LocationListener {
             case R.id.action_gpx_details:
                 if (mListener != null)
                     mListener.addGpxDetailFragment();
+                return true;
+            case R.id.action_gpx_zoom:
+                disableFollow();
+                zoomToBounds(Util.area(mListener.getGpx()));
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -451,6 +459,13 @@ public class MapFragment extends Fragment implements LocationListener {
          * Request to set a GPX layer, e.g. after a configuration change
          */
         void setGpx();
+
+        /**
+         * Retrieve the current GPX
+         *
+         * @return Gpx
+         */
+        Gpx getGpx();
 
         /**
          * Present GPX details

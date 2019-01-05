@@ -1,9 +1,9 @@
 <resources>
 
-    <style name="AlertDialogTheme" parent="android:Theme.Material.Dialog.Alert">
+    <style name="AlertDialogTheme" parent="android:Theme.Material.Light.Dialog.Alert">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorPrimaryLight</item>
+        <item name="colorAccent">@color/colorAccent</item>
     </style>
 
 </resources>
