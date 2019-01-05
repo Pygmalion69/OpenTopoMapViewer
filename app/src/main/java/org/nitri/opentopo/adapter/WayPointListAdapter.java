@@ -17,9 +17,11 @@ import java.util.List;
 public class WayPointListAdapter
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<WayPointListItem> mItems;
+    private final OnItemClickListener mListener;
 
-    public WayPointListAdapter(List<WayPointListItem> items) {
+    public WayPointListAdapter(List<WayPointListItem> items, OnItemClickListener listener) {
         mItems = items;
+        mListener = listener;
     }
 
     @Override
@@ -70,7 +72,6 @@ public class WayPointListAdapter
 
         ViewHolderHeader(View itemView) {
             super(itemView);
-
             textView = itemView.findViewById(R.id.textView);
         }
 
@@ -79,17 +80,28 @@ public class WayPointListAdapter
         }
     }
 
-    public class ViewHolderWayPoint extends ViewHolder {
+    public class ViewHolderWayPoint extends ViewHolder implements View.OnClickListener {
         private final TextView textView;
 
         ViewHolderWayPoint(View itemView) {
             super(itemView);
-
             textView = itemView.findViewById(R.id.textView);
+            itemView.setOnClickListener(this);
         }
 
         public void bindType(WayPointListItem item) {
             textView.setText(((WayPointItem) item).getWayPoint().getName());
+            int itemIndex = mItems.indexOf(item);
+            itemView.setTag(itemIndex);
         }
+
+        @Override
+        public void onClick(View view) {
+            mListener.onItemClick((Integer) view.getTag());
+        }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(int index);
     }
 }

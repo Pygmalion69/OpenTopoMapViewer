@@ -52,7 +52,7 @@ public class WayPointInfoWindow extends BasicInfoWindow {
         String snippet = overlayItem.getSnippet();
         if (snippet == null)
             snippet = "";
-        Spanned snippetHtml = Html.fromHtml(snippet.replace("href=\"//", "href=\"http://"));
+        Spanned snippetHtml = Util.fromHtml(snippet.replace("href=\"//", "href=\"http://"));
         TextView snippetText = mView.findViewById(mDescriptionId);
         snippetText.setText(snippetHtml);
         snippetText.setOnTouchListener(new View.OnTouchListener() {

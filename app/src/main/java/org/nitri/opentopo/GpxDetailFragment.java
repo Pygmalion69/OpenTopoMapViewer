@@ -48,7 +48,7 @@ import io.ticofab.androidgpxparser.parser.domain.TrackPoint;
 import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
 import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
-public class GpxDetailFragment extends Fragment {
+public class GpxDetailFragment extends Fragment implements WayPointListAdapter.OnItemClickListener, WayPointDetailDialogFragment.Callback {
 
     private OnFragmentInteractionListener mListener;
     private Gpx mGpx;
@@ -68,6 +68,7 @@ public class GpxDetailFragment extends Fragment {
     List<WayPointListItem> mWayPointListItems = new ArrayList<>();
     private WayPointListAdapter mWayPointListAdapter;
     private WebView wvDescription;
+    private int mSelectedIndex;
 
 
     public GpxDetailFragment() {
@@ -95,7 +96,7 @@ public class GpxDetailFragment extends Fragment {
                 mTfLight = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf");
             }
         }
-        mWayPointListAdapter = new WayPointListAdapter(mWayPointListItems);
+        mWayPointListAdapter = new WayPointListAdapter(mWayPointListItems, this);
     }
 
     @Override
@@ -285,6 +286,20 @@ public class GpxDetailFragment extends Fragment {
         LineData elevationData = new LineData(elevationDataSet);
         mElevationChart.setData(elevationData);
         mElevationChart.invalidate();
+    }
+
+    @Override
+    public void onItemClick(int index) {
+        mSelectedIndex = index;
+        if (getActivity() != null && !getActivity().isFinishing()) {
+            WayPointDetailDialogFragment wayPointDetailDialogFragment = new WayPointDetailDialogFragment();
+            wayPointDetailDialogFragment.show(getActivity().getSupportFragmentManager(), MainActivity.WAY_POINT_DETAIL_FRAGMENT_TAG);
+        }
+    }
+
+    @Override
+    public WayPointItem getSelectedWayPointItem() {
+        return (WayPointItem) mWayPointListItems.get(mSelectedIndex);
     }
 
     @Override

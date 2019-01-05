@@ -30,7 +30,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final String MAP_FRAGMENT_TAG = "map_fragment";
+    protected static final String MAP_FRAGMENT_TAG = "map_fragment";
+    protected static final String GPX_DETAIL_FRAGMENT_TAG = "gpx_detail_fragment";
+    protected static final String WAY_POINT_DETAIL_FRAGMENT_TAG = "way_point_detail_fragment";
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_STORAGE_PERMISSION = 2;
@@ -116,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     public void addGpxDetailFragment() {
         GpxDetailFragment gpxDetailFragment = GpxDetailFragment.newInstance();
         getSupportFragmentManager().beginTransaction().addToBackStack(null)
-                .replace(R.id.map_container, gpxDetailFragment, MAP_FRAGMENT_TAG)
+                .replace(R.id.map_container, gpxDetailFragment, GPX_DETAIL_FRAGMENT_TAG)
                 .commit();
     }
 

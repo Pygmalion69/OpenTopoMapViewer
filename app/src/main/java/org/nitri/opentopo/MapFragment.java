@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -320,8 +321,11 @@ public class MapFragment extends Fragment implements LocationListener {
                         dialog.cancel();
                     }
                 })
-                .setIcon(R.drawable.ic_alert)
-                .show();
+                .setIcon(R.drawable.ic_alert);
+        AlertDialog dialog = builder.create();
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.show();
+
     }
 
     public void zoomToBounds(final BoundingBox box) {
