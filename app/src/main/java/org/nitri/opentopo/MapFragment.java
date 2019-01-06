@@ -38,6 +38,7 @@ import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
@@ -155,7 +156,7 @@ public class MapFragment extends Fragment implements LocationListener {
             mMapView.getController().setZoom(15d);
             mMapView.setMaxZoomLevel(17d);
             mMapView.setTilesScaledToDpi(true);
-            mMapView.setBuiltInZoomControls(true);
+            mMapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
             mMapView.setMultiTouchControls(true);
             mMapView.setFlingEnabled(true);
             mMapView.getOverlays().add(this.mLocationOverlay);
