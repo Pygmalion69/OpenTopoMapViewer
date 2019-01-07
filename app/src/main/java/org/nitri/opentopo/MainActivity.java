@@ -105,9 +105,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG)
                 .commit();
-        if (mGpxUri != null) {
-            parseGpx(mGpxUri);
-        }
+        setGpx();
     }
 
     private boolean mapFragmentAdded() {
