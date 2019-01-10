@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,7 +53,7 @@ import java.util.Objects;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 
 
-public class MapFragment extends Fragment implements LocationListener {
+public class MapFragment extends Fragment implements LocationListener, PopupMenu.OnMenuItemClickListener {
 
     private MapView mMapView;
     private MyLocationNewOverlay mLocationOverlay;
@@ -401,6 +402,18 @@ public class MapFragment extends Fragment implements LocationListener {
                 disableFollow();
                 zoomToBounds(Util.area(mListener.getGpx()));
                 return true;
+            case R.id.action_layers:
+                View anchorView = getActivity().findViewById(R.id.popupAnchorView);
+                PopupMenu popup = new PopupMenu(getActivity(), anchorView);
+                android.view.MenuInflater inflater = popup.getMenuInflater();
+                inflater.inflate(R.menu.menu_tile_sources, popup.getMenu());
+
+                MenuItem openTopoItem = popup.getMenu().findItem(R.id.otm);
+                openTopoItem.setChecked(true);
+
+                popup.setOnMenuItemClickListener(MapFragment.this);
+                popup.show();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -451,6 +464,16 @@ public class MapFragment extends Fragment implements LocationListener {
         mCompassOverlay = null;
         mScaleBarOverlay = null;
         mRotationGestureOverlay = null;
+    }
+
+    /**
+     * Popup menu click
+     * @param menuItem
+     * @return
+     */
+    @Override
+    public boolean onMenuItemClick(MenuItem menuItem) {
+        return false;
     }
 
     public interface OnFragmentInteractionListener {

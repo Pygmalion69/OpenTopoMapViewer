@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:title="@string/base_map"/>
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/otm"
+              android:title="@string/open_topo_map" />
+        <item android:id="@+id/osm"
+            android:title="@string/open_street_map" />
+    </group>
+    <item android:title="@string/overlay"/>
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/none"
+            android:title="@string/none" />
+        <item android:id="@+id/lonvia_hiking"
+            android:title="@string/lonvia_hiking" />
+        <item android:id="@+id/lonvia_cycling"
+            android:title="@string/lonvia_cycling" />
+    </group>
+</menu>

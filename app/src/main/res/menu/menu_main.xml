@@ -33,5 +33,11 @@
         android:title="@string/gpx_zoom"
         android:visible="false"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_layers"
+        android:icon="@drawable/ic_action_layers"
+        android:title="@string/layers"
+        android:visible="true"
+        app:showAsAction="ifRoom"/>
 
 </menu>
