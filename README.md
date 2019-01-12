@@ -6,6 +6,8 @@ OpenTopoMap viewer for Android
 
 - Follow location
 - Import GPX
+- Lonvia hiking routes
+- Lonvia cycling routes
 
 ![Wageningen](screen_wag.png "Wageningen") ![WUR](screen_wur.png "WUR")
 

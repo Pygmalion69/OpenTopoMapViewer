@@ -3,6 +3,7 @@ package org.nitri.opentopo;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -98,7 +99,21 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     final static String PARAM_LATITUDE = "latitude";
     final static String PARAM_LONGITUDE = "longitude";
 
+    private SharedPreferences mPrefs;
+    private static final String MAP_PREFS = "map_prefs";
+
+    final static String PREF_BASE_MAP = "base_map";
+    final static String PREF_OVERLAY = "overlay";
+
+    final static int BASE_MAP_OTM = 1;
+    final static int BASE_MAP_OSM = 2;
+
+
+    private int mBaseMap = BASE_MAP_OTM;
+
     private static final String TAG = MapFragment.class.getSimpleName();
+    private TextView mCopyRightView;
+    private int mOverlay = OverlayHelper.OVERLAY_NONE;
 
     public MapFragment() {
         // Required empty public constructor
@@ -123,6 +138,11 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         setHasOptionsMenu(true);
         setRetainInstance(true);
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
+        if (getActivity() != null) {
+            mPrefs = getActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE);
+            mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM);
+            mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE);
+        }
     }
 
     @Override
@@ -164,23 +184,11 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mMapView.getOverlays().add(this.mCompassOverlay);
             mMapView.getOverlays().add(this.mScaleBarOverlay);
 
-            mMapView.setTileSource(TileSourceFactory.OpenTopo);
-
-            //final OnlineTileSourceBase localTopo = new XYTileSource("OpenTopoMap", 0, 19, 256, ".png",
-            //        new String[]{"http://192.168.2.108/hot/"}, "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)");
-            //mMapView.setTileSource(localTopo);
-
-            String copyRightNotice = mMapView.getTileProvider().getTileSource().getCopyrightNotice();
-            TextView copyRightView = view.findViewById(R.id.copyrightView);
-
-            if (!TextUtils.isEmpty(copyRightNotice)) {
-                copyRightView.setText(copyRightNotice);
-                copyRightView.setVisibility(View.VISIBLE);
-            } else {
-                copyRightView.setVisibility(View.GONE);
-            }
-
             mMapView.addMapListener(new DelayedMapListener(mDragListener));
+
+            mCopyRightView = view.findViewById(R.id.copyrightView);
+
+            setBaseMap();
 
             mLocationOverlay.enableMyLocation();
             mLocationOverlay.enableFollowLocation();
@@ -188,6 +196,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mCompassOverlay.enableCompass();
             mMapView.setVisibility(View.VISIBLE);
             mOverlayHelper = new OverlayHelper(getActivity(), mMapView);
+
+            setTilesOverlay();
         }
 
         return view;
@@ -213,6 +223,51 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 }
             }, 500);
 
+        }
+    }
+
+    private void setBaseMap() {
+        switch (mBaseMap) {
+            case BASE_MAP_OTM:
+                mMapView.setTileSource(TileSourceFactory.OpenTopo);
+                break;
+            case BASE_MAP_OSM:
+                mMapView.setTileSource(TileSourceFactory.MAPNIK);
+                break;
+        }
+        mMapView.invalidate();
+
+        //final OnlineTileSourceBase localTopo = new XYTileSource("OpenTopoMap", 0, 19, 256, ".png",
+        //        new String[]{"http://192.168.2.108/hot/"}, "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)");
+        //mMapView.setTileSource(localTopo);
+
+        setCopyrightNotice();
+    }
+
+    private void setTilesOverlay() {
+        mOverlayHelper.setTilesOverlay(mOverlay);
+        setCopyrightNotice();
+    }
+
+    private void setCopyrightNotice() {
+
+        StringBuilder copyrightStringBuilder = new StringBuilder();
+        String mapCopyRightNotice = mMapView.getTileProvider().getTileSource().getCopyrightNotice();
+        copyrightStringBuilder.append(mapCopyRightNotice);
+        if (mOverlayHelper != null) {
+            String overlayCopyRightNotice = mOverlayHelper.getCopyrightNotice();
+            if (!TextUtils.isEmpty(mapCopyRightNotice) && !TextUtils.isEmpty(overlayCopyRightNotice)) {
+                copyrightStringBuilder.append(", ");
+            }
+            copyrightStringBuilder.append(overlayCopyRightNotice);
+        }
+        String copyRightNotice = copyrightStringBuilder.toString();
+
+        if (!TextUtils.isEmpty(copyRightNotice)) {
+            mCopyRightView.setText(copyRightNotice);
+            mCopyRightView.setVisibility(View.VISIBLE);
+        } else {
+            mCopyRightView.setVisibility(View.GONE);
         }
     }
 
@@ -403,19 +458,83 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 zoomToBounds(Util.area(mListener.getGpx()));
                 return true;
             case R.id.action_layers:
-                View anchorView = getActivity().findViewById(R.id.popupAnchorView);
-                PopupMenu popup = new PopupMenu(getActivity(), anchorView);
-                android.view.MenuInflater inflater = popup.getMenuInflater();
-                inflater.inflate(R.menu.menu_tile_sources, popup.getMenu());
+                if (getActivity() != null) {
+                    View anchorView = getActivity().findViewById(R.id.popupAnchorView);
+                    PopupMenu popup = new PopupMenu(getActivity(), anchorView);
+                    android.view.MenuInflater inflater = popup.getMenuInflater();
+                    inflater.inflate(R.menu.menu_tile_sources, popup.getMenu());
 
-                MenuItem openTopoItem = popup.getMenu().findItem(R.id.otm);
-                openTopoItem.setChecked(true);
+                    MenuItem openTopoMapItem = popup.getMenu().findItem(R.id.otm);
+                    MenuItem openStreetMapItem = popup.getMenu().findItem(R.id.osm);
+                    MenuItem overlayNoneItem = popup.getMenu().findItem(R.id.none);
+                    MenuItem overlayHikingItem = popup.getMenu().findItem(R.id.lonvia_hiking);
+                    MenuItem overlayCyclingItem = popup.getMenu().findItem(R.id.lonvia_cycling);
 
-                popup.setOnMenuItemClickListener(MapFragment.this);
-                popup.show();
-                return true;
+                    switch (mBaseMap) {
+                        case BASE_MAP_OTM:
+                            openTopoMapItem.setChecked(true);
+                            break;
+                        case BASE_MAP_OSM:
+                            openStreetMapItem.setChecked(true);
+                            break;
+                    }
+
+                    switch (mOverlay) {
+                        case OverlayHelper.OVERLAY_NONE:
+                            overlayNoneItem.setChecked(true);
+                            break;
+                        case OverlayHelper.OVERLAY_HIKING:
+                            overlayHikingItem.setChecked(true);
+                            break;
+                        case OverlayHelper.OVERLAY_CYCLING:
+                            overlayCyclingItem.setChecked(true);
+                            break;
+                    }
+
+                    popup.setOnMenuItemClickListener(MapFragment.this);
+                    popup.show();
+                    return true;
+                } else {
+                    return false;
+                }
+
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Popup menu click
+     *
+     * @param menuItem
+     * @return
+     */
+    @Override
+    public boolean onMenuItemClick(MenuItem menuItem) {
+        if (!menuItem.isChecked()) {
+            menuItem.setChecked(true);
+            switch (menuItem.getItemId()) {
+                case R.id.otm:
+                    mBaseMap = BASE_MAP_OTM;
+                    break;
+                case R.id.osm:
+                    mBaseMap = BASE_MAP_OSM;
+                    break;
+                case R.id.none:
+                    mOverlay = OverlayHelper.OVERLAY_NONE;
+                    break;
+                case R.id.lonvia_hiking:
+                    mOverlay = OverlayHelper.OVERLAY_HIKING;
+                    break;
+                case R.id.lonvia_cycling:
+                    mOverlay = OverlayHelper.OVERLAY_CYCLING;
+                    break;
+            }
+            mPrefs.edit().putInt(PREF_BASE_MAP, mBaseMap).apply();
+            mPrefs.edit().putInt(PREF_OVERLAY, mOverlay).apply();
+            setBaseMap();
+            setTilesOverlay();
+        }
+        return true;
     }
 
     @Override
@@ -464,16 +583,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mCompassOverlay = null;
         mScaleBarOverlay = null;
         mRotationGestureOverlay = null;
-    }
+        mOverlayHelper.destroy();
 
-    /**
-     * Popup menu click
-     * @param menuItem
-     * @return
-     */
-    @Override
-    public boolean onMenuItemClick(MenuItem menuItem) {
-        return false;
     }
 
     public interface OnFragmentInteractionListener {

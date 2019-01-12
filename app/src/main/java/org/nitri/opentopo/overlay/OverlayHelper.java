@@ -1,13 +1,20 @@
 package org.nitri.opentopo.overlay;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.support.v4.content.ContextCompat;
 
 import org.nitri.opentopo.R;
+import org.osmdroid.tileprovider.MapTileProviderBasic;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
+import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 
 import java.util.ArrayList;
@@ -19,10 +26,27 @@ import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
 public class OverlayHelper {
 
-    Context mContext;
-    MapView mMapView;
+    private Context mContext;
+    private MapView mMapView;
 
     private ItemizedIconInfoOverlay mWayPointOverlay;
+
+    /** Tiles Overlays */
+    public final static int OVERLAY_NONE = 1;
+    public final static int OVERLAY_HIKING = 2;
+    public final static int OVERLAY_CYCLING = 3;
+
+    private int mOverlay = OVERLAY_NONE;
+    private MapTileProviderBasic mOverlayTileProvider;
+    private TilesOverlay mTilesOverlay;
+
+    private ColorMatrix tileOverlayAlphaMatrix = new ColorMatrix(new float[]
+            { 1, 0, 0, 0,    0,
+              0, 1, 0, 0,    0,
+              0, 0, 1, 0,    0,
+              0, 0, 0, 0.8f, 0 }
+    );
+    private ColorMatrixColorFilter tileOverlayAlphaFilter = new ColorMatrixColorFilter(tileOverlayAlphaMatrix);
 
     private ItemizedIconOverlay.OnItemGestureListener<OverlayItem> mWayPointItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
 
@@ -113,6 +137,66 @@ public class OverlayHelper {
      */
     public boolean hasGpx() {
         return mTrackOverlay != null || mWayPointOverlay != null;
+    }
+
+    public void setTilesOverlay(int overlay) {
+        mOverlay = overlay;
+
+        ITileSource overlayTiles = null;
+
+        if (mTilesOverlay != null) {
+            mMapView.getOverlays().remove(mTilesOverlay);
+        }
+
+        switch (mOverlay) {
+            case OVERLAY_NONE:
+                break;
+            case OVERLAY_HIKING:
+                overlayTiles = new XYTileSource("hiking", 1, 17, 256, ".png",
+                        new String[]{
+                                "https://tile.waymarkedtrails.org/hiking/"}, mContext.getString(R.string.lonvia_copy));
+                break;
+            case OVERLAY_CYCLING:
+                overlayTiles = new XYTileSource("cycling", 1, 17, 256, ".png",
+                        new String[]{
+                                "https://tile.waymarkedtrails.org/cycling/"}, mContext.getString(R.string.lonvia_copy));
+                break;
+        }
+        if (overlayTiles != null) {
+            mOverlayTileProvider = new MapTileProviderBasic(mContext);
+            mOverlayTileProvider.setTileSource(overlayTiles);
+            mTilesOverlay = new TilesOverlay(mOverlayTileProvider, mContext);
+            mTilesOverlay.setLoadingBackgroundColor(Color.TRANSPARENT);
+            mTilesOverlay.setColorFilter(tileOverlayAlphaFilter);
+            mOverlayTileProvider.setTileRequestCompleteHandler(mMapView.getTileRequestCompleteHandler());
+
+            mMapView.getOverlays().add(mTilesOverlay);
+
+            if (mTrackOverlay != null) {
+                // move track up
+                mMapView.getOverlays().remove(mTrackOverlay);
+                mMapView.getOverlays().add(mTrackOverlay);
+            }
+        }
+        mMapView.invalidate();
+    }
+
+    /**
+     * Copyright notice for the tile overlay
+     *
+     * @return copyright notice or null
+     */
+    public String getCopyrightNotice() {
+        if (mOverlayTileProvider != null && mOverlay != OVERLAY_NONE) {
+            return mOverlayTileProvider.getTileSource().getCopyrightNotice();
+        }
+        return null;
+    }
+
+    public void destroy() {
+        mTilesOverlay = null;
+        mOverlayTileProvider = null;
+        mWayPointOverlay = null;
     }
 
 }

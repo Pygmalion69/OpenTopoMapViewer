@@ -22,10 +22,10 @@ import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
 
 public class TrackOverlay extends Overlay {
 
-    Track mTrack;
-    Context mContext;
+    private Track mTrack;
+    private Context mContext;
 
-    List<List<Point>> mPointsSegments = new ArrayList<>();
+    private List<List<Point>> mPointsSegments = new ArrayList<>();
 
     private static final String TAG = TrackOverlay.class.getSimpleName();
 
@@ -50,6 +50,7 @@ public class TrackOverlay extends Overlay {
         routePaint = new Paint();
         routePaint.setColor(ContextCompat.getColor(mContext, R.color.colorTrack));
         routePaint.setAntiAlias(true);
+        routePaint.setAlpha(204);
         routePaint.setStyle(Paint.Style.STROKE);
         routePaint.setStrokeJoin(Paint.Join.ROUND);
         routePaint.setStrokeCap(Paint.Cap.ROUND);

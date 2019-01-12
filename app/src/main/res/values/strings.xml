@@ -22,6 +22,7 @@
     <string name="base_map">Base Map</string>
     <string name="overlay">Overlay</string>
     <string name="none">None</string>
+    <string name="lonvia_copy">Wanderwege &#169; Lonvia</string>
 
     <string name="invalid_gpx">Invalid GPX</string>
 </resources>
