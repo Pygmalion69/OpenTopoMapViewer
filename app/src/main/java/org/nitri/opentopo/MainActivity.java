@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,13 +27,15 @@ import de.k3b.geo.io.GeoUri;
 import io.ticofab.androidgpxparser.parser.GPXParser;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 
-public class MainActivity extends AppCompatActivity implements MapFragment.OnFragmentInteractionListener, GpxDetailFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements MapFragment.OnFragmentInteractionListener,
+        GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     protected static final String MAP_FRAGMENT_TAG = "map_fragment";
     protected static final String GPX_DETAIL_FRAGMENT_TAG = "gpx_detail_fragment";
     protected static final String WAY_POINT_DETAIL_FRAGMENT_TAG = "way_point_detail_fragment";
+    protected static final String NEARBY_FRAGMENT_TAG = "nearby_fragment";
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_STORAGE_PERMISSION = 2;
@@ -117,6 +120,14 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         GpxDetailFragment gpxDetailFragment = GpxDetailFragment.newInstance();
         getSupportFragmentManager().beginTransaction().addToBackStack(null)
                 .replace(R.id.map_container, gpxDetailFragment, GPX_DETAIL_FRAGMENT_TAG)
+                .commit();
+    }
+
+    @Override
+    public void addNearbyFragment(Location location) {
+        NearbyFragment gpxDetailFragment = NearbyFragment.newInstance(location.getLatitude(), location.getLongitude());
+        getSupportFragmentManager().beginTransaction().addToBackStack(null)
+                .replace(R.id.map_container, gpxDetailFragment, NEARBY_FRAGMENT_TAG)
                 .commit();
     }
 
@@ -242,5 +253,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     @Override
     public Gpx getGpx() {
         return mGpx;
+    }
+
+    @Override
+    public void onPoiSelected(int id) {
+
     }
 }

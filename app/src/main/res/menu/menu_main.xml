@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_location"
         android:icon="@drawable/ic_action_location"
         android:title="@string/location"
-        app:showAsAction="always"/>
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction" />
     <item
         android:id="@+id/action_follow"
         android:icon="@drawable/ic_action_follow"
@@ -37,6 +39,12 @@
         android:id="@+id/action_layers"
         android:icon="@drawable/ic_action_layers"
         android:title="@string/layers"
+        android:visible="true"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_nearby"
+        android:icon="@drawable/ic_action_nearby"
+        android:title="@string/nearby"
         android:visible="true"
         app:showAsAction="ifRoom"/>
 

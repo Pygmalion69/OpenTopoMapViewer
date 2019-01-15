@@ -24,5 +24,10 @@
     <string name="none">None</string>
     <string name="lonvia_copy">Wanderwege &#169; Lonvia</string>
 
+    <string name="nearby">Nearby</string>
+
     <string name="invalid_gpx">Invalid GPX</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
