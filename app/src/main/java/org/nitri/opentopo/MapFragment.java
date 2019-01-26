@@ -452,6 +452,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             case R.id.action_gpx_details:
                 if (mListener != null)
                     mListener.addGpxDetailFragment();
+                return true;
             case R.id.action_nearby:
                 if (mListener != null)
                     mListener.addNearbyFragment(mCurrentLocation);
