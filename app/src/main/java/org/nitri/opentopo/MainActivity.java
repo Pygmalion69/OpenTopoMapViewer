@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
+import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private Uri mGpxUri;
     private Gpx mGpx;
     private boolean mZoomToGpx;
+    private NearbyItem mSelectedNearbyPlace;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             }
         }
     }
+
 
     private void addMapFragment() {
         if (mapFragmentAdded()) {
@@ -169,11 +172,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         }
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
-
         if (requestCode == READ_REQUEST_CODE && resultCode == AppCompatActivity.RESULT_OK) {
             if (resultData != null) {
                 mGpxUri = resultData.getData();
@@ -256,7 +257,19 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     }
 
     @Override
-    public void onPoiSelected(int id) {
+    public void showNearbyPlace(NearbyItem nearbyItem) {
+        mSelectedNearbyPlace = nearbyItem;
+        getSupportFragmentManager().popBackStack();
+        addMapFragment();
+        MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+        if (mapFragment != null) {
+            mapFragment.setNearbyPlace();
+        }
+    }
 
+    public NearbyItem getSelectedNearbyPlace() {
+        NearbyItem nearbyPlace = mSelectedNearbyPlace;
+        mSelectedNearbyPlace = null;
+        return nearbyPlace;
     }
 }

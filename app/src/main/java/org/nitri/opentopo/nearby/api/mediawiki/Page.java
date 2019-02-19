@@ -18,6 +18,10 @@ public class Page {
 
     private Terms terms;
 
+    private String fullurl;
+
+    private String canonicalurl;
+
     public int getPageid() {
         return pageid;
     }
@@ -72,5 +76,21 @@ public class Page {
 
     public void setTerms(Terms terms) {
         this.terms = terms;
+    }
+
+    public String getFullurl() {
+        return fullurl;
+    }
+
+    public void setFullurl(String fullurl) {
+        this.fullurl = fullurl;
+    }
+
+    public String getCanonicalurl() {
+        return canonicalurl;
+    }
+
+    public void setCanonicalurl(String canonicalurl) {
+        this.canonicalurl = canonicalurl;
     }
 }

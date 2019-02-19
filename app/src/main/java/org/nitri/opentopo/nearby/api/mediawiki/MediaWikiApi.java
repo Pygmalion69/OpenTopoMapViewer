@@ -20,5 +20,6 @@ public interface MediaWikiApi {
                                            @Query("ggscoord") String ggscoord,
                                            @Query("ggsradius") int ggsradius,
                                            @Query("ggslimit") int ggslimit,
+                                           @Query("inprop") String inprop,
                                            @Query("format") String format);
 }

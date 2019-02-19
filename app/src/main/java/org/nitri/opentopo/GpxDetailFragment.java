@@ -64,7 +64,6 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
 
     private double mMinElevation = 0;
     private double mMaxElevation = 0;
-    private RecyclerView mWayPointRecyclerView;
     List<WayPointListItem> mWayPointListItems = new ArrayList<>();
     private WayPointListAdapter mWayPointListAdapter;
     private WebView wvDescription;
@@ -103,18 +102,18 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_gpx_detail, container, false);
-        tvName = rootView.findViewById(R.id.tvName);
+        tvName = rootView.findViewById(R.id.tvTitle);
         tvDescription = rootView.findViewById(R.id.tvDescription);
         wvDescription = rootView.findViewById(R.id.wvDescription);
         wvDescription.setBackgroundColor(Color.TRANSPARENT);
         tvLength = rootView.findViewById(R.id.tvLength);
         ConstraintLayout chartContainer = rootView.findViewById(R.id.chartContainer);
         mElevationChart = rootView.findViewById(R.id.elevationChart);
-        mWayPointRecyclerView = rootView.findViewById(R.id.way_point_recycler_view);
-        mWayPointRecyclerView.setHasFixedSize(true);
-        mWayPointRecyclerView.setNestedScrollingEnabled(false);
-        mWayPointRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mWayPointRecyclerView.setAdapter(mWayPointListAdapter);
+        RecyclerView wayPointRecyclerView = rootView.findViewById(R.id.way_point_recycler_view);
+        wayPointRecyclerView.setHasFixedSize(true);
+        wayPointRecyclerView.setNestedScrollingEnabled(false);
+        wayPointRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        wayPointRecyclerView.setAdapter(mWayPointListAdapter);
 
 
         if (mElevation) {

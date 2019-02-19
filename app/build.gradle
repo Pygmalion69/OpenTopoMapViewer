@@ -40,6 +40,7 @@ dependencies {
     implementation 'net.danlew:android.joda:2.10.1'
     implementation 'com.github.k3b:k3b-geoHelper:1.1.5'
     api 'io.ticofab.androidgpxparser:parser:1.4.0'
+    implementation 'com.squareup.picasso:picasso:2.71828'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

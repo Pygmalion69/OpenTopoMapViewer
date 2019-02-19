@@ -7,6 +7,7 @@ import android.graphics.ColorMatrixColorFilter;
 import android.support.v4.content.ContextCompat;
 
 import org.nitri.opentopo.R;
+import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
@@ -18,6 +19,8 @@ import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -30,6 +33,7 @@ public class OverlayHelper {
     private MapView mMapView;
 
     private ItemizedIconInfoOverlay mWayPointOverlay;
+    private ItemizedIconInfoOverlay mNearbyItemOverlay;
 
     /** Tiles Overlays */
     public final static int OVERLAY_NONE = 1;
@@ -56,6 +60,19 @@ public class OverlayHelper {
                 mWayPointOverlay.showWayPointInfo(mMapView, item);
             }
             return true;
+        }
+
+        @Override
+        public boolean onItemLongPress(int index, OverlayItem item) {
+            return false;
+        }
+    };
+
+    private ItemizedIconInfoOverlay.OnItemGestureListener<OverlayItem> mNearbyItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+        @Override
+        public boolean onItemSingleTapUp(int index, OverlayItem item) {
+            //TODO:
+            return false;
         }
 
         @Override
@@ -126,6 +143,27 @@ public class OverlayHelper {
             if (mWayPointOverlay != null) {
                 mMapView.getOverlays().remove(mWayPointOverlay);
                 mWayPointOverlay = null;
+            }
+        }
+    }
+
+
+    public void setNearby(NearbyItem item) {
+        GeoPoint geoPoint = new GeoPoint(item.getLat(), item.getLon());
+        OverlayItem mapItem = new OverlayItem(item.getTitle(), item.getDescription(), geoPoint);
+        mNearbyItemOverlay = new ItemizedIconInfoOverlay(Collections.singletonList(mapItem), ContextCompat.getDrawable(mContext, R.drawable.ic_place),
+                mNearbyItemGestureListener, mContext);
+        mMapView.invalidate();
+    }
+
+    /**
+     * Remove nearby item layer
+     */
+    public void clearNearby() {
+        if (mMapView != null) {
+            if (mNearbyItemOverlay != null) {
+                mMapView.getOverlays().remove(mNearbyItemOverlay);
+                mNearbyItemOverlay = null;
             }
         }
     }

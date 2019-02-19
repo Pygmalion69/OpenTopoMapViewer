@@ -1,6 +1,7 @@
 package org.nitri.opentopo.nearby.entity;
 
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
@@ -27,6 +28,11 @@ public class NearbyItem {
     private double lat;
 
     private double lon;
+
+    private String url;
+
+    @Ignore
+    private int distance;
 
     public int getId() {
         return id;
@@ -106,5 +112,21 @@ public class NearbyItem {
 
     public void setLon(double lon) {
         this.lon = lon;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public int getDistance() {
+        return distance;
+    }
+
+    public void setDistance(int distance) {
+        this.distance = distance;
     }
 }

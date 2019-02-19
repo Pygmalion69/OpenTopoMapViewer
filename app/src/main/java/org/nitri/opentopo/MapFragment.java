@@ -31,6 +31,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.nitri.opentopo.overlay.OverlayHelper;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.DelayedMapListener;
@@ -98,6 +99,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     final static String PARAM_LATITUDE = "latitude";
     final static String PARAM_LONGITUDE = "longitude";
+    final static String PARAM_NEARBY_PLACE = "nearby_place";
 
     private SharedPreferences mPrefs;
     private static final String MAP_PREFS = "map_prefs";
@@ -128,6 +130,14 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         Bundle arguments = new Bundle();
         arguments.putDouble(PARAM_LATITUDE, lat);
         arguments.putDouble(PARAM_LONGITUDE, lon);
+        mapFragment.setArguments(arguments);
+        return mapFragment;
+    }
+
+    public static MapFragment newInstance(boolean showNearbyPlace) {
+        MapFragment mapFragment = new MapFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean(PARAM_NEARBY_PLACE, showNearbyPlace);
         mapFragment.setArguments(arguments);
         return mapFragment;
     }
@@ -210,20 +220,32 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mListener.setGpx();
         Bundle arguments = getArguments();
         // Move to received geo intent coordinates
-        if (arguments != null && arguments.containsKey(PARAM_LATITUDE) && arguments.containsKey(PARAM_LONGITUDE)) {
-            final double lat = arguments.getDouble(PARAM_LATITUDE);
-            final double lon = arguments.getDouble(PARAM_LONGITUDE);
-            mMapHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (mMapView != null) {
-                        disableFollow();
-                        mMapView.getController().animateTo(new GeoPoint(lat, lon));
-                    }
-                }
-            }, 500);
-
+        if (arguments != null) {
+            if (arguments.containsKey(PARAM_LATITUDE) && arguments.containsKey(PARAM_LONGITUDE)) {
+                final double lat = arguments.getDouble(PARAM_LATITUDE);
+                final double lon = arguments.getDouble(PARAM_LONGITUDE);
+                animateToLatLon(lat, lon);
+            }
+            if (arguments.containsKey(PARAM_NEARBY_PLACE) && arguments.getBoolean(PARAM_NEARBY_PLACE)) {
+                mListener.getSelectedNearbyPlace();
+            }
         }
+        if (mListener.getSelectedNearbyPlace() != null) {
+            showNearbyPlace(mListener.getSelectedNearbyPlace());
+        }
+
+    }
+
+    private void animateToLatLon(double lat, double lon) {
+        mMapHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mMapView != null) {
+                    disableFollow();
+                    mMapView.getController().animateTo(new GeoPoint(lat, lon));
+                }
+            }
+        }, 500);
     }
 
     private void setBaseMap() {
@@ -401,6 +423,16 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         }
     }
 
+    public void setNearbyPlace() {
+        NearbyItem nearbyPlace = mListener.getSelectedNearbyPlace();
+        showNearbyPlace(nearbyPlace);
+    }
+
+    private void showNearbyPlace(NearbyItem nearbyPlace) {
+        //TODO: set overlay item
+        animateToLatLon(nearbyPlace.getLat(), nearbyPlace.getLon());
+    }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -455,7 +487,11 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 return true;
             case R.id.action_nearby:
                 if (mListener != null)
-                    mListener.addNearbyFragment(mCurrentLocation);
+                    if (mCurrentLocation != null) {
+                        mListener.addNearbyFragment(mCurrentLocation);
+                    } else {
+                        Toast.makeText(getActivity(), R.string.location_unknown, Toast.LENGTH_SHORT).show();
+                    }
                 return true;
             case R.id.action_gpx_zoom:
                 disableFollow();
@@ -588,8 +624,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mScaleBarOverlay = null;
         mRotationGestureOverlay = null;
         mOverlayHelper.destroy();
-
     }
+
 
     public interface OnFragmentInteractionListener {
 
@@ -624,5 +660,13 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
          * Set up navigation arrow
          */
         void setUpNavigation(boolean upNavigation);
+
+        /**
+         * Get selected nearby item to show on map
+         *
+         * @return NearbyItem
+         */
+        NearbyItem getSelectedNearbyPlace();
     }
 }
+

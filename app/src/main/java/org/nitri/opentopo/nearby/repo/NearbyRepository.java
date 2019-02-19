@@ -3,6 +3,7 @@ package org.nitri.opentopo.nearby.repo;
 import android.arch.lifecycle.LiveData;
 import android.support.annotation.NonNull;
 import android.support.annotation.WorkerThread;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiApi;
@@ -44,9 +45,9 @@ public class NearbyRepository {
     private void refresh() {
 
         if (mApi != null) {
-            Call<MediaWikiResponse> call = mApi.getNearbyPages("query", "coordinates|pageimages|pageterms",
-                    50, "thumbnail", 144, 50, "description", "geosearch",
-                    mLatitude + "|" + mLongitude, 10000, 50, "json");
+            Call<MediaWikiResponse> call = mApi.getNearbyPages("query", "coordinates|pageimages|pageterms|info",
+                    50, "thumbnail", 60, 50, "description", "geosearch",
+                    mLatitude + "|" + mLongitude, 10000, 50, "url","json");
             call.enqueue(new Callback<MediaWikiResponse>() {
                 @Override
                 public void onResponse(@NonNull Call<MediaWikiResponse> call, @NonNull Response<MediaWikiResponse> response) {
@@ -54,7 +55,6 @@ public class NearbyRepository {
                     if (response.body() != null) {
                         insertNearby(response.body());
                     }
-
                 }
 
                 @Override
@@ -76,6 +76,7 @@ public class NearbyRepository {
                     Page page = pageEntry.getValue();
                     item.setIndex(page.getIndex());
                     item.setTitle(page.getTitle());
+                    item.setUrl(TextUtils.isEmpty(page.getCanonicalurl()) ? page.getFullurl() : page.getCanonicalurl());
                     if (page.getCoordinates() != null) {
                         item.setLat(page.getCoordinates().get(0).getLat());
                         item.setLon(page.getCoordinates().get(0).getLon());

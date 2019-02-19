@@ -33,7 +33,7 @@ public class WayPointDetailDialogFragment extends DialogFragment {
         @SuppressLint("InflateParams")
         View rootView = inflater.inflate(R.layout.fragment_way_point_detail, null);
 
-        TextView tvName = rootView.findViewById(R.id.tvName);
+        TextView tvName = rootView.findViewById(R.id.tvTitle);
         TextView tvDescription = rootView.findViewById(R.id.tvDescription);
 
         tvDescription.setMovementMethod(LinkMovementMethod.getInstance());
