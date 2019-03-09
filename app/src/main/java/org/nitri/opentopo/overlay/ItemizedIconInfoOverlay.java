@@ -12,7 +12,7 @@ import org.osmdroid.views.overlay.OverlayItem;
 
 import java.util.List;
 
-public class ItemizedIconInfoOverlay<Item extends OverlayItem> extends ItemizedIconOverlay {
+public class ItemizedIconInfoOverlay extends ItemizedIconOverlay {
 
     private WayPointInfoWindow mInfoWindow;
 
@@ -52,6 +52,16 @@ public class ItemizedIconInfoOverlay<Item extends OverlayItem> extends ItemizedI
         GeoPoint windowLocation = (GeoPoint) item.getPoint();
         mInfoWindow.open(item, windowLocation, 0, 0);
 
+    }
+
+    /**
+     * Display a nearby item info window on the map
+     *
+     * @param mapView
+     * @param item
+     */
+    public void showNearbyItemInfo(MapView mapView, OverlayItem item) {
+        showWayPointInfo(mapView, item);
     }
 
     public void hideWayPointInfo() {

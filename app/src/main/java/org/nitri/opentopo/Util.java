@@ -39,6 +39,19 @@ public class Util {
         double lon1 = point1.getLongitude();
         double lat2 = point2.getLatitude();
         double lon2 = point2.getLongitude();
+        return distance(lat1, lon1, lat2, lon2);
+    }
+
+    /**
+     * Distance between lat/lon pairs
+     *
+     * @param lat1
+     * @param lon1
+     * @param lat2
+     * @param lon2
+     * @return meters
+     */
+    public static double distance(double lat1, double lon1, double lat2, double lon2) {
         if (lat1 == lat2 && lon1 == lon2)
             return 0;
         double theta = lon1 - lon2;

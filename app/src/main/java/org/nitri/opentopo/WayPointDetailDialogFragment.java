@@ -23,11 +23,11 @@ public class WayPointDetailDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        if (getActivity() != null && getActivity().getSupportFragmentManager() != null)
-        mCallback = (Callback) getActivity().getSupportFragmentManager().findFragmentByTag(MainActivity.GPX_DETAIL_FRAGMENT_TAG);
+        if (requireActivity().getSupportFragmentManager() != null)
+        mCallback = (Callback) requireActivity().getSupportFragmentManager().findFragmentByTag(MainActivity.GPX_DETAIL_FRAGMENT_TAG);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
 
         // Pass null as the parent view because it's going in the dialog layout
         @SuppressLint("InflateParams")

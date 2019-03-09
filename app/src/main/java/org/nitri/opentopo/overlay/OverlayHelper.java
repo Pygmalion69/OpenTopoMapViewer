@@ -20,7 +20,6 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -35,7 +34,9 @@ public class OverlayHelper {
     private ItemizedIconInfoOverlay mWayPointOverlay;
     private ItemizedIconInfoOverlay mNearbyItemOverlay;
 
-    /** Tiles Overlays */
+    /**
+     * Tiles Overlays
+     */
     public final static int OVERLAY_NONE = 1;
     public final static int OVERLAY_HIKING = 2;
     public final static int OVERLAY_CYCLING = 3;
@@ -45,10 +46,10 @@ public class OverlayHelper {
     private TilesOverlay mTilesOverlay;
 
     private ColorMatrix tileOverlayAlphaMatrix = new ColorMatrix(new float[]
-            { 1, 0, 0, 0,    0,
-              0, 1, 0, 0,    0,
-              0, 0, 1, 0,    0,
-              0, 0, 0, 0.8f, 0 }
+                   {1, 0, 0, 0, 0,
+                    0, 1, 0, 0, 0,
+                    0, 0, 1, 0, 0,
+                    0, 0, 0, 0.8f, 0}
     );
     private ColorMatrixColorFilter tileOverlayAlphaFilter = new ColorMatrixColorFilter(tileOverlayAlphaMatrix);
 
@@ -71,13 +72,17 @@ public class OverlayHelper {
     private ItemizedIconInfoOverlay.OnItemGestureListener<OverlayItem> mNearbyItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
         @Override
         public boolean onItemSingleTapUp(int index, OverlayItem item) {
-            //TODO:
-            return false;
+            if (mNearbyItemOverlay != null && mMapView != null) {
+                mNearbyItemOverlay.showNearbyItemInfo(mMapView, item);
+            }
+            return true;
         }
 
         @Override
         public boolean onItemLongPress(int index, OverlayItem item) {
-            return false;
+            clearNearby();
+            mMapView.invalidate();
+            return true;
         }
     };
 
@@ -149,10 +154,12 @@ public class OverlayHelper {
 
 
     public void setNearby(NearbyItem item) {
+        clearNearby();
         GeoPoint geoPoint = new GeoPoint(item.getLat(), item.getLon());
         OverlayItem mapItem = new OverlayItem(item.getTitle(), item.getDescription(), geoPoint);
-        mNearbyItemOverlay = new ItemizedIconInfoOverlay(Collections.singletonList(mapItem), ContextCompat.getDrawable(mContext, R.drawable.ic_place),
+        mNearbyItemOverlay = new ItemizedIconInfoOverlay(new ArrayList<>(Arrays.asList(mapItem)), ContextCompat.getDrawable(mContext, R.drawable.ic_default_marker),
                 mNearbyItemGestureListener, mContext);
+        mMapView.getOverlays().add(mNearbyItemOverlay);
         mMapView.invalidate();
     }
 
@@ -160,11 +167,9 @@ public class OverlayHelper {
      * Remove nearby item layer
      */
     public void clearNearby() {
-        if (mMapView != null) {
-            if (mNearbyItemOverlay != null) {
-                mMapView.getOverlays().remove(mNearbyItemOverlay);
-                mNearbyItemOverlay = null;
-            }
+        if (mMapView != null && mNearbyItemOverlay != null) {
+            mMapView.getOverlays().remove(mNearbyItemOverlay);
+            mNearbyItemOverlay = null;
         }
     }
 

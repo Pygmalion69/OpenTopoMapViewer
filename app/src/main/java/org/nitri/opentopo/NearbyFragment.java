@@ -28,6 +28,7 @@ import org.nitri.opentopo.nearby.repo.NearbyRepository;
 import org.nitri.opentopo.nearby.viewmodel.NearbyViewModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Retrofit;
@@ -91,7 +92,7 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
         mNearbyAdapter = new NearbyAdapter(mNearbyItems, this);
         mNearbyAdapter.setHasStableIds(true);
 
-        NearbyViewModel nearbyViewModel = ViewModelProviders.of(getActivity()).get(NearbyViewModel.class);
+        NearbyViewModel nearbyViewModel = ViewModelProviders.of(requireActivity()).get(NearbyViewModel.class);
 
         MediaWikiApi api = retrofit.create(MediaWikiApi.class);
         NearbyDao dao = NearbyDatabase.getDatabase(getActivity()).nearbyDao();
@@ -103,12 +104,21 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
             mNearbyItems.clear();
             if (items != null) {
                 mNearbyItems.addAll(items);
+                setDistance();
+                Collections.sort(mNearbyItems);
                 mNearbyAdapter.notifyDataSetChanged();
             }
         };
 
         nearbyViewModel.getItems().observe(this, nearbyObserver);
 
+    }
+
+    private void setDistance() {
+        for (NearbyItem item: mNearbyItems) {
+            int distance = (int) Math.round(Util.distance(mLatitude, mLongitude, item.getLat(), item.getLon()));
+            item.setDistance(distance);
+        }
     }
 
     @Override

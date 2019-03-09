@@ -430,6 +430,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     private void showNearbyPlace(NearbyItem nearbyPlace) {
         //TODO: set overlay item
+        mOverlayHelper.setNearby(nearbyPlace);
         animateToLatLon(nearbyPlace.getLat(), nearbyPlace.getLon());
     }
 

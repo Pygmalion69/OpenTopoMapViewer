@@ -4,9 +4,10 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 @Entity(tableName = "Nearby", indices={@Index(value = "pageid", unique = true)})
-public class NearbyItem {
+public class NearbyItem implements Comparable<NearbyItem> {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -128,5 +129,10 @@ public class NearbyItem {
 
     public void setDistance(int distance) {
         this.distance = distance;
+    }
+
+    @Override
+    public int compareTo(@NonNull NearbyItem other) {
+        return Integer.compare(distance, other.getDistance());
     }
 }

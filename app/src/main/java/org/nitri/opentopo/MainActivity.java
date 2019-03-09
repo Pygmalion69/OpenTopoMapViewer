@@ -269,7 +269,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     public NearbyItem getSelectedNearbyPlace() {
         NearbyItem nearbyPlace = mSelectedNearbyPlace;
-        mSelectedNearbyPlace = null;
         return nearbyPlace;
     }
 }
