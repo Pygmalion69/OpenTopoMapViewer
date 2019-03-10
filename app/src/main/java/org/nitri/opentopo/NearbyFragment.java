@@ -127,7 +127,8 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
         View rootView = inflater.inflate(R.layout.fragment_nearby, container, false);
         RecyclerView nearbyRecyclerView = rootView.findViewById(R.id.nearby_recycler_view);
         nearbyRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        nearbyRecyclerView.getItemAnimator().setChangeDuration(0);
+        if (nearbyRecyclerView.getItemAnimator() != null)
+            nearbyRecyclerView.getItemAnimator().setChangeDuration(0);
         nearbyRecyclerView.setAdapter(mNearbyAdapter);
         return rootView;
     }

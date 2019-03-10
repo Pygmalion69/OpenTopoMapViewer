@@ -2,7 +2,6 @@ package org.nitri.opentopo;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -175,7 +174,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                     R.drawable.ic_crosshairs);
 
             mLocationOverlay.setPersonIcon(bmCrosshairs);
-            mLocationOverlay.setPersonHotspot(bmCrosshairs.getWidth() / 2, bmCrosshairs.getHeight() / 2);
+            mLocationOverlay.setPersonHotspot(bmCrosshairs.getWidth() / 2f, bmCrosshairs.getHeight() / 2f);
 
             mScaleBarOverlay = new ScaleBarOverlay(mMapView);
             mScaleBarOverlay.setCentred(true);
@@ -237,13 +236,10 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     }
 
     private void animateToLatLon(double lat, double lon) {
-        mMapHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mMapView != null) {
-                    disableFollow();
-                    mMapView.getController().animateTo(new GeoPoint(lat, lon));
-                }
+        mMapHandler.postDelayed(() -> {
+            if (mMapView != null) {
+                disableFollow();
+                mMapView.getController().animateTo(new GeoPoint(lat, lon));
             }
         }, 500);
     }
@@ -382,24 +378,18 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()), R.style.AlertDialogTheme);
         builder.setTitle(getString(R.string.gpx))
                 .setMessage(getString(R.string.discard_current_gpx))
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (mOverlayHelper != null) {
-                            mOverlayHelper.clearGpx();
-                            if (getActivity() != null)
-                                ((AppCompatActivity) getActivity()).supportInvalidateOptionsMenu();
-                        }
-                        if (mListener != null) {
-                            mListener.selectGpx();
-                        }
-                        dialog.dismiss();
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    if (mOverlayHelper != null) {
+                        mOverlayHelper.clearGpx();
+                        if (getActivity() != null)
+                            ((AppCompatActivity) getActivity()).supportInvalidateOptionsMenu();
                     }
-                })
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
+                    if (mListener != null) {
+                        mListener.selectGpx();
                     }
+                    dialog.dismiss();
                 })
+                .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
                 .setIcon(R.drawable.ic_alert);
         AlertDialog dialog = builder.create();
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);

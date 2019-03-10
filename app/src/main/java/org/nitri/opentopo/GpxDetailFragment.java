@@ -22,14 +22,12 @@ import android.webkit.WebView;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 import org.nitri.opentopo.adapter.WayPointListAdapter;
 import org.nitri.opentopo.domain.DistancePoint;
@@ -237,12 +235,7 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
         xAxis.setDrawGridLines(false);
         xAxis.setTextColor(primaryTextColorInt);
         xAxis.setGranularity(1f);
-        xAxis.setValueFormatter(new IAxisValueFormatter() {
-            @Override
-            public String getFormattedValue(float value, AxisBase axis) {
-                return String.format(Locale.getDefault(), "%.1f", value / 1000);
-            }
-        });
+        xAxis.setValueFormatter((value, axis) -> String.format(Locale.getDefault(), "%.1f", value / 1000));
 
         xAxis.setAxisMinimum(0);
         xAxis.setAxisMaximum((float) mDistance);

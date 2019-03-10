@@ -12,19 +12,19 @@ import org.osmdroid.views.overlay.OverlayItem;
 
 import java.util.List;
 
-public class ItemizedIconInfoOverlay extends ItemizedIconOverlay {
+public class ItemizedIconInfoOverlay extends ItemizedIconOverlay<OverlayItem> {
 
     private WayPointInfoWindow mInfoWindow;
 
-    public ItemizedIconInfoOverlay(List pList, Drawable pDefaultMarker, OnItemGestureListener pOnItemGestureListener, Context pContext) {
+    public ItemizedIconInfoOverlay(List<OverlayItem> pList, Drawable pDefaultMarker, OnItemGestureListener<OverlayItem> pOnItemGestureListener, Context pContext) {
         super(pList, pDefaultMarker, pOnItemGestureListener, pContext);
     }
 
-    public ItemizedIconInfoOverlay(List pList, OnItemGestureListener pOnItemGestureListener, Context pContext) {
+    public ItemizedIconInfoOverlay(List<OverlayItem> pList, OnItemGestureListener<OverlayItem> pOnItemGestureListener, Context pContext) {
         super(pList, pOnItemGestureListener, pContext);
     }
 
-    public ItemizedIconInfoOverlay(Context pContext, List pList, OnItemGestureListener pOnItemGestureListener) {
+    public ItemizedIconInfoOverlay(Context pContext, List<OverlayItem> pList, OnItemGestureListener<OverlayItem> pOnItemGestureListener) {
         super(pContext, pList, pOnItemGestureListener);
     }
 
