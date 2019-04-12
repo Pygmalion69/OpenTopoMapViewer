@@ -62,7 +62,7 @@ public class Util {
         dist = rad2deg(dist);
         dist = dist * 60 * 1.1515;
         dist = dist * 1609.344;
-        return (dist);
+        return dist;
     }
 
     private static double deg2rad(double deg) {

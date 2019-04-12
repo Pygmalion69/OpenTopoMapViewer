@@ -1,7 +1,5 @@
 package org.nitri.opentopo.nearby.api.mediawiki;
 
-import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiResponse;
-
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
