@@ -5,28 +5,24 @@ android:
   - tools
   - platform-tools
   - build-tools-26.0.2
-  - android-22
   - android-26
-  - sys-img-armeabi-v7a-android-22
 jdk:
-- oraclejdk8
+  - oraclejdk8
 before_install:
-- openssl aes-256-cbc -K $encrypted_185e3830080a_key -iv $encrypted_185e3830080a_iv
+  - openssl aes-256-cbc -K $encrypted_185e3830080a_key -iv $encrypted_185e3830080a_iv
   -in keystore.enc -out ./keystore -d
-- chmod +x gradlew
-- yes | sdkmanager "platforms;android-28"
-before_script:
-- echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
-- emulator -avd test -no-audio -no-window &
-- android-wait-for-emulator
-- adb shell input keyevent 82 &
+  - chmod +x gradlew
+  - yes | sdkmanager "platforms;android-28"
+install:
+  - true
+script:
+  - ./gradlew build
 before_deploy:
-- cp $TRAVIS_BUILD_DIR/keystore $HOME
-- cd app/build/outputs/apk/release/
-- jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/keystore
-  -storepass $storepass -keypass $keypass app-release-unsigned.apk prisoner
-- jarsigner -verify app-release-unsigned.apk
-- "${ANDROID_HOME}/build-tools/26.0.2/zipalign -v 4 app-release-unsigned.apk OpenTopoMapViewer.apk"
+  - cp $TRAVIS_BUILD_DIR/keystore $HOME
+  - cd app/build/outputs/apk/release/
+  - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/keystore -storepass $storepass -keypass $keypass app-release-unsigned.apk prisoner
+  - jarsigner -verify app-release-unsigned.apk
+  - "${ANDROID_HOME}/build-tools/26.0.2/zipalign -v 4 app-release-unsigned.apk OpenTopoMapViewer.apk"
 deploy:
   provider: releases
   api_key: "${api_key}"
