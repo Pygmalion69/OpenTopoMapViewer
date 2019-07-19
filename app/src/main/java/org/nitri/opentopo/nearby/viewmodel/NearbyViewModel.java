@@ -1,7 +1,7 @@
 package org.nitri.opentopo.nearby.viewmodel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModel;
 
 import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.nitri.opentopo.nearby.repo.NearbyRepository;

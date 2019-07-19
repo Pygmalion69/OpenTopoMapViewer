@@ -1,8 +1,8 @@
 package org.nitri.opentopo.nearby.repo;
 
-import android.arch.lifecycle.LiveData;
-import android.support.annotation.NonNull;
-import android.support.annotation.WorkerThread;
+import androidx.lifecycle.LiveData;
+import androidx.annotation.NonNull;
+import androidx.annotation.WorkerThread;
 import android.text.TextUtils;
 import android.util.Log;
 
