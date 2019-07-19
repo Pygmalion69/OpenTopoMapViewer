@@ -45,14 +45,11 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
     private double mLatitude;
     private double mLongitude;
 
-    private static final String URL = "https://en.wikipedia.org/";
+    private String wikiBaseUrl;
 
     Gson gson = new GsonBuilder().setLenient().create();
 
-    Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl(URL)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build();
+    Retrofit retrofit;
 
     List<NearbyItem> mNearbyItems = new ArrayList<>();
     private NearbyAdapter mNearbyAdapter;
@@ -88,6 +85,12 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
             mLatitude = getArguments().getDouble(PARAM_LATITUDE);
             mLongitude = getArguments().getDouble(PARAM_LONGITUDE);
         }
+
+        wikiBaseUrl = requireContext().getString(R.string.wiki_base_url);
+        retrofit = new Retrofit.Builder()
+                .baseUrl(wikiBaseUrl)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
 
         mNearbyAdapter = new NearbyAdapter(mNearbyItems, this);
         mNearbyAdapter.setHasStableIds(true);

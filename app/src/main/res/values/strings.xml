@@ -29,4 +29,6 @@
     <string name="invalid_gpx">Invalid GPX</string>
     <string name="location_unknown">Location unknown</string>
 
+    <string name="wiki_base_url">https://en.wikipedia.org/</string>
+
 </resources>
