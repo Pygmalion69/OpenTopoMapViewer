@@ -96,18 +96,17 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     private OnFragmentInteractionListener mListener;
 
-    final static String PARAM_LATITUDE = "latitude";
-    final static String PARAM_LONGITUDE = "longitude";
-    final static String PARAM_NEARBY_PLACE = "nearby_place";
+    private final static String PARAM_LATITUDE = "latitude";
+    private final static String PARAM_LONGITUDE = "longitude";
 
     private SharedPreferences mPrefs;
     private static final String MAP_PREFS = "map_prefs";
 
-    final static String PREF_BASE_MAP = "base_map";
-    final static String PREF_OVERLAY = "overlay";
+    private final static String PREF_BASE_MAP = "base_map";
+    private final static String PREF_OVERLAY = "overlay";
 
-    final static int BASE_MAP_OTM = 1;
-    final static int BASE_MAP_OSM = 2;
+    private final static int BASE_MAP_OTM = 1;
+    private final static int BASE_MAP_OSM = 2;
 
 
     private int mBaseMap = BASE_MAP_OTM;
@@ -129,14 +128,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         Bundle arguments = new Bundle();
         arguments.putDouble(PARAM_LATITUDE, lat);
         arguments.putDouble(PARAM_LONGITUDE, lon);
-        mapFragment.setArguments(arguments);
-        return mapFragment;
-    }
-
-    public static MapFragment newInstance(boolean showNearbyPlace) {
-        MapFragment mapFragment = new MapFragment();
-        Bundle arguments = new Bundle();
-        arguments.putBoolean(PARAM_NEARBY_PLACE, showNearbyPlace);
         mapFragment.setArguments(arguments);
         return mapFragment;
     }
@@ -224,9 +215,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 final double lat = arguments.getDouble(PARAM_LATITUDE);
                 final double lon = arguments.getDouble(PARAM_LONGITUDE);
                 animateToLatLon(lat, lon);
-            }
-            if (arguments.containsKey(PARAM_NEARBY_PLACE) && arguments.getBoolean(PARAM_NEARBY_PLACE)) {
-                mListener.getSelectedNearbyPlace();
             }
         }
         if (mListener.getSelectedNearbyPlace() != null) {
@@ -419,7 +407,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     }
 
     private void showNearbyPlace(NearbyItem nearbyPlace) {
-        //TODO: set overlay item
         mOverlayHelper.setNearby(nearbyPlace);
         animateToLatLon(nearbyPlace.getLat(), nearbyPlace.getLon());
     }

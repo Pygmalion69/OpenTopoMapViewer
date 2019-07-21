@@ -45,13 +45,11 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
     private double mLatitude;
     private double mLongitude;
 
-    private String wikiBaseUrl;
+    private Gson gson = new GsonBuilder().setLenient().create();
 
-    Gson gson = new GsonBuilder().setLenient().create();
+    private Retrofit retrofit;
 
-    Retrofit retrofit;
-
-    List<NearbyItem> mNearbyItems = new ArrayList<>();
+    private List<NearbyItem> mNearbyItems = new ArrayList<>();
     private NearbyAdapter mNearbyAdapter;
 
 
@@ -86,7 +84,7 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
             mLongitude = getArguments().getDouble(PARAM_LONGITUDE);
         }
 
-        wikiBaseUrl = requireContext().getString(R.string.wiki_base_url);
+        String wikiBaseUrl = requireContext().getString(R.string.wiki_base_url);
         retrofit = new Retrofit.Builder()
                 .baseUrl(wikiBaseUrl)
                 .addConverterFactory(GsonConverterFactory.create(gson))

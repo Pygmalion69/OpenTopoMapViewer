@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         if (!TextUtils.isEmpty(mGpxUriString)) {
             outState.putString(GPX_URI_STATE, mGpxUriString);
         }
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     @Override
     public void setUpNavigation(boolean upNavigation) {
-        if (getSupportFragmentManager() != null && getSupportActionBar() != null) {
+        if (getSupportActionBar() != null) {
             if (upNavigation) {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                 getSupportActionBar().setDisplayShowHomeEnabled(true);
