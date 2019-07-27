@@ -175,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
+        super.onActivityResult(requestCode, resultCode, resultData);
         if (requestCode == READ_REQUEST_CODE && resultCode == AppCompatActivity.RESULT_OK) {
             if (resultData != null) {
                 mGpxUri = resultData.getData();
