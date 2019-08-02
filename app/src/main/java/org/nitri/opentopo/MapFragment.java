@@ -1,15 +1,19 @@
 package org.nitri.opentopo;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -34,6 +38,7 @@ import android.widget.Toast;
 
 import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.nitri.opentopo.overlay.OverlayHelper;
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.config.IConfigurationProvider;
 import org.osmdroid.events.DelayedMapListener;
@@ -102,6 +107,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private final static String PARAM_LATITUDE = "latitude";
     private final static String PARAM_LONGITUDE = "longitude";
 
+    private final static String STATE_LATITUDE = "latitude";
+    private final static String STATE_LONGITUDE = "longitude";
+
     private SharedPreferences mPrefs;
     private static final String MAP_PREFS = "map_prefs";
 
@@ -117,6 +125,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private static final String TAG = MapFragment.class.getSimpleName();
     private TextView mCopyRightView;
     private int mOverlay = OverlayHelper.OVERLAY_NONE;
+    private GeoPoint mMapCenterState;
 
     public MapFragment() {
         // Required empty public constructor
@@ -144,10 +153,19 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         IConfigurationProvider configuration = Configuration.getInstance();
         configuration.setUserAgentValue(BuildConfig.APPLICATION_ID);
         configuration.load(context, PreferenceManager.getDefaultSharedPreferences(context));
-        if (getActivity() != null) {
-            mPrefs = getActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE);
-            mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM);
-            mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE);
+        mPrefs = requireActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE);
+        mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM);
+        mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE);
+        mLocationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
+    }
+
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            mMapCenterState = new GeoPoint(savedInstanceState.getDouble(STATE_LATITUDE, 0),
+                    savedInstanceState.getDouble(STATE_LONGITUDE, 0));
         }
     }
 
@@ -190,6 +208,10 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mMapView.getOverlays().add(this.mCompassOverlay);
             mMapView.getOverlays().add(this.mScaleBarOverlay);
 
+            if (mMapCenterState != null) {
+                mMapView.getController().setCenter(mMapCenterState);
+            }
+
             mMapView.addMapListener(new DelayedMapListener(mDragListener));
 
             mCopyRightView = view.findViewById(R.id.copyrightView);
@@ -197,7 +219,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             setBaseMap();
 
             mLocationOverlay.enableMyLocation();
-            mLocationOverlay.enableFollowLocation();
+            mLocationOverlay.disableFollowLocation();
             mLocationOverlay.setOptionsMenuEnabled(true);
             mCompassOverlay.enableCompass();
             mMapView.setVisibility(View.VISIBLE);
@@ -225,6 +247,19 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         }
         if (mListener.getSelectedNearbyPlace() != null) {
             showNearbyPlace(mListener.getSelectedNearbyPlace());
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                    requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                mCurrentLocation = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+            }
+        } else {
+            mCurrentLocation = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+        }
+        if (mMapCenterState != null) {
+            mMapView.getController().setCenter(mMapCenterState);
+        } else if (mCurrentLocation != null) {
+            mMapView.getController().setCenter(new GeoPoint(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
         }
 
     }
@@ -315,6 +350,28 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mMapHandler.removeCallbacks(mCenterRunnable);
     }
 
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onResume() {
+        super.onResume();
+        //File basePath = Configuration.getInstance().getOsmdroidBasePath();
+        //File cache = Configuration.getInstance().getOsmdroidTileCache();
+        initMap();
+        if (mLocationManager != null) {
+            try {
+                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+
+            }
+            try {
+                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -332,28 +389,13 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mScaleBarOverlay.disableScaleBar();
     }
 
-    @SuppressLint("MissingPermission")
     @Override
-    public void onResume() {
-        super.onResume();
-        //File basePath = Configuration.getInstance().getOsmdroidBasePath();
-        //File cache = Configuration.getInstance().getOsmdroidTileCache();
-        initMap();
-        if (getActivity() != null) {
-            mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-            if (mLocationManager != null) {
-                try {
-                    mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-
-                }
-                try {
-                    mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mMapView != null) {
+            mMapCenterState = (GeoPoint) mMapView.getMapCenter();
+            outState.putDouble(STATE_LATITUDE, mMapCenterState.getLatitude());
+            outState.putDouble(STATE_LONGITUDE, mMapCenterState.getLongitudeE6());
         }
     }
 
@@ -652,5 +694,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
          */
         NearbyItem getSelectedNearbyPlace();
     }
+
 }
 
