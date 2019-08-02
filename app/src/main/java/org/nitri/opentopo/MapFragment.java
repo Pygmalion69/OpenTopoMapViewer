@@ -16,6 +16,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -33,6 +35,7 @@ import android.widget.Toast;
 import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.nitri.opentopo.overlay.OverlayHelper;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.config.IConfigurationProvider;
 import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
@@ -137,7 +140,10 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         setRetainInstance(true);
-        Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
+        Context context = requireActivity().getApplicationContext();
+        IConfigurationProvider configuration = Configuration.getInstance();
+        configuration.setUserAgentValue(BuildConfig.APPLICATION_ID);
+        configuration.load(context, PreferenceManager.getDefaultSharedPreferences(context));
         if (getActivity() != null) {
             mPrefs = getActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE);
             mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM);
