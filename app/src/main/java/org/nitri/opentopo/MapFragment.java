@@ -38,7 +38,6 @@ import android.widget.Toast;
 
 import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.nitri.opentopo.overlay.OverlayHelper;
-import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.config.IConfigurationProvider;
 import org.osmdroid.events.DelayedMapListener;
