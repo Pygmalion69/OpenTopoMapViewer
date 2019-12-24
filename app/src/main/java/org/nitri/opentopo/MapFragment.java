@@ -207,10 +207,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mMapView.getOverlays().add(this.mCompassOverlay);
             mMapView.getOverlays().add(this.mScaleBarOverlay);
 
-            if (mMapCenterState != null) {
-                mMapView.getController().setCenter(mMapCenterState);
-            }
-
             mMapView.addMapListener(new DelayedMapListener(mDragListener));
 
             mCopyRightView = view.findViewById(R.id.copyrightView);
@@ -255,8 +251,10 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         } else {
             mCurrentLocation = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         }
+
         if (mMapCenterState != null) {
             mMapView.getController().setCenter(mMapCenterState);
+            mMapCenterState = null; // We're done with the old state
         } else if (mCurrentLocation != null) {
             mMapView.getController().setCenter(new GeoPoint(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
         }
