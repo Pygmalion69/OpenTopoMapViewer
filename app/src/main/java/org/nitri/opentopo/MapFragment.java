@@ -252,13 +252,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mCurrentLocation = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         }
 
-        if (mMapCenterState != null) {
-            mMapView.getController().setCenter(mMapCenterState);
-            mMapCenterState = null; // We're done with the old state
-        } else if (mCurrentLocation != null) {
-            mMapView.getController().setCenter(new GeoPoint(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
-        }
-
     }
 
     private void animateToLatLon(double lat, double lon) {
@@ -354,6 +347,14 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         //File basePath = Configuration.getInstance().getOsmdroidBasePath();
         //File cache = Configuration.getInstance().getOsmdroidTileCache();
         initMap();
+
+        if (mMapCenterState != null) {
+            mMapView.getController().setCenter(mMapCenterState);
+            mMapCenterState = null; // We're done with the old state
+        } else if (mCurrentLocation != null) {
+            mMapView.getController().setCenter(new GeoPoint(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
+        }
+
         if (mLocationManager != null) {
             try {
                 mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
@@ -372,6 +373,11 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     @Override
     public void onPause() {
         super.onPause();
+
+        if (mMapView != null) {
+            mMapCenterState = (GeoPoint) mMapView.getMapCenter();
+        }
+
         try {
             mLocationManager.removeUpdates(this);
         } catch (Exception ex) {
@@ -389,8 +395,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mMapView != null) {
-            mMapCenterState = (GeoPoint) mMapView.getMapCenter();
+        if (mMapView != null && mMapCenterState != null) {
             outState.putDouble(STATE_LATITUDE, mMapCenterState.getLatitude());
             outState.putDouble(STATE_LONGITUDE, mMapCenterState.getLongitude());
         }
