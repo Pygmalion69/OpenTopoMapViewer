@@ -394,7 +394,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         if (mMapView != null) {
             mMapCenterState = (GeoPoint) mMapView.getMapCenter();
             outState.putDouble(STATE_LATITUDE, mMapCenterState.getLatitude());
-            outState.putDouble(STATE_LONGITUDE, mMapCenterState.getLongitudeE6());
+            outState.putDouble(STATE_LONGITUDE, mMapCenterState.getLongitude());
         }
     }
 
