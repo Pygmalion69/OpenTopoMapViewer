@@ -125,6 +125,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private TextView mCopyRightView;
     private int mOverlay = OverlayHelper.OVERLAY_NONE;
     private GeoPoint mMapCenterState;
+    private int mLastNearbyAnimateToId;
 
     public MapFragment() {
         // Required empty public constructor
@@ -458,7 +459,11 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     private void showNearbyPlace(NearbyItem nearbyPlace) {
         mOverlayHelper.setNearby(nearbyPlace);
-        animateToLatLon(nearbyPlace.getLat(), nearbyPlace.getLon());
+        if (nearbyPlace.getId() != mLastNearbyAnimateToId) {
+            // Animate only once
+            animateToLatLon(nearbyPlace.getLat(), nearbyPlace.getLon());
+            mLastNearbyAnimateToId = nearbyPlace.getId();
+        }
     }
 
     @Override
@@ -514,12 +519,21 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                     mListener.addGpxDetailFragment();
                 return true;
             case R.id.action_nearby:
-                if (mListener != null)
-                    if (mCurrentLocation != null) {
-                        mListener.addNearbyFragment(mCurrentLocation);
-                    } else {
+                if (mListener != null) {
+                    mListener.clearSelectedNearbyPlace();
+                    GeoPoint nearbyCenter = null;
+                    if (mMapView != null) {
+                        nearbyCenter = (GeoPoint) mMapView.getMapCenter();
+                        mListener.addNearbyFragment(nearbyCenter);
+                    }
+                    if (nearbyCenter == null && mCurrentLocation != null) {
+                        nearbyCenter = new GeoPoint(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+                        mListener.addNearbyFragment(nearbyCenter);
+                    }
+                    if (nearbyCenter == null) {
                         Toast.makeText(getActivity(), R.string.location_unknown, Toast.LENGTH_SHORT).show();
                     }
+                }
                 return true;
             case R.id.action_gpx_zoom:
                 disableFollow();
@@ -682,7 +696,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         /**
          * Present nearby items
          */
-        void addNearbyFragment(Location location);
+        void addNearbyFragment(GeoPoint nearbyCenterPoint);
 
         /**
          * Set up navigation arrow
@@ -695,6 +709,11 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
          * @return NearbyItem
          */
         NearbyItem getSelectedNearbyPlace();
+
+        /**
+         * Clear selected nearby place
+         */
+        void clearSelectedNearbyPlace();
     }
 
 }

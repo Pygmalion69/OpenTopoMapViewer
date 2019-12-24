@@ -4,20 +4,21 @@ import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.nitri.opentopo.nearby.entity.NearbyItem;
+import org.osmdroid.util.GeoPoint;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -127,8 +128,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     }
 
     @Override
-    public void addNearbyFragment(Location location) {
-        NearbyFragment gpxDetailFragment = NearbyFragment.newInstance(location.getLatitude(), location.getLongitude());
+    public void addNearbyFragment(GeoPoint nearbyCenterPoint) {
+        NearbyFragment gpxDetailFragment = NearbyFragment.newInstance(nearbyCenterPoint.getLatitude(), nearbyCenterPoint.getLongitude());
         getSupportFragmentManager().beginTransaction().addToBackStack(null)
                 .replace(R.id.map_container, gpxDetailFragment, NEARBY_FRAGMENT_TAG)
                 .commit();
@@ -268,7 +269,13 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         }
     }
 
+    @Override
     public NearbyItem getSelectedNearbyPlace() {
         return mSelectedNearbyPlace;
+    }
+
+    @Override
+    public void clearSelectedNearbyPlace() {
+        mSelectedNearbyPlace = null;
     }
 }
