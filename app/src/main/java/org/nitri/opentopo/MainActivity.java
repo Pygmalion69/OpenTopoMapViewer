@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                         mGeoPointFromIntent = getGeoPointDtoFromIntent(intent);
                         break;
                     case "file":
+                    case "content":
                         mGpxUri = intent.getData();
                         mGpxUriString = mGpxUri.toString();
                         Log.i(TAG, "Uri: " + mGpxUriString);
