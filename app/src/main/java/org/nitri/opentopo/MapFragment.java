@@ -7,9 +7,11 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.OnNmeaMessageListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +22,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -36,6 +40,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.nitri.opentopo.model.LocationViewModel;
 import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.nitri.opentopo.overlay.OverlayHelper;
 import org.osmdroid.config.Configuration;
@@ -69,15 +74,14 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private ScaleBarOverlay mScaleBarOverlay;
     private RotationGestureOverlay mRotationGestureOverlay;
     private LocationManager mLocationManager;
-    private Location mCurrentLocation = null;
     private OverlayHelper mOverlayHelper;
     private Handler mMapHandler = new Handler();
     private Runnable mCenterRunnable = new Runnable() {
 
         @Override
         public void run() {
-            if (mMapView != null && mCurrentLocation != null) {
-                mMapView.getController().animateTo(new GeoPoint(mCurrentLocation));
+            if (mMapView != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
+                mMapView.getController().animateTo(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue()));
             }
             mMapHandler.postDelayed(this, 5000);
         }
@@ -125,16 +129,16 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private TextView mCopyRightView;
     private int mOverlay = OverlayHelper.OVERLAY_NONE;
     private GeoPoint mMapCenterState;
+    private LocationViewModel mLocationViewModel;
 
     public MapFragment() {
-        // Required empty public constructor
     }
 
-    public static MapFragment newInstance() {
+    static MapFragment newInstance() {
         return new MapFragment();
     }
 
-    public static MapFragment newInstance(double lat, double lon) {
+    static MapFragment newInstance(double lat, double lon) {
         MapFragment mapFragment = new MapFragment();
         Bundle arguments = new Bundle();
         arguments.putDouble(PARAM_LATITUDE, lat);
@@ -156,6 +160,25 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM);
         mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE);
         mLocationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
+        mLocationViewModel = new ViewModelProvider(requireActivity()).get(LocationViewModel.class);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            OnNmeaMessageListener nmeaListener = (s, l) -> {
+                if (mLocationViewModel != null && mLocationViewModel.getCurrentNmea() != null) {
+                    mLocationViewModel.getCurrentNmea().setValue(s);
+                }
+            };
+            if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                mLocationManager.addNmeaListener(nmeaListener);
+            }
+        } else {
+            GpsStatus.NmeaListener nmeaListener = (l, s) -> {
+                if (mLocationViewModel != null && mLocationViewModel.getCurrentNmea() != null) {
+                    mLocationViewModel.getCurrentNmea().setValue(s);
+                }
+            };
+                mLocationManager.addNmeaListener(nmeaListener);
+        }
     }
 
 
@@ -246,17 +269,18 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                     requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mCurrentLocation = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+                mLocationViewModel.getCurrentLocation().setValue(mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER));
             }
         } else {
-            mCurrentLocation = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+            mLocationViewModel.getCurrentLocation().setValue(mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER));
         }
 
         if (mMapCenterState != null) {
             mMapView.getController().setCenter(mMapCenterState);
             mMapCenterState = null; // We're done with the old state
-        } else if (mCurrentLocation != null) {
-            mMapView.getController().setCenter(new GeoPoint(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()));
+        } else if (mLocationViewModel.getCurrentLocation() != null) {
+            mMapView.getController().setCenter(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue().getLatitude(),
+                    mLocationViewModel.getCurrentLocation().getValue().getLongitude()));
         }
 
     }
@@ -457,7 +481,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         mListener.setUpNavigation(false);
         inflater.inflate(R.menu.menu_main, menu);
@@ -482,7 +506,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_gpx:
                 if (mOverlayHelper != null && mOverlayHelper.hasGpx()) {
@@ -492,8 +516,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 }
                 return true;
             case R.id.action_location:
-                if (mCurrentLocation != null) {
-                    mMapView.getController().animateTo(new GeoPoint(mCurrentLocation));
+                if (mLocationViewModel.getCurrentLocation().getValue() != null) {
+                    mMapView.getController().animateTo(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue()));
                 }
                 return true;
             case R.id.action_follow:
@@ -508,10 +532,15 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 if (mListener != null)
                     mListener.addGpxDetailFragment();
                 return true;
+            case R.id.action_location_details:
+                FragmentManager fm = requireActivity().getSupportFragmentManager();
+                LocationDetailFragment locationDetailFragment = new LocationDetailFragment();
+                locationDetailFragment.show(fm, "location_detail");
+                return true;
             case R.id.action_nearby:
                 if (mListener != null)
-                    if (mCurrentLocation != null) {
-                        mListener.addNearbyFragment(mCurrentLocation);
+                    if (mLocationViewModel.getCurrentLocation() != null) {
+                        mListener.addNearbyFragment(mLocationViewModel.getCurrentLocation().getValue());
                     } else {
                         Toast.makeText(getActivity(), R.string.location_unknown, Toast.LENGTH_SHORT).show();
                     }
@@ -602,7 +631,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     @Override
     public void onLocationChanged(Location location) {
-        mCurrentLocation = location;
+        mLocationViewModel.getCurrentLocation().setValue(location);
     }
 
     @Override
@@ -641,15 +670,13 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     public void onDestroy() {
         super.onDestroy();
         mLocationManager = null;
-        mCurrentLocation = null;
         mLocationOverlay = null;
         mCompassOverlay = null;
         mScaleBarOverlay = null;
         mRotationGestureOverlay = null;
         mOverlayHelper.destroy();
     }
-
-
+    
     public interface OnFragmentInteractionListener {
 
         /**

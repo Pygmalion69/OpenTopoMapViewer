@@ -1,20 +1,21 @@
 package org.nitri.opentopo;
 
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -93,7 +94,7 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
         mNearbyAdapter = new NearbyAdapter(mNearbyItems, this);
         mNearbyAdapter.setHasStableIds(true);
 
-        NearbyViewModel nearbyViewModel = ViewModelProviders.of(requireActivity()).get(NearbyViewModel.class);
+        NearbyViewModel nearbyViewModel = new ViewModelProvider(requireActivity()).get(NearbyViewModel.class);
 
         MediaWikiApi api = retrofit.create(MediaWikiApi.class);
         NearbyDao dao = NearbyDatabase.getDatabase(getActivity()).nearbyDao();

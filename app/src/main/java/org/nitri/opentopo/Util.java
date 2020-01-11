@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 
 import org.osmdroid.util.BoundingBox;
@@ -26,6 +27,8 @@ import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
 import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
 public class Util {
+
+    static final int NO_ELEVATION_VALUE = -99999;
 
     /**
      * Distance between points
@@ -203,6 +206,29 @@ public class Util {
         } else {
             return Html.fromHtml(source);
         }
+    }
+
+    /**
+     * Antenna altitude above mean sea level
+     *
+     * @param nmea NMEA
+     * @return antenna altitude
+     */
+    public static double elevationFromNmea(String nmea) {
+        if (nmea.startsWith("$GPGGA")) {
+            String[] tokens = nmea.split(",");
+            try {
+                String elevation = tokens[9];
+                if (!TextUtils.isEmpty(elevation)) {
+                    return Double.parseDouble(elevation);
+                }
+            } catch (Exception ex) {
+                Log.e("NMEA", "elevationFromNmea: "
+                        + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+        return NO_ELEVATION_VALUE;
     }
 
 }
