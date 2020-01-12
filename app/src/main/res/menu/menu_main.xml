@@ -42,6 +42,12 @@
         android:visible="true"
         app:showAsAction="ifRoom"/>
     <item
+        android:id="@+id/action_location_details"
+        android:icon="@drawable/ic_action_location_detail"
+        android:title="@string/location_details"
+        android:visible="true"
+        app:showAsAction="ifRoom"/>
+    <item
         android:id="@+id/action_nearby"
         android:icon="@drawable/ic_action_nearby"
         android:title="@string/nearby"

@@ -9,6 +9,13 @@
     <string name="gpx_details">GPX details</string>
     <string name="gpx_zoom">Zoom to GPX</string>
 
+    <string name="location_details">Location detail</string>
+    <string name="label_latitude">Latitude:</string>
+    <string name="label_longitude">Longitude:</string>
+    <string name="label_elevation">Elevation:</string>
+    <string name="close">Close</string>
+    <string name="unknown_symbol">-</string>
+
     <string name="elevation">Elevation</string>
     <string name="unit_m">m</string>
     <string name="unit_km">km</string>
