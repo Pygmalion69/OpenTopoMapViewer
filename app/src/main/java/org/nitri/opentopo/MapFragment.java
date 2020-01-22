@@ -280,7 +280,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         if (mMapCenterState != null) {
             mMapView.getController().setCenter(mMapCenterState);
             mMapCenterState = null; // We're done with the old state
-        } else if (mLocationViewModel.getCurrentLocation() != null) {
+        } else if (mLocationViewModel.getCurrentLocation() != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
             mMapView.getController().setCenter(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue().getLatitude(),
                     mLocationViewModel.getCurrentLocation().getValue().getLongitude()));
         }
@@ -470,7 +470,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     }
 
-    public void zoomToBounds(final BoundingBox box) {
+    private void zoomToBounds(final BoundingBox box) {
         if (mMapView.getHeight() > 0) {
             mMapView.zoomToBoundingBox(box, true, 64);
         } else {
@@ -486,7 +486,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         }
     }
 
-    public void setNearbyPlace() {
+    void setNearbyPlace() {
         NearbyItem nearbyPlace = mListener.getSelectedNearbyPlace();
         showNearbyPlace(nearbyPlace);
     }
@@ -681,7 +681,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
