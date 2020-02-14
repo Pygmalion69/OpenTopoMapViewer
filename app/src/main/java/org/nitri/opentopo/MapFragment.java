@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModelProvider;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -112,15 +113,21 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     private final static String STATE_LATITUDE = "latitude";
     private final static String STATE_LONGITUDE = "longitude";
+    private final static String STATE_ZOOM = "zoom";
+
 
     private SharedPreferences mPrefs;
     private static final String MAP_PREFS = "map_prefs";
 
     private final static String PREF_BASE_MAP = "base_map";
     private final static String PREF_OVERLAY = "overlay";
+    private final static String PREF_LATITUDE = "latitude";
+    private final static String PREF_LONGITUDE = "longitude";
 
     private final static int BASE_MAP_OTM = 1;
     private final static int BASE_MAP_OSM = 2;
+
+    private final static double DEFAULT_ZOOM = 15d;
 
 
     private int mBaseMap = BASE_MAP_OTM;
@@ -129,6 +136,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private TextView mCopyRightView;
     private int mOverlay = OverlayHelper.OVERLAY_NONE;
     private GeoPoint mMapCenterState;
+    private double mZoomState = DEFAULT_ZOOM;
     private int mLastNearbyAnimateToId;
 
     private LocationViewModel mLocationViewModel;
@@ -153,7 +161,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        setRetainInstance(true);
         Context context = requireActivity().getApplicationContext();
         IConfigurationProvider configuration = Configuration.getInstance();
         configuration.setUserAgentValue(BuildConfig.APPLICATION_ID);
@@ -190,7 +197,24 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         if (savedInstanceState != null) {
             mMapCenterState = new GeoPoint(savedInstanceState.getDouble(STATE_LATITUDE, 0),
                     savedInstanceState.getDouble(STATE_LONGITUDE, 0));
+            Log.d(TAG, String.format("Restoring center state: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
+            mZoomState = savedInstanceState.getDouble(STATE_ZOOM, DEFAULT_ZOOM);
+        } else {
+            Log.d(TAG, "No saved center state");
+            float prefLat = mPrefs.getFloat(PREF_LATITUDE, 0f);
+            float prefLon = mPrefs.getFloat(PREF_LONGITUDE, 0f);
+            mMapCenterState = new GeoPoint(prefLat, prefLon);
+            Log.d(TAG, String.format("Restoring center state from prefs: %f, %f", prefLat, prefLon));
         }
+
+        if (mMapCenterState != null) {
+            mMapView.getController().setCenter(mMapCenterState);
+        } else if (mLocationViewModel.getCurrentLocation() != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
+            mMapView.getController().setCenter(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue().getLatitude(),
+                    mLocationViewModel.getCurrentLocation().getValue().getLongitude()));
+        }
+
+        mMapView.getController().setZoom(mZoomState);
     }
 
     @Override
@@ -222,7 +246,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mRotationGestureOverlay = new RotationGestureOverlay(mMapView);
             mRotationGestureOverlay.setEnabled(true);
 
-            mMapView.getController().setZoom(15d);
             mMapView.setMaxZoomLevel(17d);
             mMapView.setTilesScaledToDpi(true);
             mMapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
@@ -277,13 +300,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mLocationViewModel.getCurrentLocation().setValue(mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER));
         }
 
-        if (mMapCenterState != null) {
-            mMapView.getController().setCenter(mMapCenterState);
-            mMapCenterState = null; // We're done with the old state
-        } else if (mLocationViewModel.getCurrentLocation() != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
-            mMapView.getController().setCenter(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue().getLatitude(),
-                    mLocationViewModel.getCurrentLocation().getValue().getLongitude()));
-        }
 
     }
 
@@ -406,7 +422,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     @Override
     public void onPause() {
-        super.onPause();
 
         if (mMapView != null) {
             mMapCenterState = (GeoPoint) mMapView.getMapCenter();
@@ -424,16 +439,31 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mLocationOverlay.disableFollowLocation();
         mLocationOverlay.disableMyLocation();
         mScaleBarOverlay.disableScaleBar();
+
+        super.onPause();
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState()");
         if (mMapView != null) {
             mMapCenterState = (GeoPoint) mMapView.getMapCenter();
             outState.putDouble(STATE_LATITUDE, mMapCenterState.getLatitude());
             outState.putDouble(STATE_LONGITUDE, mMapCenterState.getLongitude());
+            Log.d(TAG, String.format("Saving center state: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
+            outState.putDouble(STATE_ZOOM, mMapView.getZoomLevelDouble());
         }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onStop() {
+        if (mMapCenterState != null) {
+            mPrefs.edit().putFloat(PREF_LATITUDE, (float) mMapCenterState.getLatitude()).apply();
+            mPrefs.edit().putFloat(PREF_LONGITUDE, (float) mMapCenterState.getLongitude()).apply();
+            Log.d(TAG, String.format("Saving center prefs: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
+        }
+        super.onStop();
     }
 
     void setGpx(Gpx gpx, boolean zoom) {
@@ -501,14 +531,14 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         mListener.setUpNavigation(false);
         inflater.inflate(R.menu.menu_main, menu);
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
         if (mFollow) {
             menu.findItem(R.id.action_follow).setVisible(false);
             menu.findItem(R.id.action_no_follow).setVisible(true);
