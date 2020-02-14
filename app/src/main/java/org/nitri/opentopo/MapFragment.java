@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -129,7 +128,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     private final static double DEFAULT_ZOOM = 15d;
 
-
     private int mBaseMap = BASE_MAP_OTM;
 
     private static final String TAG = MapFragment.class.getSimpleName();
@@ -158,6 +156,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
@@ -181,7 +180,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 mLocationManager.addNmeaListener(nmeaListener);
             }
         } else {
-            GpsStatus.NmeaListener nmeaListener = (l, s) -> {
+            android.location.GpsStatus.NmeaListener nmeaListener = (l, s) -> {
                 if (mLocationViewModel != null && mLocationViewModel.getCurrentNmea() != null) {
                     mLocationViewModel.getCurrentNmea().setValue(s);
                 }
@@ -566,7 +565,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 }
                 return true;
             case R.id.action_location:
-                if (mLocationViewModel.getCurrentLocation().getValue() != null) {
+                if (mLocationViewModel.getCurrentLocation() != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
                     mMapView.getController().animateTo(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue()));
                 }
                 return true;
