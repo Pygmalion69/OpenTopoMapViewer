@@ -20,6 +20,9 @@ allprojects {
             url 'https://www.jitpack.io'
         }
     }
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
 }
 
 task clean(type: Delete) {

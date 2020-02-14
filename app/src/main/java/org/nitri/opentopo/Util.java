@@ -159,7 +159,7 @@ public class Util {
      * @return
      */
     public static List<WayPoint> getWayPointsByType(Gpx gpx, String type) {
-        List<WayPoint> wayPoints = new ArrayList();
+        List<WayPoint> wayPoints = new ArrayList<>();
         if (gpx.getWayPoints() != null) {
             for (WayPoint wayPoint: gpx.getWayPoints()) {
                 if (!TextUtils.isEmpty(wayPoint.getType()) && wayPoint.getType().equals(type))
