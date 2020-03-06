@@ -1,4 +1,4 @@
-package org.nitri.opentopo;
+package org.nitri.opentopo.nearby;
 
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.nitri.opentopo.R;
+import org.nitri.opentopo.Util;
 import org.nitri.opentopo.nearby.adapter.NearbyAdapter;
 import org.nitri.opentopo.nearby.api.NearbyDatabase;
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiApi;
@@ -79,7 +81,6 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        setRetainInstance(true);
         if (getArguments() != null) {
             mLatitude = getArguments().getDouble(PARAM_LATITUDE);
             mLongitude = getArguments().getDouble(PARAM_LONGITUDE);

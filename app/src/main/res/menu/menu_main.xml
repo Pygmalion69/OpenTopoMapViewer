@@ -53,5 +53,11 @@
         android:title="@string/nearby"
         android:visible="true"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_cache_settings"
+        android:icon="@drawable/ic_action_cache_settings"
+        android:title="@string/cache_settings"
+        android:visible="true"
+        app:showAsAction="ifRoom"/>
 
 </menu>

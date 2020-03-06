@@ -14,9 +14,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
+import org.nitri.opentopo.nearby.NearbyFragment;
 import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.osmdroid.util.GeoPoint;
 import org.xmlpull.v1.XmlPullParserException;
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private Gpx mGpx;
     private boolean mZoomToGpx;
     private NearbyItem mSelectedNearbyPlace;
+    private Fragment mMapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +76,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
         } else {
             addMapFragment();
+        }
+
+        if (savedInstanceState != null) {
+            mMapFragment = getSupportFragmentManager().getFragment(savedInstanceState, MAP_FRAGMENT_TAG);
         }
     }
 
@@ -101,17 +108,16 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (mapFragmentAdded()) {
             return;
         }
-        MapFragment mapFragment;
         if (mGeoPointFromIntent == null) {
-            mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
-            if (mapFragment == null) {
-                mapFragment = MapFragment.newInstance();
+            mMapFragment = getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+            if (mMapFragment == null) {
+                mMapFragment = MapFragment.newInstance();
             }
         } else {
-            mapFragment = MapFragment.newInstance(mGeoPointFromIntent.getLatitude(), mGeoPointFromIntent.getLongitude());
+            mMapFragment = MapFragment.newInstance(mGeoPointFromIntent.getLatitude(), mGeoPointFromIntent.getLongitude());
         }
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG)
+                .replace(R.id.map_container, mMapFragment, MAP_FRAGMENT_TAG)
                 .commit();
         setGpx();
     }
@@ -123,16 +129,16 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     @Override
     public void addGpxDetailFragment() {
         GpxDetailFragment gpxDetailFragment = GpxDetailFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().addToBackStack(null)
+        getSupportFragmentManager().beginTransaction().addToBackStack("gpx")
                 .replace(R.id.map_container, gpxDetailFragment, GPX_DETAIL_FRAGMENT_TAG)
                 .commit();
     }
 
     @Override
     public void addNearbyFragment(GeoPoint nearbyCenterPoint) {
-        NearbyFragment gpxDetailFragment = NearbyFragment.newInstance(nearbyCenterPoint.getLatitude(), nearbyCenterPoint.getLongitude());
-        getSupportFragmentManager().beginTransaction().addToBackStack(null)
-                .replace(R.id.map_container, gpxDetailFragment, NEARBY_FRAGMENT_TAG)
+        NearbyFragment nearbyFragment = NearbyFragment.newInstance(nearbyCenterPoint.getLatitude(), nearbyCenterPoint.getLongitude());
+        getSupportFragmentManager().beginTransaction().addToBackStack("nearby")
+                .replace(R.id.map_container, nearbyFragment, NEARBY_FRAGMENT_TAG)
                 .commit();
     }
 
@@ -203,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (!TextUtils.isEmpty(mGpxUriString)) {
             outState.putString(GPX_URI_STATE, mGpxUriString);
         }
+        getSupportFragmentManager().putFragment(outState, MAP_FRAGMENT_TAG, mMapFragment);
         super.onSaveInstanceState(outState);
     }
 

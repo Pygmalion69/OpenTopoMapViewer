@@ -14,17 +14,6 @@ import android.location.OnNmeaMessageListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProvider;
-
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -39,6 +28,15 @@ import android.view.Window;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 
 import org.nitri.opentopo.model.LocationViewModel;
 import org.nitri.opentopo.nearby.entity.NearbyItem;
@@ -61,6 +59,7 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.io.File;
 import java.util.Objects;
 
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -116,7 +115,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
 
     private SharedPreferences mPrefs;
-    private static final String MAP_PREFS = "map_prefs";
+    static final String MAP_PREFS = "map_prefs";
 
     private final static String PREF_BASE_MAP = "base_map";
     private final static String PREF_OVERLAY = "overlay";
@@ -161,10 +160,10 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         Context context = requireActivity().getApplicationContext();
+        mPrefs = requireActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE);
         IConfigurationProvider configuration = Configuration.getInstance();
         configuration.setUserAgentValue(BuildConfig.APPLICATION_ID);
-        configuration.load(context, PreferenceManager.getDefaultSharedPreferences(context));
-        mPrefs = requireActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE);
+        configuration.load(context, mPrefs);
         mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM);
         mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE);
         mLocationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -194,10 +193,14 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
-            mMapCenterState = new GeoPoint(savedInstanceState.getDouble(STATE_LATITUDE, 0),
-                    savedInstanceState.getDouble(STATE_LONGITUDE, 0));
-            Log.d(TAG, String.format("Restoring center state: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
-            mZoomState = savedInstanceState.getDouble(STATE_ZOOM, DEFAULT_ZOOM);
+            if (savedInstanceState.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(STATE_LONGITUDE)) {
+                mMapCenterState = new GeoPoint(savedInstanceState.getDouble(STATE_LATITUDE, 0),
+                        savedInstanceState.getDouble(STATE_LONGITUDE, 0));
+                Log.d(TAG, String.format("Restoring center state: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
+                mZoomState = savedInstanceState.getDouble(STATE_ZOOM, DEFAULT_ZOOM);
+            } else {
+                Log.d(TAG, "No center state delivered");
+            }
         } else {
             Log.d(TAG, "No saved center state");
             float prefLat = mPrefs.getFloat(PREF_LATITUDE, 0f);
@@ -388,12 +391,21 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mMapHandler.removeCallbacks(mCenterRunnable);
     }
 
+    private void saveMapCenterPrefs() {
+        if (mMapCenterState != null) {
+            mPrefs.edit().putFloat(PREF_LATITUDE, (float) mMapCenterState.getLatitude()).apply();
+            mPrefs.edit().putFloat(PREF_LONGITUDE, (float) mMapCenterState.getLongitude()).apply();
+            Log.d(TAG, String.format("Saving center prefs: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
+        }
+    }
+
     @SuppressLint("MissingPermission")
     @Override
     public void onResume() {
         super.onResume();
         //File basePath = Configuration.getInstance().getOsmdroidBasePath();
-        //File cache = Configuration.getInstance().getOsmdroidTileCache();
+        File cache = Configuration.getInstance().getOsmdroidTileCache();
+        Log.d(TAG, "Cache: " + cache.getAbsolutePath());
         initMap();
 
         if (mMapCenterState != null) {
@@ -457,11 +469,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     @Override
     public void onStop() {
-        if (mMapCenterState != null) {
-            mPrefs.edit().putFloat(PREF_LATITUDE, (float) mMapCenterState.getLatitude()).apply();
-            mPrefs.edit().putFloat(PREF_LONGITUDE, (float) mMapCenterState.getLongitude()).apply();
-            Log.d(TAG, String.format("Saving center prefs: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
-        }
+        saveMapCenterPrefs();
         super.onStop();
     }
 
@@ -556,6 +564,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        FragmentManager fm;
+
         switch (item.getItemId()) {
             case R.id.action_gpx:
                 if (mOverlayHelper != null && mOverlayHelper.hasGpx()) {
@@ -582,7 +593,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                     mListener.addGpxDetailFragment();
                 return true;
             case R.id.action_location_details:
-                FragmentManager fm = requireActivity().getSupportFragmentManager();
+                fm = requireActivity().getSupportFragmentManager();
                 LocationDetailFragment locationDetailFragment = new LocationDetailFragment();
                 locationDetailFragment.show(fm, "location_detail");
                 return true;
@@ -604,6 +615,15 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                         Toast.makeText(getActivity(), R.string.location_unknown, Toast.LENGTH_SHORT).show();
                     }
                 }
+                return true;
+            case R.id.action_cache_settings:
+                if (mMapView != null) {
+                    mMapCenterState = (GeoPoint) mMapView.getMapCenter();
+                }
+                saveMapCenterPrefs();
+                fm = requireActivity().getSupportFragmentManager();
+                CacheSettingsFragment cacheSettingsFragment = new CacheSettingsFragment();
+                cacheSettingsFragment.show(fm, "cache_settings");
                 return true;
             case R.id.action_gpx_zoom:
                 disableFollow();
@@ -734,7 +754,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mCompassOverlay = null;
         mScaleBarOverlay = null;
         mRotationGestureOverlay = null;
-        mOverlayHelper.destroy();
+        if (mOverlayHelper != null)
+            mOverlayHelper.destroy();
+        mMapView = null;
     }
 
     public interface OnFragmentInteractionListener {
