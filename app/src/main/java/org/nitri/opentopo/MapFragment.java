@@ -201,7 +201,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             } else {
                 Log.d(TAG, "No center state delivered");
             }
-        } else {
+        }
+        if (mMapCenterState == null) {
             Log.d(TAG, "No saved center state");
             float prefLat = mPrefs.getFloat(PREF_LATITUDE, 0f);
             float prefLon = mPrefs.getFloat(PREF_LONGITUDE, 0f);
