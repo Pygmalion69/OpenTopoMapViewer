@@ -108,7 +108,6 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
         ConstraintLayout chartContainer = rootView.findViewById(R.id.chartContainer);
         mElevationChart = rootView.findViewById(R.id.elevationChart);
         RecyclerView wayPointRecyclerView = rootView.findViewById(R.id.way_point_recycler_view);
-        wayPointRecyclerView.setHasFixedSize(true);
         wayPointRecyclerView.setNestedScrollingEnabled(false);
         wayPointRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         wayPointRecyclerView.setAdapter(mWayPointListAdapter);
