@@ -52,7 +52,7 @@ public class NearbyAdapter extends RecyclerView.Adapter<NearbyAdapter.ItemViewHo
 
     @Override
     public long getItemId(int position) {
-        return Long.valueOf(mItems.get(position).getPageid());
+        return Long.parseLong(mItems.get(position).getPageid());
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -77,9 +77,9 @@ public class NearbyAdapter extends RecyclerView.Adapter<NearbyAdapter.ItemViewHo
         @Override
         public void onClick(View view) {
             if (view.getId() == R.id.ivMap) {
-                mListener.onMapItemClick(getAdapterPosition());
+                mListener.onMapItemClick(getBindingAdapterPosition());
             } else {
-                mListener.onItemClick(getAdapterPosition());
+                mListener.onItemClick(getBindingAdapterPosition());
             }
         }
     }
