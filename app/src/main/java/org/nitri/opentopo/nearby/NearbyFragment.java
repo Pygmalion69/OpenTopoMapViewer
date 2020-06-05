@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.nitri.opentopo.BuildConfig;
 import org.nitri.opentopo.R;
 import org.nitri.opentopo.Util;
 import org.nitri.opentopo.nearby.adapter.NearbyAdapter;
@@ -34,13 +35,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClickListener {
-    final static String PARAM_LATITUDE = "latitude";
-    final static String PARAM_LONGITUDE = "longitude";
+    private final static String PARAM_LATITUDE = "latitude";
+    private final static String PARAM_LONGITUDE = "longitude";
 
     private static final String TAG = NearbyFragment.class.getSimpleName();
 
@@ -49,8 +52,6 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
     private double mLongitude;
 
     private Gson gson = new GsonBuilder().setLenient().create();
-
-    private Retrofit retrofit;
 
     private List<NearbyItem> mNearbyItems = new ArrayList<>();
     private NearbyAdapter mNearbyAdapter;
@@ -86,10 +87,22 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
             mLongitude = getArguments().getDouble(PARAM_LONGITUDE);
         }
 
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+        httpClient.addInterceptor(chain -> {
+            Request original = chain.request();
+            Request request = original.newBuilder()
+                    .header("User-Agent", getString(R.string.app_name) + " "
+                            + BuildConfig.VERSION_NAME)
+                    .method(original.method(), original.body())
+                    .build();
+            return chain.proceed(request);
+        });
+
         String wikiBaseUrl = requireContext().getString(R.string.wiki_base_url);
-        retrofit = new Retrofit.Builder()
+        Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(wikiBaseUrl)
                 .addConverterFactory(GsonConverterFactory.create(gson))
+                .client(httpClient.build())
                 .build();
 
         mNearbyAdapter = new NearbyAdapter(mNearbyItems, this);
@@ -118,7 +131,7 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
     }
 
     private void setDistance() {
-        for (NearbyItem item: mNearbyItems) {
+        for (NearbyItem item : mNearbyItems) {
             int distance = (int) Math.round(Util.distance(mLatitude, mLongitude, item.getLat(), item.getLon()));
             item.setDistance(distance);
         }
@@ -137,13 +150,13 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         mListener.setUpNavigation(true);
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
