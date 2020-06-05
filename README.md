@@ -15,4 +15,7 @@ OpenTopoMap viewer for Android
 
 ![GPX](screen_dopplersteig_gpx_detail.png "GPX")
 
-<a href="https://f-droid.org/en/packages/org.nitri.opentopo/"><img src="https://f-droid.org/badge/get-it-on.png" height="75"></a>
+<a href="https://f-droid.org/packages/org.nitri.opentopo">
+    <img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">
