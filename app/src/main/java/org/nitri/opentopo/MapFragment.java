@@ -399,7 +399,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             Log.d(TAG, String.format("Saving center prefs: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
         }
     }
-
+    
     @SuppressLint("MissingPermission")
     @Override
     public void onResume() {
@@ -419,13 +419,13 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
         if (mLocationManager != null) {
             try {
-                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this);
+                mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0L, 0f, this);
             } catch (Exception ex) {
                 ex.printStackTrace();
 
             }
             try {
-                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this);
+                mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0L, 0f, this);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
