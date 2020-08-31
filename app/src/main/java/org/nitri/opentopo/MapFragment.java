@@ -121,6 +121,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private final static String PREF_OVERLAY = "overlay";
     private final static String PREF_LATITUDE = "latitude";
     private final static String PREF_LONGITUDE = "longitude";
+    private final static String PREF_FOLLOW = "follow";
 
     private final static int BASE_MAP_OTM = 1;
     private final static int BASE_MAP_OSM = 2;
@@ -218,6 +219,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         }
 
         mMapView.getController().setZoom(mZoomState);
+
+        if (mPrefs.getBoolean(PREF_FOLLOW, false))
+            enableFollow();
     }
 
     @Override
@@ -382,6 +386,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mLocationOverlay.enableFollowLocation();
         mMapHandler.removeCallbacks(mCenterRunnable);
         mMapHandler.post(mCenterRunnable);
+        mPrefs.edit().putBoolean(PREF_FOLLOW, true).apply();
     }
 
     private void disableFollow() {
@@ -390,6 +395,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             ((AppCompatActivity) getActivity()).supportInvalidateOptionsMenu();
         mLocationOverlay.disableFollowLocation();
         mMapHandler.removeCallbacks(mCenterRunnable);
+        mPrefs.edit().putBoolean(PREF_FOLLOW, false).apply();
     }
 
     private void saveMapCenterPrefs() {
