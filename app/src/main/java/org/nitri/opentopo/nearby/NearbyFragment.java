@@ -65,7 +65,7 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param lat latitute
+     * @param lat latitude
      * @param lon longitude
      * @return A new instance of fragment NearbyFragment.
      */
