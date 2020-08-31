@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        startActivityForResult(intent, READ_REQUEST_CODE);
+        startActivityForResult(Intent.createChooser(intent, "GPX"), READ_REQUEST_CODE);
     }
 
     @Override
