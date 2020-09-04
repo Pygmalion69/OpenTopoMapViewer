@@ -240,11 +240,16 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getActivity()),
                     mMapView);
 
-            Bitmap bmCrosshairs = BitmapFactory.decodeResource(getResources(),
-                    R.drawable.ic_crosshairs);
+            Bitmap bmMapLocation = BitmapFactory.decodeResource(getResources(),
+                    R.drawable.ic_map_location);
 
-            mLocationOverlay.setPersonIcon(bmCrosshairs);
-            mLocationOverlay.setPersonHotspot(bmCrosshairs.getWidth() / 2f, bmCrosshairs.getHeight() / 2f);
+            Bitmap bmMapBearing = BitmapFactory.decodeResource(getResources(),
+                    R.drawable.ic_map_bearing);
+
+            mLocationOverlay.setPersonIcon(bmMapLocation);
+            mLocationOverlay.setPersonHotspot(bmMapLocation.getWidth() / 2f, bmMapLocation.getHeight() / 2f);
+
+            mLocationOverlay.setDirectionArrow(bmMapLocation, bmMapBearing);
 
             mScaleBarOverlay = new ScaleBarOverlay(mMapView);
             mScaleBarOverlay.setCentred(true);
@@ -306,8 +311,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         } else {
             mLocationViewModel.getCurrentLocation().setValue(mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER));
         }
-
-
     }
 
     private void animateToLatLon(double lat, double lon) {
