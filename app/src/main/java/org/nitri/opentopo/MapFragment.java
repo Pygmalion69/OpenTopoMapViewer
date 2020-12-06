@@ -240,15 +240,19 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getActivity()),
                     mMapView);
 
-            Bitmap bmMapLocation = BitmapFactory.decodeResource(getResources(),
-                    R.drawable.ic_map_location);
-
-            Bitmap bmMapBearing = BitmapFactory.decodeResource(getResources(),
-                    R.drawable.ic_map_bearing);
-
+            Bitmap bmMapLocation = Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_position, 204);
+            if (bmMapLocation == null) {
+                bmMapLocation = BitmapFactory.decodeResource(getResources(),
+                        R.drawable.ic_map_location);
+            }
             mLocationOverlay.setPersonIcon(bmMapLocation);
             mLocationOverlay.setPersonHotspot(bmMapLocation.getWidth() / 2f, bmMapLocation.getHeight() / 2f);
 
+            Bitmap bmMapBearing = Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_direction, 204);
+            if (bmMapBearing == null) {
+                bmMapBearing = BitmapFactory.decodeResource(getResources(),
+                        R.drawable.ic_map_bearing);
+            }
             mLocationOverlay.setDirectionArrow(bmMapLocation, bmMapBearing);
 
             mScaleBarOverlay = new ScaleBarOverlay(mMapView);

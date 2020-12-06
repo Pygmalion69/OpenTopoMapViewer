@@ -2,10 +2,20 @@ package org.nitri.opentopo;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ScaleDrawable;
+import android.graphics.drawable.VectorDrawable;
 import android.os.Build;
 import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
+import androidx.annotation.DrawableRes;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -231,4 +241,32 @@ public class Util {
         return NO_ELEVATION_VALUE;
     }
 
+    /**
+     * Bitmap from vector drawable
+     *
+     * @param context
+     * @param drawableId
+     * @return
+     */
+    public static Bitmap getBitmapFromDrawable(Context context, @DrawableRes int drawableId, int alpha) {
+        Drawable drawable = AppCompatResources.getDrawable(context, drawableId);
+        drawable.setAlpha(alpha);
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        } else if (drawable instanceof VectorDrawableCompat) {
+            return createBitmap(drawable);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && drawable instanceof VectorDrawable) {
+            return createBitmap(drawable);
+        } else {
+            throw new IllegalArgumentException("unsupported drawable type");
+        }
+    }
+
+    private static Bitmap createBitmap(Drawable drawable) {
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
 }
