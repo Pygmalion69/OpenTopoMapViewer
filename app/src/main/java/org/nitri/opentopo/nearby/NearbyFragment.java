@@ -51,9 +51,9 @@ public class NearbyFragment extends Fragment implements NearbyAdapter.OnItemClic
     private double mLatitude;
     private double mLongitude;
 
-    private Gson gson = new GsonBuilder().setLenient().create();
+    private final Gson gson = new GsonBuilder().setLenient().create();
 
-    private List<NearbyItem> mNearbyItems = new ArrayList<>();
+    private final List<NearbyItem> mNearbyItems = new ArrayList<>();
     private NearbyAdapter mNearbyAdapter;
 
 

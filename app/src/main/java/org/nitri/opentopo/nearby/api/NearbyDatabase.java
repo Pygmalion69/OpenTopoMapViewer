@@ -18,7 +18,7 @@ public abstract class NearbyDatabase extends RoomDatabase {
     public static synchronized NearbyDatabase getDatabase(Context context) {
         if (instance == null) {
             instance =
-                    Room.databaseBuilder(context.getApplicationContext(), NearbyDatabase.class, "reading-database")
+                    Room.databaseBuilder(context.getApplicationContext(), NearbyDatabase.class, "nearby-database")
                             .build();
         }
         return instance;

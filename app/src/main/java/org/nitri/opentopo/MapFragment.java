@@ -74,8 +74,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private RotationGestureOverlay mRotationGestureOverlay;
     private LocationManager mLocationManager;
     private OverlayHelper mOverlayHelper;
-    private Handler mMapHandler = new Handler();
-    private Runnable mCenterRunnable = new Runnable() {
+    private final Handler mMapHandler = new Handler();
+    private final Runnable mCenterRunnable = new Runnable() {
 
         @Override
         public void run() {
@@ -86,7 +86,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         }
     };
 
-    private MapListener mDragListener = new MapListener() {
+    private final MapListener mDragListener = new MapListener() {
         @Override
         public boolean onScroll(ScrollEvent event) {
             if (mFollow && mMapHandler != null && mCenterRunnable != null) {
