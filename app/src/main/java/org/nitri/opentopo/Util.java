@@ -225,7 +225,7 @@ public class Util {
      * @return antenna altitude
      */
     public static double elevationFromNmea(String nmea) {
-        if (nmea.startsWith("$GPGGA")) {
+        if (!TextUtils.isEmpty(nmea) && nmea.startsWith("$GPGGA")) {
             String[] tokens = nmea.split(",");
             try {
                 String elevation = tokens[9];

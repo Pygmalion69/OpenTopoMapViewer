@@ -50,9 +50,10 @@ public class LocationDetailFragment extends DialogFragment {
         TextView tvElevation = view.findViewById(R.id.textViewElevation);
 
         Observer<Location> locationObserver = location -> {
-            tvLatitude.setText(String.format("%.5f", location.getLatitude()));
-            tvLongitude.setText(String.format("%.5f", location.getLongitude()));
-
+            if (location != null) {
+                tvLatitude.setText(String.format("%.5f", location.getLatitude()));
+                tvLongitude.setText(String.format("%.5f", location.getLongitude()));
+            }
         };
 
         Observer<String> nmeaObserver = nmea -> {
