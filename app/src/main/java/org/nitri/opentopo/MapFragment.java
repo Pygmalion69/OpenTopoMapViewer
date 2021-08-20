@@ -185,7 +185,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                     mLocationViewModel.getCurrentNmea().setValue(s);
                 }
             };
-            mLocationManager.addNmeaListener(nmeaListener);
+            if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                mLocationManager.addNmeaListener(nmeaListener);
+            }
         }
     }
 
