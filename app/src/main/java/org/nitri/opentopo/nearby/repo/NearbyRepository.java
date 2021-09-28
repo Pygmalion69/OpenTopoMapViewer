@@ -28,7 +28,6 @@ public class NearbyRepository {
     private final double mLatitude;
     private final double mLongitude;
 
-
     public NearbyRepository(NearbyDao dao, MediaWikiApi api, double latitude, double longitude) {
         mDao = dao;
         mApi = api;

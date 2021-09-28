@@ -45,7 +45,7 @@ dependencies {
     annotationProcessor 'androidx.room:room-compiler:2.3.0'
     implementation 'net.danlew:android.joda:2.10.1'
     implementation 'com.github.k3b:k3b-geoHelper:1.1.5'
-    api 'io.ticofab.androidgpxparser:parser:1.4.0'
+    implementation 'com.github.ticofab:android-gpx-parser:2.0.1'
     implementation('com.squareup.picasso:picasso:2.71828') {
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'

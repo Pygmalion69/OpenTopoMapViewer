@@ -33,6 +33,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -185,7 +186,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                     mLocationViewModel.getCurrentNmea().setValue(s);
                 }
             };
-            if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mLocationManager.addNmeaListener(nmeaListener);
             }
         }
@@ -501,7 +502,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     private void showGpxdialog() {
         final AlertDialog.Builder builder;
-        builder = new AlertDialog.Builder(Objects.requireNonNull(getActivity()), R.style.AlertDialogTheme);
+        builder = new AlertDialog.Builder(requireActivity(), R.style.AlertDialogTheme);
         builder.setTitle(getString(R.string.gpx))
                 .setMessage(getString(R.string.discard_current_gpx))
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
