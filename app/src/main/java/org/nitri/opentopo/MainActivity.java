@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
@@ -35,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    private static final boolean DEVELOPER_MODE = true;
 
     protected static final String MAP_FRAGMENT_TAG = "map_fragment";
     protected static final String GPX_DETAIL_FRAGMENT_TAG = "gpx_detail_fragment";
@@ -81,6 +84,16 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (savedInstanceState != null) {
             mMapFragment = getSupportFragmentManager().getFragment(savedInstanceState, MAP_FRAGMENT_TAG);
         }
+
+        if (DEVELOPER_MODE) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                    .detectDiskReads()
+                    .detectDiskWrites()
+                    .detectNetwork()   // or .detectAll() for all detectable problems
+                    .penaltyLog()
+                    .build());
+        }
+
     }
 
     private void handleIntent(Intent intent) {

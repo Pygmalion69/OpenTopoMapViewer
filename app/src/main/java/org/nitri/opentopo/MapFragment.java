@@ -49,8 +49,10 @@ import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.util.MapTileIndex;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
@@ -61,12 +63,19 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.File;
-import java.util.Objects;
 
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 
-
 public class MapFragment extends Fragment implements LocationListener, PopupMenu.OnMenuItemClickListener {
+
+    private final XYTileSource topoWmts = new XYTileSource(
+            "TopPlusOpen", 0, 18, 256, ".png",
+            new String[]{"https://sgx.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web/default/WEBMERCATOR/"},  "© Bundesamt für Kartographie und Geodäsie <2021>, Datenquellen: https://sgx.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf") {
+        @Override
+        public String getTileURLString(final long pMapTileIndex) {
+            return getBaseUrl() + MapTileIndex.getZoom(pMapTileIndex) + "/" + MapTileIndex.getY(pMapTileIndex) + "/" + MapTileIndex.getX(pMapTileIndex) + ".png";
+        }
+    };
 
     private MapView mMapView;
     private MyLocationNewOverlay mLocationOverlay;
@@ -126,6 +135,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     private final static int BASE_MAP_OTM = 1;
     private final static int BASE_MAP_OSM = 2;
+    private final static int BASE_TOPO_WMTS = 3;
 
     private final static double DEFAULT_ZOOM = 15d;
 
@@ -164,7 +174,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         Context context = requireActivity().getApplicationContext();
         mPrefs = requireActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE);
         IConfigurationProvider configuration = Configuration.getInstance();
-        configuration.setUserAgentValue(BuildConfig.APPLICATION_ID);
         configuration.load(context, mPrefs);
         mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM);
         mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE);
@@ -191,7 +200,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             }
         }
     }
-
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -265,7 +273,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mRotationGestureOverlay = new RotationGestureOverlay(mMapView);
             mRotationGestureOverlay.setEnabled(true);
 
-            mMapView.setMaxZoomLevel(17d);
+            mMapView.setMaxZoomLevel(20d);
             mMapView.setTilesScaledToDpi(true);
             mMapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
             mMapView.setMultiTouchControls(true);
@@ -337,13 +345,12 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             case BASE_MAP_OSM:
                 mMapView.setTileSource(TileSourceFactory.MAPNIK);
                 break;
+            case BASE_TOPO_WMTS: {
+                mMapView.setTileSource(topoWmts);
+                break;
+            }
         }
         mMapView.invalidate();
-
-        //final OnlineTileSourceBase localTopo = new XYTileSource("OpenTopoMap", 0, 19, 256, ".png",
-        //        new String[]{"http://192.168.2.108/hot/"}, "Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)");
-        //mMapView.setTileSource(localTopo);
-
         setCopyrightNotice();
     }
 
@@ -658,6 +665,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                     MenuItem overlayNoneItem = popup.getMenu().findItem(R.id.none);
                     MenuItem overlayHikingItem = popup.getMenu().findItem(R.id.lonvia_hiking);
                     MenuItem overlayCyclingItem = popup.getMenu().findItem(R.id.lonvia_cycling);
+                    MenuItem overlayLikaItem = popup.getMenu().findItem(R.id.lika);
+                    MenuItem topoWmtsMapItem = popup.getMenu().findItem(R.id.topowmts);
 
                     switch (mBaseMap) {
                         case BASE_MAP_OTM:
@@ -665,6 +674,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                             break;
                         case BASE_MAP_OSM:
                             openStreetMapItem.setChecked(true);
+                            break;
+                        case BASE_TOPO_WMTS:
+                            topoWmtsMapItem.setChecked(true);
                             break;
                     }
 
@@ -677,6 +689,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                             break;
                         case OverlayHelper.OVERLAY_CYCLING:
                             overlayCyclingItem.setChecked(true);
+                            break;
+                        case OverlayHelper.OVERLAY_LIKA:
+                            overlayLikaItem.setChecked(true);
                             break;
                     }
 
@@ -708,6 +723,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 case R.id.osm:
                     mBaseMap = BASE_MAP_OSM;
                     break;
+                case R.id.topowmts:
+                    mBaseMap = BASE_TOPO_WMTS;
+                    break;
                 case R.id.none:
                     mOverlay = OverlayHelper.OVERLAY_NONE;
                     break;
@@ -716,6 +734,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                     break;
                 case R.id.lonvia_cycling:
                     mOverlay = OverlayHelper.OVERLAY_CYCLING;
+                    break;
+                case R.id.lika:
+                    mOverlay = OverlayHelper.OVERLAY_LIKA;
                     break;
             }
             mPrefs.edit().putInt(PREF_BASE_MAP, mBaseMap).apply();

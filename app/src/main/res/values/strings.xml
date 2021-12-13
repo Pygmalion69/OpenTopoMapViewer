@@ -26,6 +26,8 @@
     <string name="open_street_map">OpenSteetMap</string>
     <string name="lonvia_hiking">Lonvia Hiking</string>
     <string name="lonvia_cycling">Lonvia Cycling</string>
+    <string name="lika">Liegenschaftskarte</string>
+    <string name="topowmts">TOPO WMTS</string>
     <string name="base_map">Base Map</string>
     <string name="overlay">Overlay</string>
     <string name="none">None</string>

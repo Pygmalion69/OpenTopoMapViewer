@@ -10,6 +10,9 @@
         <item
             android:id="@+id/osm"
             android:title="@string/open_street_map" />
+        <item
+            android:id="@+id/topowmts"
+            android:title="@string/topowmts" />
     </group>
     <item android:title="@string/overlay" />
     <group
@@ -24,5 +27,8 @@
         <item
             android:id="@+id/lonvia_cycling"
             android:title="@string/lonvia_cycling" />
+        <item
+            android:id="@+id/lika"
+            android:title="@string/lika" />
     </group>
 </menu>

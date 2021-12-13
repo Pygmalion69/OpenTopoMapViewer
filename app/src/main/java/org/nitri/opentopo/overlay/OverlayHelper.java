@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+
 import androidx.core.content.ContextCompat;
 
 import org.nitri.opentopo.R;
@@ -17,7 +18,12 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
+import org.osmdroid.wms.WMSEndpoint;
+import org.osmdroid.wms.WMSParser;
+import org.osmdroid.wms.WMSTileSource;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,11 +31,15 @@ import java.util.List;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 import io.ticofab.androidgpxparser.parser.domain.Track;
 import io.ticofab.androidgpxparser.parser.domain.WayPoint;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class OverlayHelper {
 
-    private Context mContext;
-    private MapView mMapView;
+    private final Context mContext;
+    private final MapView mMapView;
 
     private ItemizedIconInfoOverlay mWayPointOverlay;
     private ItemizedIconInfoOverlay mNearbyItemOverlay;
@@ -40,20 +50,21 @@ public class OverlayHelper {
     public final static int OVERLAY_NONE = 1;
     public final static int OVERLAY_HIKING = 2;
     public final static int OVERLAY_CYCLING = 3;
+    public final static int OVERLAY_LIKA = 4;
 
     private int mOverlay = OVERLAY_NONE;
     private MapTileProviderBasic mOverlayTileProvider;
     private TilesOverlay mTilesOverlay;
 
-    private ColorMatrix tileOverlayAlphaMatrix = new ColorMatrix(new float[]
+    private final ColorMatrix tileOverlayAlphaMatrix = new ColorMatrix(new float[]
                    {1, 0, 0, 0, 0,
                     0, 1, 0, 0, 0,
                     0, 0, 1, 0, 0,
                     0, 0, 0, 0.8f, 0}
     );
-    private ColorMatrixColorFilter tileOverlayAlphaFilter = new ColorMatrixColorFilter(tileOverlayAlphaMatrix);
+    private final ColorMatrixColorFilter tileOverlayAlphaFilter = new ColorMatrixColorFilter(tileOverlayAlphaMatrix);
 
-    private ItemizedIconOverlay.OnItemGestureListener<OverlayItem> mWayPointItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+    private final ItemizedIconOverlay.OnItemGestureListener<OverlayItem> mWayPointItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
 
         @Override
         public boolean onItemSingleTapUp(int index, OverlayItem item) {
@@ -69,7 +80,7 @@ public class OverlayHelper {
         }
     };
 
-    private ItemizedIconInfoOverlay.OnItemGestureListener<OverlayItem> mNearbyItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+    private final ItemizedIconInfoOverlay.OnItemGestureListener<OverlayItem> mNearbyItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
         @Override
         public boolean onItemSingleTapUp(int index, OverlayItem item) {
             if (mNearbyItemOverlay != null && mMapView != null) {
@@ -152,7 +163,6 @@ public class OverlayHelper {
         }
     }
 
-
     public void setNearby(NearbyItem item) {
         clearNearby();
         GeoPoint geoPoint = new GeoPoint(item.getLat(), item.getLon());
@@ -203,6 +213,36 @@ public class OverlayHelper {
                 overlayTiles = new XYTileSource("cycling", 1, 17, 256, ".png",
                         new String[]{
                                 "https://tile.waymarkedtrails.org/cycling/"}, mContext.getString(R.string.lonvia_copy));
+                break;
+            case OVERLAY_LIKA:
+                InputStream is = null;
+
+                try {
+                    OkHttpClient client = new OkHttpClient();
+                    String url = "https://geo4.service24.rlp.de/wms/lika_basis.fcgi?request=GetCapabilities&Service=WMS&Version=1.3.0";
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .build();
+
+                    try (Response response = client.newCall(request).execute()) {
+                        ResponseBody responseBody = response.body();
+                        if (responseBody != null) {
+                            is = responseBody.byteStream();
+                            WMSEndpoint wmsEndpoint = WMSParser.parse(is);
+                            overlayTiles = WMSTileSource.createFrom(wmsEndpoint, wmsEndpoint.getLayers().get(0));
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
                 break;
         }
         if (overlayTiles != null) {
