@@ -37,7 +37,7 @@
     <string name="tile_cache">Tile cache</string>
     <string name="max_cache_size">Max. cache size (MB)</string>
     <string name="reset">Reset</string>
-    <string name="external_storage_root">External storage root: %1$s</string>
+    <string name="storage_root">External storage root: %1$s</string>
 
     <string name="invalid_gpx">Invalid GPX</string>
     <string name="location_unknown">Location unknown</string>

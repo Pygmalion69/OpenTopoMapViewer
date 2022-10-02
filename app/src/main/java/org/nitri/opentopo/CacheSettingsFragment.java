@@ -56,8 +56,8 @@ public class CacheSettingsFragment extends DialogFragment {
         etTileCache = view.findViewById(R.id.etTileCache);
         etCacheSize = view.findViewById(R.id.etCacheSize);
 
-        String externalStorageRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-        tvExternalStorageRoot.setText(getString(R.string.external_storage_root, externalStorageRoot));
+        String storageRoot = Configuration.getInstance().getOsmdroidBasePath().getAbsolutePath();
+        tvExternalStorageRoot.setText(getString(R.string.storage_root, storageRoot));
 
         String currentTileCache = prefs.getString(PREF_TILE_CACHE, DEFAULT_TILE_CACHE);
         int currentCacheSize = prefs.getInt(PREF_CACHE_SIZE, DEFAULT_CACHE_SIZE);
@@ -68,17 +68,17 @@ public class CacheSettingsFragment extends DialogFragment {
         builder.setView(view)
                 .setPositiveButton(android.R.string.ok, (dialog, id) -> {
                     String newTileCache = etTileCache.getText().toString();
-                    int newCacheSize = Integer.valueOf(etCacheSize.getText().toString());
+                    int newCacheSize = Integer.parseInt(etCacheSize.getText().toString());
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putString(PREF_TILE_CACHE, newTileCache);
                     editor.putInt(PREF_CACHE_SIZE, newCacheSize);
                     editor.apply();
-                    File cacheDir = new File(externalStorageRoot + "/" + newTileCache);
+                    File cacheDir = new File(storageRoot + "/" + newTileCache);
                     if (cacheDir.mkdirs()) {
                         Log.i(TAG, "Tile cache created: " + newTileCache);
                     }
                     Configuration.getInstance().setOsmdroidTileCache(cacheDir);
-                    Configuration.getInstance().setTileFileSystemCacheMaxBytes(newCacheSize * 1024 * 1024);
+                    Configuration.getInstance().setTileFileSystemCacheMaxBytes((long) newCacheSize * 1024 * 1024);
                     Configuration.getInstance().save(requireActivity().getApplicationContext(), prefs);
                     if (!newTileCache.equals(currentTileCache) || newCacheSize != currentCacheSize)
                         restart();
@@ -105,7 +105,7 @@ public class CacheSettingsFragment extends DialogFragment {
                 PendingIntent.getActivity(requireActivity().getBaseContext(), 0,
                         new Intent(requireActivity().getIntent()), requireActivity().getIntent().getFlags()));
 
-        new Handler().postDelayed(() -> android.os.Process.killProcess(android.os.Process.myPid()), 500);
+        new Handler(requireActivity().getMainLooper()).postDelayed(() -> android.os.Process.killProcess(android.os.Process.myPid()), 500);
 
         requireActivity().finish();
     }

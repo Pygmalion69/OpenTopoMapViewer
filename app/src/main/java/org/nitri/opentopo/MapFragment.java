@@ -61,7 +61,6 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.File;
-import java.util.Objects;
 
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 
@@ -75,7 +74,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private RotationGestureOverlay mRotationGestureOverlay;
     private LocationManager mLocationManager;
     private OverlayHelper mOverlayHelper;
-    private final Handler mMapHandler = new Handler();
+    private Handler mMapHandler;
     private final Runnable mCenterRunnable = new Runnable() {
 
         @Override
@@ -156,6 +155,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         return mapFragment;
     }
 
+    @SuppressLint("ApplySharedPref")
     @Override
     @SuppressWarnings("deprecation")
     public void onCreate(Bundle savedInstanceState) {
@@ -163,8 +163,17 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         setHasOptionsMenu(true);
         Context context = requireActivity().getApplicationContext();
         mPrefs = requireActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE);
+
         IConfigurationProvider configuration = Configuration.getInstance();
         configuration.setUserAgentValue(BuildConfig.APPLICATION_ID);
+        File basePath = new File(context.getCacheDir().getAbsolutePath(), "osmdroid");
+        configuration.setOsmdroidBasePath(basePath);
+        File tileCache = new File(configuration.getOsmdroidBasePath().getAbsolutePath(), "tile");
+        configuration.setOsmdroidTileCache(tileCache);
+        SharedPreferences.Editor edit = mPrefs.edit();
+        edit.putString("osmdroid.basePath", basePath.getAbsolutePath());
+        edit.putString("osmdroid.cachePath", tileCache.getAbsolutePath());
+        edit.commit();
         configuration.load(context, mPrefs);
         mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM);
         mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE);
@@ -297,6 +306,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mMapHandler = new Handler(requireActivity().getMainLooper());
         mListener.setGpx();
         Bundle arguments = getArguments();
         // Move to received geo intent coordinates
@@ -420,7 +430,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     @Override
     public void onResume() {
         super.onResume();
-        //File basePath = Configuration.getInstance().getOsmdroidBasePath();
+        File basePath = Configuration.getInstance().getOsmdroidBasePath();
         File cache = Configuration.getInstance().getOsmdroidTileCache();
         Log.d(TAG, "Cache: " + cache.getAbsolutePath());
         initMap();
@@ -500,7 +510,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         }
     }
 
-    private void showGpxdialog() {
+    private void showGpxDialog() {
         final AlertDialog.Builder builder;
         builder = new AlertDialog.Builder(requireActivity(), R.style.AlertDialogTheme);
         builder.setTitle(getString(R.string.gpx))
@@ -584,109 +594,108 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
         FragmentManager fm;
 
-        switch (item.getItemId()) {
-            case R.id.action_gpx:
-                if (mOverlayHelper != null && mOverlayHelper.hasGpx()) {
-                    showGpxdialog();
-                } else {
-                    mListener.selectGpx();
-                }
-                return true;
-            case R.id.action_location:
-                if (mLocationViewModel.getCurrentLocation() != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
-                    mMapView.getController().animateTo(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue()));
-                }
-                return true;
-            case R.id.action_follow:
-                enableFollow();
-                Toast.makeText(getActivity(), R.string.follow_enabled, Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.action_no_follow:
-                disableFollow();
-                Toast.makeText(getActivity(), R.string.follow_disabled, Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.action_gpx_details:
-                if (mListener != null)
-                    mListener.addGpxDetailFragment();
-                return true;
-            case R.id.action_location_details:
-                fm = requireActivity().getSupportFragmentManager();
-                LocationDetailFragment locationDetailFragment = new LocationDetailFragment();
-                locationDetailFragment.show(fm, "location_detail");
-                return true;
-            case R.id.action_nearby:
-                if (mListener != null) {
-                    mListener.clearSelectedNearbyPlace();
-                    GeoPoint nearbyCenter = null;
-                    if (mMapView != null) {
-                        nearbyCenter = (GeoPoint) mMapView.getMapCenter();
-                        mListener.addNearbyFragment(nearbyCenter);
-                    }
-                    if (nearbyCenter == null && mLocationViewModel.getCurrentLocation() != null &&
-                            mLocationViewModel.getCurrentLocation().getValue() != null) {
-                        nearbyCenter = new GeoPoint(mLocationViewModel.getCurrentLocation().getValue().getLatitude(),
-                                mLocationViewModel.getCurrentLocation().getValue().getLongitude());
-                        mListener.addNearbyFragment(nearbyCenter);
-                    }
-                    if (nearbyCenter == null) {
-                        Toast.makeText(getActivity(), R.string.location_unknown, Toast.LENGTH_SHORT).show();
-                    }
-                }
-                return true;
-            case R.id.action_cache_settings:
+        int itemId = item.getItemId();
+        if (itemId == R.id.action_gpx) {
+            if (mOverlayHelper != null && mOverlayHelper.hasGpx()) {
+                showGpxDialog();
+            } else {
+                mListener.selectGpx();
+            }
+            return true;
+        } else if (itemId == R.id.action_location) {
+            if (mLocationViewModel.getCurrentLocation() != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
+                mMapView.getController().animateTo(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue()));
+            }
+            return true;
+        } else if (itemId == R.id.action_follow) {
+            enableFollow();
+            Toast.makeText(getActivity(), R.string.follow_enabled, Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.action_no_follow) {
+            disableFollow();
+            Toast.makeText(getActivity(), R.string.follow_disabled, Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (itemId == R.id.action_gpx_details) {
+            if (mListener != null)
+                mListener.addGpxDetailFragment();
+            return true;
+        } else if (itemId == R.id.action_location_details) {
+            fm = requireActivity().getSupportFragmentManager();
+            LocationDetailFragment locationDetailFragment = new LocationDetailFragment();
+            locationDetailFragment.show(fm, "location_detail");
+            return true;
+        } else if (itemId == R.id.action_nearby) {
+            if (mListener != null) {
+                mListener.clearSelectedNearbyPlace();
+                GeoPoint nearbyCenter = null;
                 if (mMapView != null) {
-                    mMapCenterState = (GeoPoint) mMapView.getMapCenter();
+                    nearbyCenter = (GeoPoint) mMapView.getMapCenter();
+                    mListener.addNearbyFragment(nearbyCenter);
                 }
-                saveMapCenterPrefs();
-                fm = requireActivity().getSupportFragmentManager();
-                CacheSettingsFragment cacheSettingsFragment = new CacheSettingsFragment();
-                cacheSettingsFragment.show(fm, "cache_settings");
-                return true;
-            case R.id.action_gpx_zoom:
-                disableFollow();
-                zoomToBounds(Util.area(mListener.getGpx()));
-                return true;
-            case R.id.action_layers:
-                if (getActivity() != null) {
-                    View anchorView = getActivity().findViewById(R.id.popupAnchorView);
-                    PopupMenu popup = new PopupMenu(getActivity(), anchorView);
-                    android.view.MenuInflater inflater = popup.getMenuInflater();
-                    inflater.inflate(R.menu.menu_tile_sources, popup.getMenu());
+                if (nearbyCenter == null && mLocationViewModel.getCurrentLocation() != null &&
+                        mLocationViewModel.getCurrentLocation().getValue() != null) {
+                    nearbyCenter = new GeoPoint(mLocationViewModel.getCurrentLocation().getValue().getLatitude(),
+                            mLocationViewModel.getCurrentLocation().getValue().getLongitude());
+                    mListener.addNearbyFragment(nearbyCenter);
+                }
+                if (nearbyCenter == null) {
+                    Toast.makeText(getActivity(), R.string.location_unknown, Toast.LENGTH_SHORT).show();
+                }
+            }
+            return true;
+        } else if (itemId == R.id.action_cache_settings) {
+            if (mMapView != null) {
+                mMapCenterState = (GeoPoint) mMapView.getMapCenter();
+            }
+            saveMapCenterPrefs();
+            fm = requireActivity().getSupportFragmentManager();
+            CacheSettingsFragment cacheSettingsFragment = new CacheSettingsFragment();
+            cacheSettingsFragment.show(fm, "cache_settings");
+            return true;
+        } else if (itemId == R.id.action_gpx_zoom) {
+            disableFollow();
+            zoomToBounds(Util.area(mListener.getGpx()));
+            return true;
+        } else if (itemId == R.id.action_layers) {
+            if (getActivity() != null) {
+                View anchorView = getActivity().findViewById(R.id.popupAnchorView);
+                PopupMenu popup = new PopupMenu(getActivity(), anchorView);
+                MenuInflater inflater = popup.getMenuInflater();
+                inflater.inflate(R.menu.menu_tile_sources, popup.getMenu());
 
-                    MenuItem openTopoMapItem = popup.getMenu().findItem(R.id.otm);
-                    MenuItem openStreetMapItem = popup.getMenu().findItem(R.id.osm);
-                    MenuItem overlayNoneItem = popup.getMenu().findItem(R.id.none);
-                    MenuItem overlayHikingItem = popup.getMenu().findItem(R.id.lonvia_hiking);
-                    MenuItem overlayCyclingItem = popup.getMenu().findItem(R.id.lonvia_cycling);
+                MenuItem openTopoMapItem = popup.getMenu().findItem(R.id.otm);
+                MenuItem openStreetMapItem = popup.getMenu().findItem(R.id.osm);
+                MenuItem overlayNoneItem = popup.getMenu().findItem(R.id.none);
+                MenuItem overlayHikingItem = popup.getMenu().findItem(R.id.lonvia_hiking);
+                MenuItem overlayCyclingItem = popup.getMenu().findItem(R.id.lonvia_cycling);
 
-                    switch (mBaseMap) {
-                        case BASE_MAP_OTM:
-                            openTopoMapItem.setChecked(true);
-                            break;
-                        case BASE_MAP_OSM:
-                            openStreetMapItem.setChecked(true);
-                            break;
-                    }
-
-                    switch (mOverlay) {
-                        case OverlayHelper.OVERLAY_NONE:
-                            overlayNoneItem.setChecked(true);
-                            break;
-                        case OverlayHelper.OVERLAY_HIKING:
-                            overlayHikingItem.setChecked(true);
-                            break;
-                        case OverlayHelper.OVERLAY_CYCLING:
-                            overlayCyclingItem.setChecked(true);
-                            break;
-                    }
-
-                    popup.setOnMenuItemClickListener(MapFragment.this);
-                    popup.show();
-                    return true;
-                } else {
-                    return false;
+                switch (mBaseMap) {
+                    case BASE_MAP_OTM:
+                        openTopoMapItem.setChecked(true);
+                        break;
+                    case BASE_MAP_OSM:
+                        openStreetMapItem.setChecked(true);
+                        break;
                 }
 
+                switch (mOverlay) {
+                    case OverlayHelper.OVERLAY_NONE:
+                        overlayNoneItem.setChecked(true);
+                        break;
+                    case OverlayHelper.OVERLAY_HIKING:
+                        overlayHikingItem.setChecked(true);
+                        break;
+                    case OverlayHelper.OVERLAY_CYCLING:
+                        overlayCyclingItem.setChecked(true);
+                        break;
+                }
+
+                popup.setOnMenuItemClickListener(MapFragment.this);
+                popup.show();
+                return true;
+            } else {
+                return false;
+            }
         }
         return super.onOptionsItemSelected(item);
     }
@@ -701,22 +710,17 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     public boolean onMenuItemClick(MenuItem menuItem) {
         if (!menuItem.isChecked()) {
             menuItem.setChecked(true);
-            switch (menuItem.getItemId()) {
-                case R.id.otm:
-                    mBaseMap = BASE_MAP_OTM;
-                    break;
-                case R.id.osm:
-                    mBaseMap = BASE_MAP_OSM;
-                    break;
-                case R.id.none:
-                    mOverlay = OverlayHelper.OVERLAY_NONE;
-                    break;
-                case R.id.lonvia_hiking:
-                    mOverlay = OverlayHelper.OVERLAY_HIKING;
-                    break;
-                case R.id.lonvia_cycling:
-                    mOverlay = OverlayHelper.OVERLAY_CYCLING;
-                    break;
+            int itemId = menuItem.getItemId();
+            if (itemId == R.id.otm) {
+                mBaseMap = BASE_MAP_OTM;
+            } else if (itemId == R.id.osm) {
+                mBaseMap = BASE_MAP_OSM;
+            } else if (itemId == R.id.none) {
+                mOverlay = OverlayHelper.OVERLAY_NONE;
+            } else if (itemId == R.id.lonvia_hiking) {
+                mOverlay = OverlayHelper.OVERLAY_HIKING;
+            } else if (itemId == R.id.lonvia_cycling) {
+                mOverlay = OverlayHelper.OVERLAY_CYCLING;
             }
             mPrefs.edit().putInt(PREF_BASE_MAP, mBaseMap).apply();
             mPrefs.edit().putInt(PREF_OVERLAY, mOverlay).apply();
@@ -728,6 +732,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     @Override
     public void onLocationChanged(Location location) {
+        if (BuildConfig.DEBUG && location != null) Log.d(TAG, String.format("Location: %f, %f", location.getLatitude(), location.getLongitude()));
         mLocationViewModel.getCurrentLocation().setValue(location);
     }
 
