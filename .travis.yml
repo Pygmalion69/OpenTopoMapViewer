@@ -6,12 +6,17 @@ android:
   - tools
   - platform-tools
   - build-tools-30.0.2
+  - extra-android-m2repository
 jdk:
   - oraclejdk11
 before_install:
+  - touch $HOME/.android/repositories.cfg
+  - wget "https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip" -O commandlinetools.zip
+  - unzip commandlinetools.zip -d $ANDROID_HOME/
+  - yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager "platforms;android-${TARGET_VERSION}" --sdk_root=$ANDROID_HOME
+  - yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" --sdk_root=$ANDROID_HOME
   - openssl aes-256-cbc -K $encrypted_185e3830080a_key -iv $encrypted_185e3830080a_iv -in keystore.enc -out ./keystore -d
   - chmod +x gradlew
-  - yes | sdkmanager "platforms;android-30"
 install:
   - true
 script:
