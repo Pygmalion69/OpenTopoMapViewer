@@ -8,7 +8,7 @@ android:
   - build-tools-26.0.2
   - android-26
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 before_install:
   - openssl aes-256-cbc -K $encrypted_185e3830080a_key -iv $encrypted_185e3830080a_iv -in keystore.enc -out ./keystore -d
   - chmod +x gradlew
