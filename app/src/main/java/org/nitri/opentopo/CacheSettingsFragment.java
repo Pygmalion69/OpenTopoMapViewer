@@ -100,14 +100,9 @@ public class CacheSettingsFragment extends DialogFragment {
      * Restart the rude way
      */
     private void restart() {
-        AlarmManager mgr = (AlarmManager) requireActivity().getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 1500,
-                PendingIntent.getActivity(requireActivity().getBaseContext(), 0,
-                        new Intent(requireActivity().getIntent()), requireActivity().getIntent().getFlags()));
-
-        new Handler(requireActivity().getMainLooper()).postDelayed(() -> android.os.Process.killProcess(android.os.Process.myPid()), 500);
-
         requireActivity().finish();
+        startActivity(requireActivity().getIntent());
+        requireActivity().overridePendingTransition(0, 0);
     }
 
     @Override
