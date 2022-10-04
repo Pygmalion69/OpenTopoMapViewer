@@ -5,24 +5,29 @@ android:
   - tools
   - tools
   - platform-tools
-  - build-tools-26.0.2
-  - android-26
+  - build-tools-30.0.2
+  - extra-android-m2repository
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 before_install:
+  - touch $HOME/.android/repositories.cfg
+  - wget "https://dl.google.com/android/repository/commandlinetools-linux-7302050_latest.zip" -O commandlinetools.zip
+  - unzip commandlinetools.zip -d $ANDROID_HOME/
+  - yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager "platforms;android-${TARGET_VERSION}" --sdk_root=$ANDROID_HOME
+  - yes | $ANDROID_HOME/cmdline-tools/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" --sdk_root=$ANDROID_HOME
   - openssl aes-256-cbc -K $encrypted_185e3830080a_key -iv $encrypted_185e3830080a_iv -in keystore.enc -out ./keystore -d
   - chmod +x gradlew
-  - yes | sdkmanager "platforms;android-28"
 install:
   - true
 script:
   - ./gradlew build
 before_deploy:
+  - touch $HOME/.android/repositories.cfg
   - cp $TRAVIS_BUILD_DIR/keystore $HOME
   - cd app/build/outputs/apk/release/
   - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/keystore -storepass $storepass -keypass $keypass app-release-unsigned.apk prisoner
   - jarsigner -verify app-release-unsigned.apk
-  - "${ANDROID_HOME}/build-tools/26.0.2/zipalign -v 4 app-release-unsigned.apk OpenTopoMapViewer.apk"
+  - "${ANDROID_HOME}/build-tools/30.0.2/zipalign -v 4 app-release-unsigned.apk OpenTopoMapViewer.apk"
 deploy:
   provider: releases
   api_key: "${api_key}"
@@ -33,5 +38,8 @@ deploy:
     tags: true
 env:
   global:
+  - TARGET_VERSION=30
+  - ANDROID_BUILD_TOOLS_VERSION=30.0.2
+  - ANDROID_HOME=~/android-sdk
   - secure: O7mugbQQs8MLONAv/pH5Gm7hIocK6f+S5p7FR15jXHpZFJ+C2jzbE2MbCOz/WPkehFfwI9ghRx8FcyMmkgOzmX5LF2cNi9+5XH2Ev/ItN9qpfcSFLyMJnRkMutF67ZkNsQRCvtwBezW20AFMDxS+9ZifB2kiCbQ+TwQl8IEcU4e7Q0TPGj91MfpzzJsLxW34A8Ol0oRDRukEmnBh7NAN0I08LVuDd5X1EpdN54mka79d2ADfXQLSjEjACunVjagM7u/p0BMYt8o/gJJlo917s9Xm+c4lINJ0xz4voOQ8snqgfFJRh272QjOQriyRqFHngXTqoA4HZpiNXclkQTn81QzdW2M+kH3liVXXC99v1zhjW9+r3QcNWhFGUNaLgQkWFdA31Br8V2rTAA7ZFrlvifnVGiogz0llp5d96WF5Z3rIUEwuyPH5qPhhWaJOSuNKiaugF/kB3B7fgx668MvtJNQncHIOxq7/Bjb1egCsxur3LrnoFGJXVUGCFs7xZ03S3pmvSRTv4RZbSVDQNw6dDzcLHz/dXRziR6+83kESvwgpZ1xqc0uczjDKvqLgyrvxxQJSk/q2LYBeo9aeej14E0F3bOozJxKlSa8SSWajzzp4MD3GjcgejVFzWZwAErOeZw9CazMTA+7xryZaxgmmCT514tIq8VlIgLon+3XxvSk=
   - secure: PQpq6YY2wF20LqszaJc4Tkx7jLMugu5YZqCMbnBHSl2rHIphrG6Q0jMhHmAwoIIep6ItcRUpyOAoqie6sPZvjIt5FJDh8rUqKc3Ki6nWitmPrXCWn4MzO1cZKHsWIED+ExxLBvMmnFyNHCyql5WaxvB7A4GpwPQXqEDhMWT0BLwohxf+aa34wtPvyFC6oXtNqydzM5S7irwvVEUCq60CW1oTeWTt9EOTiOeGPtPDdXCJ+hBBRP5tRMcLMckLRv8o7D5neDF+ipuFcdFp20zVzkPDjqxvm6X2wOdADyQuT3AsDaH8E763FxnsjcxqPW8XVUPpJNP/+fd9U7C4ipLhJuQjNFPNxttcDgEFsVPuDO80Mj1ZfBm9fxACo+DjWx2eGHy/8+V2fbe3B2sl2+aSXbivZ3w/hRHpi924dO13J9YFCX3AZkSVzMPH1yY6hkrE0UrWRPVlkjX3zplmKcbm4Vrfd4V0gZKtG8nu4ZnkoAUHKKitHkUoDv19tr803PsA2MDmdLYtezf9bvBy1DOrjEA5TvnvXLZW7GfJy+eWfYaJGYgcuivjnf42YZ+On2MOFnyd8IEhRCZRse8s5x/IE99rjOmcsU8IrlWrOii8X6zpWLorMfBPfpakclHUVt2uDCix/9FYApN7Gm+7QyY/hg2P2X8de5B/FcfAuoCNEug=
