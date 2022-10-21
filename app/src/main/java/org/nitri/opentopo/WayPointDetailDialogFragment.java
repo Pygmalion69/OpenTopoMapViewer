@@ -24,7 +24,7 @@ public class WayPointDetailDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         if (requireActivity().getSupportFragmentManager() != null)
-        mCallback = (Callback) requireActivity().getSupportFragmentManager().findFragmentByTag(MainActivity.GPX_DETAIL_FRAGMENT_TAG);
+            mCallback = (Callback) requireActivity().getSupportFragmentManager().findFragmentByTag(MainActivity.GPX_DETAIL_FRAGMENT_TAG);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
