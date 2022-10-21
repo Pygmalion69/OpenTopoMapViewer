@@ -265,7 +265,7 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
         ArrayList<Entry> elevationValues = new ArrayList<>();
         for (DistancePoint point : mTrackDistanceLine) {
             if (point.getElevation() != null)
-            elevationValues.add(new Entry(point.getDistance().floatValue(), point.getElevation().floatValue()));
+                elevationValues.add(new Entry(point.getDistance().floatValue(), point.getElevation().floatValue()));
         }
         LineDataSet elevationDataSet = new LineDataSet(elevationValues, getString(R.string.elevation));
         elevationDataSet.setDrawValues(false);
