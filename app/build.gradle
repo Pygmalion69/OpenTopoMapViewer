@@ -22,7 +22,9 @@ android {
         targetCompatibility = '1.8'
     }
     lintOptions {
+        abortOnError false
         disable 'ExpiredTargetSdkVersion'
+        disable 'ExpiringTargetSdkVersion'
     }
     namespace 'org.nitri.opentopo'
     configurations.all {
