@@ -15,9 +15,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
-import net.danlew.android.joda.JodaTimeAndroid;
-
+import org.nitri.opentopo.model.GpxViewModel;
 import org.nitri.opentopo.nearby.NearbyFragment;
 import org.nitri.opentopo.nearby.entity.NearbyItem;
 import org.osmdroid.util.GeoPoint;
@@ -49,10 +49,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private GeoPointDto mGeoPointFromIntent;
     private String mGpxUriString;
     private Uri mGpxUri;
-    private Gpx mGpx;
     private boolean mZoomToGpx;
     private NearbyItem mSelectedNearbyPlace;
     private Fragment mMapFragment;
+    private GpxViewModel mGpxViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,13 +62,13 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             mGpxUriString = savedInstanceState.getString(GPX_URI_STATE);
         }
 
+        mGpxViewModel = new ViewModelProvider(this).get(GpxViewModel.class);
+
         Intent intent = getIntent();
 
         if (intent != null && intent.getData() != null) {
             handleIntent(intent);
         }
-
-        //JodaTimeAndroid.init(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
@@ -220,10 +220,10 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
             try {
                 InputStream inputStream = contentResolver.openInputStream(uri);
                 if (inputStream != null) {
-                    mGpx = parser.parse(inputStream);
+                    mGpxViewModel.gpx = parser.parse(inputStream);
                     MapFragment mapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
-                    if (mapFragment != null && mGpx != null) {
-                        mapFragment.setGpx(mGpx, mZoomToGpx);
+                    if (mapFragment != null && mGpxViewModel.gpx != null) {
+                        mapFragment.setGpx(mGpxViewModel.gpx, mZoomToGpx);
                         mGpxUriString = uri.toString();
                         mZoomToGpx = false;
                     }
@@ -250,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     @Override
     public Gpx getGpx() {
-        return mGpx;
+        return mGpxViewModel.gpx;
     }
 
     @Override

@@ -16,15 +16,12 @@ public class NearbyViewModel extends ViewModel {
 
     private NearbyRepository mRepository;
 
-    private LiveData<List<NearbyItem>> mItems;
-
     public void setRepository(NearbyRepository repository) {
         mRepository = repository;
     }
 
     public LiveData<List<NearbyItem>> getItems() {
-        mItems = mRepository.loadNearbyItems();
-        return mItems;
+        return mRepository.loadNearbyItems();
     }
 
 }

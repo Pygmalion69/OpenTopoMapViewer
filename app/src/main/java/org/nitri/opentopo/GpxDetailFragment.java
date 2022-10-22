@@ -9,6 +9,10 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
@@ -31,6 +35,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 
 import org.nitri.opentopo.adapter.WayPointListAdapter;
 import org.nitri.opentopo.domain.DistancePoint;
+import org.nitri.opentopo.model.GpxViewModel;
 import org.nitri.opentopo.model.WayPointHeaderItem;
 import org.nitri.opentopo.model.WayPointItem;
 import org.nitri.opentopo.model.WayPointListItem;
@@ -49,7 +54,6 @@ import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 public class GpxDetailFragment extends Fragment implements WayPointListAdapter.OnItemClickListener, WayPointDetailDialogFragment.Callback {
 
     private OnFragmentInteractionListener mListener;
-    private Gpx mGpx;
     private List<DistancePoint> mTrackDistanceLine;
     private double mDistance;
     private boolean mElevation;
@@ -66,6 +70,8 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
     private WayPointListAdapter mWayPointListAdapter;
     private WebView wvDescription;
     private int mSelectedIndex;
+    private GpxViewModel mGpxViewModel;
+    private ConstraintLayout chartContainer;
 
 
     public GpxDetailFragment() {
@@ -74,25 +80,13 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
 
 
     public static GpxDetailFragment newInstance() {
-        GpxDetailFragment fragment = new GpxDetailFragment();
-        return fragment;
+        return new GpxDetailFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        setRetainInstance(true);
-        mGpx = mListener.getGpx();
-        if (mGpx != null && mGpx.getTracks() != null) {
-            for (Track track : mGpx.getTracks()) {
-                buildTrackDistanceLine(track);
-            }
-            if (getActivity() != null) {
-                mTfRegular = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
-                mTfLight = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf");
-            }
-        }
         mWayPointListAdapter = new WayPointListAdapter(mWayPointListItems, this);
     }
 
@@ -105,7 +99,7 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
         wvDescription = rootView.findViewById(R.id.wvDescription);
         wvDescription.setBackgroundColor(Color.TRANSPARENT);
         tvLength = rootView.findViewById(R.id.tvLength);
-        ConstraintLayout chartContainer = rootView.findViewById(R.id.chartContainer);
+        chartContainer = rootView.findViewById(R.id.chartContainer);
         mElevationChart = rootView.findViewById(R.id.elevationChart);
         RecyclerView wayPointRecyclerView = rootView.findViewById(R.id.way_point_recycler_view);
         wayPointRecyclerView.setNestedScrollingEnabled(false);
@@ -113,12 +107,6 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
         wayPointRecyclerView.setAdapter(mWayPointListAdapter);
 
 
-        if (mElevation) {
-            setUpElevationChart();
-            setChartData();
-        } else {
-            chartContainer.setVisibility(View.GONE);
-        }
         return rootView;
     }
 
@@ -126,14 +114,26 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mGpxViewModel = new ViewModelProvider(requireActivity()).get(GpxViewModel.class);
+
+        if (mGpxViewModel.gpx != null && mGpxViewModel.gpx.getTracks() != null) {
+            for (Track track : mGpxViewModel.gpx.getTracks()) {
+                buildTrackDistanceLine(track);
+            }
+           /* if (getActivity() != null) {
+                mTfRegular = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
+                mTfLight = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf");
+            }*/
+        }
+
         // For now, use title and description of first track
-        if (mGpx != null && mGpx.getTracks() != null && mGpx.getTracks().get(0) != null) {
-            if (TextUtils.isEmpty(mGpx.getTracks().get(0).getTrackName())) {
+        if (mGpxViewModel.gpx != null && mGpxViewModel.gpx.getTracks() != null && mGpxViewModel.gpx.getTracks().get(0) != null) {
+            if (TextUtils.isEmpty(mGpxViewModel.gpx.getTracks().get(0).getTrackName())) {
                 tvName.setVisibility(View.GONE);
             } else {
-                tvName.setText(mGpx.getTracks().get(0).getTrackName());
+                tvName.setText(mGpxViewModel.gpx.getTracks().get(0).getTrackName());
             }
-            String description = mGpx.getTracks().get(0).getTrackDesc();
+            String description = mGpxViewModel.gpx.getTracks().get(0).getTrackDesc();
             if (TextUtils.isEmpty(description)) {
                 tvDescription.setVisibility(View.GONE);
                 wvDescription.setVisibility(View.GONE);
@@ -151,13 +151,20 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
             }
         }
 
+        if (mElevation) {
+            setUpElevationChart();
+            setChartData();
+        } else {
+            chartContainer.setVisibility(View.GONE);
+        }
+
         if (mDistance > 0) {
             tvLength.setText(String.format(Locale.getDefault(), "%.2f km", mDistance / 1000f));
         } else {
             tvLength.setVisibility(View.GONE);
         }
 
-        if (mGpx != null && mGpx.getWayPoints() != null) {
+        if (mGpxViewModel.gpx != null && mGpxViewModel.gpx.getWayPoints() != null) {
             buildWayPointList();
             mWayPointListAdapter.notifyDataSetChanged();
         }
@@ -201,10 +208,10 @@ public class GpxDetailFragment extends Fragment implements WayPointListAdapter.O
         String defaultType = getString(R.string.poi);
         List<WayPoint> wayPoints;
         mWayPointListItems.clear();
-        for (String type : Util.getWayPointTypes(mGpx, defaultType)) {
-            wayPoints = Util.getWayPointsByType(mGpx, type);
+        for (String type : Util.getWayPointTypes(mGpxViewModel.gpx, defaultType)) {
+            wayPoints = Util.getWayPointsByType(mGpxViewModel.gpx, type);
             if (type.equals(defaultType))
-                wayPoints.addAll(Util.getWayPointsByType(mGpx, null));
+                wayPoints.addAll(Util.getWayPointsByType(mGpxViewModel.gpx, null));
             if (wayPoints.size() > 0) {
                 mWayPointListItems.add(new WayPointHeaderItem(type));
                 for (WayPoint wayPoint : wayPoints) {
