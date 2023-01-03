@@ -8,8 +8,8 @@ Note for v1.12.1: external storage has been restricted in this release.
 
 - Follow location
 - Import GPX
-- Lonvia hiking routes
-- Lonvia cycling routes
+- [Waymarked Trails hiking routes](https://hiking.waymarkedtrails.org/)
+- [Waymarked Trails cycling routes](https://cycling.waymarkedtrails.org/)
 
 ![Wageningen](screen_wag.png "Wageningen") ![WUR](screen_wur.png "WUR")
 
