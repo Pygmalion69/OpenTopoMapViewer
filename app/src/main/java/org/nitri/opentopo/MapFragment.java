@@ -45,6 +45,7 @@ import org.nitri.opentopo.overlay.OverlayHelper;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.config.IConfigurationProvider;
 import org.osmdroid.events.DelayedMapListener;
+import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
@@ -53,6 +54,7 @@ import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
@@ -89,7 +91,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private final MapListener mDragListener = new MapListener() {
         @Override
         public boolean onScroll(ScrollEvent event) {
-            if (mFollow && mMapHandler != null && mCenterRunnable != null) {
+            if (mFollow && mMapHandler != null) {
                 mMapHandler.removeCallbacks(mCenterRunnable);
                 mMapHandler.postDelayed(mCenterRunnable, 6000);
             }
@@ -203,40 +205,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(STATE_LONGITUDE)) {
-                mMapCenterState = new GeoPoint(savedInstanceState.getDouble(STATE_LATITUDE, 0),
-                        savedInstanceState.getDouble(STATE_LONGITUDE, 0));
-                Log.d(TAG, String.format("Restoring center state: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
-                mZoomState = savedInstanceState.getDouble(STATE_ZOOM, DEFAULT_ZOOM);
-            } else {
-                Log.d(TAG, "No center state delivered");
-            }
-        }
-        if (mMapCenterState == null) {
-            Log.d(TAG, "No saved center state");
-            float prefLat = mPrefs.getFloat(PREF_LATITUDE, 0f);
-            float prefLon = mPrefs.getFloat(PREF_LONGITUDE, 0f);
-            mMapCenterState = new GeoPoint(prefLat, prefLon);
-            Log.d(TAG, String.format("Restoring center state from prefs: %f, %f", prefLat, prefLon));
-        }
-
-        if (mMapCenterState != null) {
-            mMapView.getController().setCenter(mMapCenterState);
-        } else if (mLocationViewModel.getCurrentLocation() != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
-            mMapView.getController().setCenter(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue().getLatitude(),
-                    mLocationViewModel.getCurrentLocation().getValue().getLongitude()));
-        }
-
-        mMapView.getController().setZoom(mZoomState);
-
-        if (mPrefs.getBoolean(PREF_FOLLOW, false))
-            enableFollow();
-    }
-
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
@@ -276,7 +244,11 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
             mMapView.setMaxZoomLevel(17d);
             mMapView.setTilesScaledToDpi(true);
-            mMapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
+            if (mListener != null && mListener.isFullscreen()) {
+                showZoomControls(false);
+            } else {
+                showZoomControls(true);
+            }
             mMapView.setMultiTouchControls(true);
             mMapView.setFlingEnabled(true);
             mMapView.getOverlays().add(this.mLocationOverlay);
@@ -328,6 +300,54 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         } else {
             mLocationViewModel.getCurrentLocation().setValue(mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER));
         }
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(STATE_LONGITUDE)) {
+                mMapCenterState = new GeoPoint(savedInstanceState.getDouble(STATE_LATITUDE, 0),
+                        savedInstanceState.getDouble(STATE_LONGITUDE, 0));
+                Log.d(TAG, String.format("Restoring center state: %f, %f", mMapCenterState.getLatitude(), mMapCenterState.getLongitude()));
+                mZoomState = savedInstanceState.getDouble(STATE_ZOOM, DEFAULT_ZOOM);
+            } else {
+                Log.d(TAG, "No center state delivered");
+            }
+        }
+        if (mMapCenterState == null) {
+            Log.d(TAG, "No saved center state");
+            float prefLat = mPrefs.getFloat(PREF_LATITUDE, 0f);
+            float prefLon = mPrefs.getFloat(PREF_LONGITUDE, 0f);
+            mMapCenterState = new GeoPoint(prefLat, prefLon);
+            Log.d(TAG, String.format("Restoring center state from prefs: %f, %f", prefLat, prefLon));
+        }
+
+        if (mMapCenterState != null) {
+            mMapView.getController().setCenter(mMapCenterState);
+        } else if (mLocationViewModel.getCurrentLocation() != null && mLocationViewModel.getCurrentLocation().getValue() != null) {
+            mMapView.getController().setCenter(new GeoPoint(mLocationViewModel.getCurrentLocation().getValue().getLatitude(),
+                    mLocationViewModel.getCurrentLocation().getValue().getLongitude()));
+        }
+
+        mMapView.getController().setZoom(mZoomState);
+
+        if (mPrefs.getBoolean(PREF_FOLLOW, false))
+            enableFollow();
+
+        mMapView.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
+            @Override
+            public boolean singleTapConfirmedHelper(GeoPoint p) {
+                if (mListener != null) {
+                    mListener.onMapTap();
+                }
+                return true;
+            }
+
+            @Override
+            public boolean longPressHelper(GeoPoint p) {
+                if (mListener != null) {
+                    mListener.onMapLongPress();
+                }
+                return false;
+            }
+        }));
     }
 
     private void animateToLatLon(double lat, double lon) {
@@ -555,6 +575,16 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         showNearbyPlace(nearbyPlace);
     }
 
+    void showZoomControls(boolean show) {
+        if (mMapView != null) {
+            if (show) {
+                mMapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
+            } else {
+                mMapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+            }
+        }
+    }
+
     private void showNearbyPlace(NearbyItem nearbyPlace) {
         mOverlayHelper.setNearby(nearbyPlace);
         if (nearbyPlace.getId() != mLastNearbyAnimateToId) {
@@ -569,6 +599,10 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         super.onCreateOptionsMenu(menu, inflater);
         mListener.setUpNavigation(false);
         inflater.inflate(R.menu.menu_main, menu);
+        MenuItem fullscreenItem = menu.findItem(R.id.action_fullscreen);
+        if (mListener != null) {
+            fullscreenItem.setChecked(mListener.isFullscreenOnMapTap());
+        }
     }
 
     @Override
@@ -695,6 +729,11 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 return true;
             } else {
                 return false;
+            }
+        } else if (itemId == R.id.action_fullscreen) {
+            if (mListener != null) {
+                item.setChecked(!item.isChecked());
+                mListener.setFullscreenOnMapTap(item.isChecked());
             }
         }
         return super.onOptionsItemSelected(item);
@@ -826,6 +865,27 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
          * Clear selected nearby place
          */
         void clearSelectedNearbyPlace();
+
+        /**
+         * Single tap map
+         */
+        void onMapTap();
+
+        /**
+         * Long press on map
+         */
+        void onMapLongPress();
+
+        /**
+         * Fullscreen on map tap
+         *
+         * @param fullscreenOnMapTap
+         */
+        void setFullscreenOnMapTap(boolean fullscreenOnMapTap);
+
+        boolean isFullscreenOnMapTap();
+
+        boolean isFullscreen();
     }
 
 }

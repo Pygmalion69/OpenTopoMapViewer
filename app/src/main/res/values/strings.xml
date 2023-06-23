@@ -31,6 +31,8 @@
     <string name="none">None</string>
     <string name="lonvia_copy">Wanderwege &#169; Lonvia</string>
 
+    <string name="fullscreen_on_map_tap">Fullscreen on tap</string>
+
     <string name="nearby">Nearby</string>
 
     <string name="cache_settings">Cache settings</string>

@@ -41,12 +41,21 @@
         android:title="@string/layers"
         android:visible="true"
         app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_fullscreen"
+        android:title="@string/fullscreen_on_map_tap"
+        android:checkable="true"
+        app:actionViewClass="android.widget.CheckBox"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_location_details"
         android:icon="@drawable/ic_action_location_detail"
         android:title="@string/location_details"
         android:visible="true"
         app:showAsAction="ifRoom"/>
+
     <item
         android:id="@+id/action_nearby"
         android:icon="@drawable/ic_action_nearby"

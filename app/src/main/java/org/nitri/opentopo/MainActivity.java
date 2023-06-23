@@ -3,18 +3,26 @@ package org.nitri.opentopo;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import androidx.preference.PreferenceManager;
+
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import org.nitri.opentopo.model.GpxViewModel;
@@ -41,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     protected static final String WAY_POINT_DETAIL_FRAGMENT_TAG = "way_point_detail_fragment";
     protected static final String NEARBY_FRAGMENT_TAG = "nearby_fragment";
 
+    private static final String PREF_FULLSCREEN = "fullscreen";
+    private static final String PREF_FULLSCREEN_ON_MAP_TAP = "fullscreen_on_map_tap";
+
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_STORAGE_PERMISSION = 2;
     private static final int READ_REQUEST_CODE = 69;
@@ -51,8 +62,14 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private Uri mGpxUri;
     private boolean mZoomToGpx;
     private NearbyItem mSelectedNearbyPlace;
-    private Fragment mMapFragment;
+    private MapFragment mMapFragment;
     private GpxViewModel mGpxViewModel;
+    boolean mFullscreen = false;
+    private WindowInsetsControllerCompat windowInsetsController;
+    private ActionBar actionBar;
+    private boolean mFullscreenOnMapTap;
+    private SharedPreferences mPrefs;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +78,12 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         if (savedInstanceState != null) {
             mGpxUriString = savedInstanceState.getString(GPX_URI_STATE);
         }
+
+        handler = new Handler(getMainLooper());
+
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        mFullscreenOnMapTap = mPrefs.getBoolean(PREF_FULLSCREEN_ON_MAP_TAP, false);
 
         mGpxViewModel = new ViewModelProvider(this).get(GpxViewModel.class);
 
@@ -77,8 +100,24 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         }
 
         if (savedInstanceState != null) {
-            mMapFragment = getSupportFragmentManager().getFragment(savedInstanceState, MAP_FRAGMENT_TAG);
+            mMapFragment = (MapFragment) getSupportFragmentManager().getFragment(savedInstanceState, MAP_FRAGMENT_TAG);
         }
+
+        windowInsetsController =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        windowInsetsController.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        );
+
+        actionBar = getSupportActionBar();
+
+        setFullscreen(mPrefs.getBoolean(PREF_FULLSCREEN, false));
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        //tapDetector.onTouchEvent(ev);
+        return super.dispatchTouchEvent(ev);
     }
 
     private void handleIntent(Intent intent) {
@@ -101,13 +140,48 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         }
     }
 
+    private void setFullscreen(boolean fullscreen) {
+        handler.removeCallbacksAndMessages(null);
+        if (windowInsetsController == null)
+            return;
+        if (fullscreen) {
+            windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
+            if (actionBar != null) {
+                actionBar.hide();
+            }
+            if (mMapFragment != null) {
+                handler.postDelayed( () ->
+                mMapFragment.showZoomControls(false), 3000);
+            }
+        } else {
+            windowInsetsController.show(WindowInsetsCompat.Type.systemBars());
+            if (actionBar != null) {
+                actionBar.show();
+            }
+            if (mMapFragment != null) {
+                mMapFragment.showZoomControls(true);
+            }
+        }
+        mFullscreen = fullscreen;
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean(PREF_FULLSCREEN, mFullscreen);
+        editor.apply();
+
+    }
+    private void toggleFullscreen() {
+        mFullscreen = !mFullscreen;
+        setFullscreen(mFullscreen);
+    }
+
 
     private void addMapFragment() {
         if (mapFragmentAdded()) {
             return;
         }
         if (mGeoPointFromIntent == null) {
-            mMapFragment = getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
+            mMapFragment = (MapFragment) getSupportFragmentManager().findFragmentByTag(MAP_FRAGMENT_TAG);
             if (mMapFragment == null) {
                 mMapFragment = MapFragment.newInstance();
             }
@@ -145,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    addMapFragment();
+                addMapFragment();
             } else {
                 finish();
             }
@@ -272,5 +346,32 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     @Override
     public void clearSelectedNearbyPlace() {
         mSelectedNearbyPlace = null;
+    }
+
+    @Override
+    public void onMapTap() {
+        if (mFullscreenOnMapTap) {
+            toggleFullscreen();
+        }
+    }
+
+    @Override
+    public void onMapLongPress() {
+
+    }
+
+    @Override
+    public void setFullscreenOnMapTap(boolean fullscreenOnMapTap) {
+        mFullscreenOnMapTap = fullscreenOnMapTap;
+        mPrefs.edit().putBoolean(PREF_FULLSCREEN_ON_MAP_TAP, fullscreenOnMapTap).apply();
+    }
+
+    public boolean isFullscreenOnMapTap() {
+        return mFullscreenOnMapTap;
+    }
+
+    @Override
+    public boolean isFullscreen() {
+        return mFullscreen;
     }
 }
