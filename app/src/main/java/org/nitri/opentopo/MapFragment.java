@@ -226,15 +226,14 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                         R.drawable.ic_map_location);
             }
             mLocationOverlay.setPersonIcon(bmMapLocation);
-            mLocationOverlay.setPersonAnchor(bmMapLocation.getWidth() / 2f, bmMapLocation.getHeight() / 2f);
+            mLocationOverlay.setPersonHotspot(bmMapLocation.getWidth() / 2f, bmMapLocation.getHeight() / 2f);
 
             Bitmap bmMapBearing = Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_direction, 204);
             if (bmMapBearing == null) {
                 bmMapBearing = BitmapFactory.decodeResource(getResources(),
                         R.drawable.ic_map_bearing);
             }
-            mLocationOverlay.setPersonIcon(bmMapLocation);
-            mLocationOverlay.setDirectionIcon(bmMapBearing);
+            mLocationOverlay.setDirectionArrow(bmMapLocation, bmMapBearing);
 
             mScaleBarOverlay = new ScaleBarOverlay(mMapView);
             mScaleBarOverlay.setCentred(true);
