@@ -20,6 +20,7 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
@@ -45,15 +46,15 @@ public class OverlayHelper {
     private MapTileProviderBasic mOverlayTileProvider;
     private TilesOverlay mTilesOverlay;
 
-    private ColorMatrix tileOverlayAlphaMatrix = new ColorMatrix(new float[]
+    private final ColorMatrix tileOverlayAlphaMatrix = new ColorMatrix(new float[]
                    {1, 0, 0, 0, 0,
                     0, 1, 0, 0, 0,
                     0, 0, 1, 0, 0,
                     0, 0, 0, 0.8f, 0}
     );
-    private ColorMatrixColorFilter tileOverlayAlphaFilter = new ColorMatrixColorFilter(tileOverlayAlphaMatrix);
+    private final ColorMatrixColorFilter tileOverlayAlphaFilter = new ColorMatrixColorFilter(tileOverlayAlphaMatrix);
 
-    private ItemizedIconOverlay.OnItemGestureListener<OverlayItem> mWayPointItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+    private final ItemizedIconOverlay.OnItemGestureListener<OverlayItem> mWayPointItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
 
         @Override
         public boolean onItemSingleTapUp(int index, OverlayItem item) {
@@ -69,7 +70,7 @@ public class OverlayHelper {
         }
     };
 
-    private ItemizedIconInfoOverlay.OnItemGestureListener<OverlayItem> mNearbyItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+    private final ItemizedIconInfoOverlay.OnItemGestureListener<OverlayItem> mNearbyItemGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
         @Override
         public boolean onItemSingleTapUp(int index, OverlayItem item) {
             if (mNearbyItemOverlay != null && mMapView != null) {
@@ -157,7 +158,7 @@ public class OverlayHelper {
         clearNearby();
         GeoPoint geoPoint = new GeoPoint(item.getLat(), item.getLon());
         OverlayItem mapItem = new OverlayItem(item.getTitle(), item.getDescription(), geoPoint);
-        mNearbyItemOverlay = new ItemizedIconInfoOverlay(new ArrayList<>(Arrays.asList(mapItem)), ContextCompat.getDrawable(mContext, R.drawable.ic_default_marker),
+        mNearbyItemOverlay = new ItemizedIconInfoOverlay(new ArrayList<>(Collections.singletonList(mapItem)), ContextCompat.getDrawable(mContext, R.drawable.ic_default_marker),
                 mNearbyItemGestureListener, mContext);
         mMapView.getOverlays().add(mNearbyItemOverlay);
         mMapView.invalidate();
@@ -211,7 +212,8 @@ public class OverlayHelper {
             mTilesOverlay = new TilesOverlay(mOverlayTileProvider, mContext);
             mTilesOverlay.setLoadingBackgroundColor(Color.TRANSPARENT);
             mTilesOverlay.setColorFilter(tileOverlayAlphaFilter);
-            mOverlayTileProvider.setTileRequestCompleteHandler(mMapView.getTileRequestCompleteHandler());
+            mOverlayTileProvider.getTileRequestCompleteHandlers().clear();
+            mOverlayTileProvider.getTileRequestCompleteHandlers().add(mMapView.getTileRequestCompleteHandler());
 
             mMapView.getOverlays().add(mTilesOverlay);
 

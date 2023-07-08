@@ -226,14 +226,15 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                         R.drawable.ic_map_location);
             }
             mLocationOverlay.setPersonIcon(bmMapLocation);
-            mLocationOverlay.setPersonHotspot(bmMapLocation.getWidth() / 2f, bmMapLocation.getHeight() / 2f);
+            mLocationOverlay.setPersonAnchor(bmMapLocation.getWidth() / 2f, bmMapLocation.getHeight() / 2f);
 
             Bitmap bmMapBearing = Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_direction, 204);
             if (bmMapBearing == null) {
                 bmMapBearing = BitmapFactory.decodeResource(getResources(),
                         R.drawable.ic_map_bearing);
             }
-            mLocationOverlay.setDirectionArrow(bmMapLocation, bmMapBearing);
+            mLocationOverlay.setPersonIcon(bmMapLocation);
+            mLocationOverlay.setDirectionIcon(bmMapBearing);
 
             mScaleBarOverlay = new ScaleBarOverlay(mMapView);
             mScaleBarOverlay.setCentred(true);
@@ -775,10 +776,6 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mLocationViewModel.getCurrentLocation().setValue(location);
     }
 
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
 
     @Override
     public void onProviderEnabled(String s) {

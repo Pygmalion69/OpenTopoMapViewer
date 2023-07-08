@@ -1,12 +1,18 @@
 package org.nitri.opentopo;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.preference.PreferenceManager;
 
 import android.os.Handler;
@@ -231,8 +237,27 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("*/*");
-        startActivityForResult(Intent.createChooser(intent, "GPX"), READ_REQUEST_CODE);
+        Intent activityIntent = Intent.createChooser(intent, "GPX");
+        activityResultLauncher.launch(activityIntent);
     }
+
+    ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        if (result.getData() != null) {
+                            mGpxUri = result.getData().getData();
+                            mZoomToGpx = true;
+                            if (mGpxUri != null) {
+                                Log.i(TAG, "Uri: " + mGpxUri.toString());
+                                parseGpx(mGpxUri);
+                            }
+                        }
+                    }
+                }
+            });
 
     @Override
     public void setGpx() {
