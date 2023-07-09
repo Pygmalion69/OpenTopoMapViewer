@@ -41,6 +41,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import org.nitri.opentopo.model.LocationViewModel;
 import org.nitri.opentopo.nearby.entity.NearbyItem;
+import org.nitri.opentopo.overlay.GestureOverlay;
 import org.nitri.opentopo.overlay.OverlayHelper;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.config.IConfigurationProvider;
@@ -67,7 +68,8 @@ import java.io.File;
 import io.ticofab.androidgpxparser.parser.domain.Gpx;
 
 
-public class MapFragment extends Fragment implements LocationListener, PopupMenu.OnMenuItemClickListener {
+public class MapFragment extends Fragment implements LocationListener, PopupMenu.OnMenuItemClickListener,
+        GestureOverlay.GestureCallback {
 
     private MapView mMapView;
     private MyLocationNewOverlay mLocationOverlay;
@@ -88,18 +90,27 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         }
     };
 
+    private final Runnable mEnableFollowRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            if (mLocationOverlay != null) {
+                mLocationOverlay.enableFollowLocation();
+                mLocationOverlay.setEnableAutoStop(true);
+            }
+            mMapHandler.postDelayed(this, 5000);
+        }
+    };
+
     private final MapListener mDragListener = new MapListener() {
         @Override
         public boolean onScroll(ScrollEvent event) {
-            if (mFollow && mMapHandler != null) {
-                mMapHandler.removeCallbacks(mCenterRunnable);
-                mMapHandler.postDelayed(mCenterRunnable, 6000);
-            }
-            return true;
+            return false;
         }
 
         @Override
         public boolean onZoom(ZoomEvent event) {
+            onUserMapInteraction();
             return false;
         }
     };
@@ -140,6 +151,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
     private int mLastNearbyAnimateToId;
 
     private LocationViewModel mLocationViewModel;
+    private GestureOverlay mGestureOverlay;
 
     public MapFragment() {
     }
@@ -242,6 +254,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mRotationGestureOverlay = new RotationGestureOverlay(mMapView);
             mRotationGestureOverlay.setEnabled(true);
 
+            mGestureOverlay = new GestureOverlay(this);
+            mMapView.getOverlays().add(mGestureOverlay);
+
             mMapView.setMaxZoomLevel(17d);
             mMapView.setTilesScaledToDpi(true);
             if (mListener != null && mListener.isFullscreen()) {
@@ -269,6 +284,21 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             mOverlayHelper = new OverlayHelper(getActivity(), mMapView);
 
             setTilesOverlay();
+
+            mLocationOverlay.runOnFirstFix(new Runnable() {
+                @Override
+                public void run() {
+                    final GeoPoint location = mLocationOverlay.getMyLocation();
+                    if (location != null) {
+                        try {
+                            requireActivity().runOnUiThread(() -> mMapView.getController().animateTo(location));
+                        } catch (IllegalStateException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    ;
+                }
+            });
         }
 
         return view;
@@ -424,8 +454,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         if (getActivity() != null)
             ((AppCompatActivity) getActivity()).supportInvalidateOptionsMenu();
         mLocationOverlay.enableFollowLocation();
+        mLocationOverlay.setEnableAutoStop(true);
         mMapHandler.removeCallbacks(mCenterRunnable);
-        mMapHandler.post(mCenterRunnable);
+        //mMapHandler.post(mCenterRunnable);
         mPrefs.edit().putBoolean(PREF_FOLLOW, true).apply();
     }
 
@@ -434,7 +465,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         if (getActivity() != null)
             ((AppCompatActivity) getActivity()).supportInvalidateOptionsMenu();
         mLocationOverlay.disableFollowLocation();
-        mMapHandler.removeCallbacks(mCenterRunnable);
+        mMapHandler.removeCallbacksAndMessages(null);
         mPrefs.edit().putBoolean(PREF_FOLLOW, false).apply();
     }
 
@@ -771,7 +802,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
     @Override
     public void onLocationChanged(Location location) {
-        if (BuildConfig.DEBUG && location != null) Log.d(TAG, String.format("Location: %f, %f", location.getLatitude(), location.getLongitude()));
+        if (BuildConfig.DEBUG && location != null)
+            Log.d(TAG, String.format("Location: %f, %f", location.getLatitude(), location.getLongitude()));
         mLocationViewModel.getCurrentLocation().setValue(location);
     }
 
@@ -811,9 +843,19 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mCompassOverlay = null;
         mScaleBarOverlay = null;
         mRotationGestureOverlay = null;
+        mGestureOverlay = null;
         if (mOverlayHelper != null)
             mOverlayHelper.destroy();
         mMapView = null;
+    }
+
+    @Override
+    public void onUserMapInteraction() {
+        if (mFollow) {
+            // follow disabled by gesture -> re-enable with delay
+            mMapHandler.removeCallbacksAndMessages(null);
+            mMapHandler.postDelayed(mEnableFollowRunnable, 5000);
+        }
     }
 
     public interface OnFragmentInteractionListener {

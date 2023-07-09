@@ -22,10 +22,9 @@ import io.ticofab.androidgpxparser.parser.domain.TrackSegment;
 
 public class TrackOverlay extends Overlay {
 
-    private Track mTrack;
-    private Context mContext;
-
-    private List<List<Point>> mPointsSegments = new ArrayList<>();
+    private final Track mTrack;
+    private final Context mContext;
+    private final List<List<Point>> mPointsSegments = new ArrayList<>();
 
     private static final String TAG = TrackOverlay.class.getSimpleName();
 

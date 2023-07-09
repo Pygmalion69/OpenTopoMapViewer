@@ -1,7 +1,6 @@
 package org.nitri.opentopo.overlay;
 
 import android.annotation.SuppressLint;
-import android.text.Html;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
@@ -21,9 +20,9 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 public class WayPointInfoWindow extends BasicInfoWindow {
 
     private final String mSubDescription;
-    private int mTitleId;
-    private int mDescriptionId;
-    private int mSubDescriptionId;
+    private final int mTitleId;
+    private final int mDescriptionId;
+    private final int mSubDescriptionId;
 
     public WayPointInfoWindow(int layoutResId, int titleId, int descriptionId, int subDescriptionId,
                               String subDescription, MapView mapView) {

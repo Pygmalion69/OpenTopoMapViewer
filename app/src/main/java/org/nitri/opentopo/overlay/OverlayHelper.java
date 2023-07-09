@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+
 import androidx.core.content.ContextCompat;
 
 import org.nitri.opentopo.R;
@@ -19,7 +20,6 @@ import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,8 +29,8 @@ import io.ticofab.androidgpxparser.parser.domain.WayPoint;
 
 public class OverlayHelper {
 
-    private Context mContext;
-    private MapView mMapView;
+    private final Context mContext;
+    private final MapView mMapView;
 
     private ItemizedIconInfoOverlay mWayPointOverlay;
     private ItemizedIconInfoOverlay mNearbyItemOverlay;
@@ -152,7 +152,6 @@ public class OverlayHelper {
             }
         }
     }
-
 
     public void setNearby(NearbyItem item) {
         clearNearby();

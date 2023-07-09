@@ -6,8 +6,8 @@ android {
         applicationId "org.nitri.opentopo"
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 37
-        versionName "1.13.2"
+        versionCode 38
+        versionName "1.13.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
