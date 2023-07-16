@@ -50,6 +50,13 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_keep_screen_on"
+        android:title="@string/keep_screen_on"
+        android:checkable="true"
+        app:actionViewClass="android.widget.CheckBox"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_location_details"
         android:icon="@drawable/ic_action_location_detail"
         android:title="@string/location_details"

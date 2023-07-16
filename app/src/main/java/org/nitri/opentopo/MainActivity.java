@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
 
     private static final String PREF_FULLSCREEN = "fullscreen";
     private static final String PREF_FULLSCREEN_ON_MAP_TAP = "fullscreen_on_map_tap";
+    private static final String PREF_KEEP_SCREEN_ON = "keep_screen_on";
 
     private static final int REQUEST_LOCATION_PERMISSION = 1;
     private static final int REQUEST_STORAGE_PERMISSION = 2;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     private WindowInsetsControllerCompat windowInsetsController;
     private ActionBar actionBar;
     private boolean mFullscreenOnMapTap;
+    private boolean mKeepScreenOn;
     private SharedPreferences mPrefs;
     private Handler handler;
 
@@ -88,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
         handler = new Handler(getMainLooper());
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
         mFullscreenOnMapTap = mPrefs.getBoolean(PREF_FULLSCREEN_ON_MAP_TAP, false);
+        mKeepScreenOn = mPrefs.getBoolean(PREF_KEEP_SCREEN_ON, false);
 
         mGpxViewModel = new ViewModelProvider(this).get(GpxViewModel.class);
 
@@ -398,5 +400,16 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
     @Override
     public boolean isFullscreen() {
         return mFullscreen;
+    }
+
+    @Override
+    public void setKeepScreenOn(boolean keepScreenOn) {
+        mKeepScreenOn = keepScreenOn;
+        mPrefs.edit().putBoolean(PREF_KEEP_SCREEN_ON, keepScreenOn).apply();
+    }
+
+    @Override
+    public boolean isKeepScreenOn() {
+        return mKeepScreenOn;
     }
 }

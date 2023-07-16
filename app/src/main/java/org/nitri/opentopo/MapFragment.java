@@ -259,11 +259,7 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
 
             mMapView.setMaxZoomLevel(17d);
             mMapView.setTilesScaledToDpi(true);
-            if (mListener != null && mListener.isFullscreen()) {
-                showZoomControls(false);
-            } else {
-                showZoomControls(true);
-            }
+            showZoomControls(mListener == null || !mListener.isFullscreen());
             mMapView.setMultiTouchControls(true);
             mMapView.setFlingEnabled(true);
             mMapView.getOverlays().add(this.mLocationOverlay);
@@ -378,6 +374,8 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
                 return false;
             }
         }));
+
+        mMapView.setKeepScreenOn(mListener.isKeepScreenOn());
     }
 
     private void animateToLatLon(double lat, double lon) {
@@ -631,8 +629,10 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         mListener.setUpNavigation(false);
         inflater.inflate(R.menu.menu_main, menu);
         MenuItem fullscreenItem = menu.findItem(R.id.action_fullscreen);
+        MenuItem keepScreenOnItem = menu.findItem(R.id.action_keep_screen_on);
         if (mListener != null) {
             fullscreenItem.setChecked(mListener.isFullscreenOnMapTap());
+            keepScreenOnItem.setChecked(mListener.isKeepScreenOn());
         }
     }
 
@@ -765,6 +765,12 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
             if (mListener != null) {
                 item.setChecked(!item.isChecked());
                 mListener.setFullscreenOnMapTap(item.isChecked());
+            }
+        } else if (itemId == R.id.action_keep_screen_on) {
+            if (mListener != null && mMapView != null) {
+                item.setChecked(!item.isChecked());
+                mListener.setKeepScreenOn(item.isChecked());
+                mMapView.setKeepScreenOn(item.isChecked());
             }
         }
         return super.onOptionsItemSelected(item);
@@ -924,6 +930,9 @@ public class MapFragment extends Fragment implements LocationListener, PopupMenu
         boolean isFullscreenOnMapTap();
 
         boolean isFullscreen();
+
+        void setKeepScreenOn(boolean keepScrenOn);
+        boolean isKeepScreenOn();
     }
 
 }
