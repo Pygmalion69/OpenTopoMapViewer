@@ -114,7 +114,7 @@ public class OverlayHelper {
         if (gpx.getTracks() != null) {
             for (Track track : gpx.getTracks()) {
                 mTrackOverlay = new TrackOverlay(mContext, track);
-                mMapView.getOverlays().add(mTrackOverlay);
+                mMapView.getOverlays().add(0, mTrackOverlay);
             }
         }
 
@@ -214,13 +214,8 @@ public class OverlayHelper {
             mOverlayTileProvider.getTileRequestCompleteHandlers().clear();
             mOverlayTileProvider.getTileRequestCompleteHandlers().add(mMapView.getTileRequestCompleteHandler());
 
-            mMapView.getOverlays().add(mTilesOverlay);
+            mMapView.getOverlays().add(0, mTilesOverlay);
 
-            if (mTrackOverlay != null) {
-                // move track up
-                mMapView.getOverlays().remove(mTrackOverlay);
-                mMapView.getOverlays().add(mTrackOverlay);
-            }
         }
         mMapView.invalidate();
     }
