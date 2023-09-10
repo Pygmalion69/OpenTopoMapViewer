@@ -253,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.OnFra
                             mGpxUri = result.getData().getData();
                             mZoomToGpx = true;
                             if (mGpxUri != null) {
-                                Log.i(TAG, "Uri: " + mGpxUri.toString());
+                                Log.i(TAG, "Uri: " + mGpxUri);
                                 parseGpx(mGpxUri);
                             }
                         }
