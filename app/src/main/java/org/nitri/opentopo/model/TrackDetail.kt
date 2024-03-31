@@ -4,9 +4,11 @@ import org.nitri.opentopo.domain.DistancePoint
 import java.util.Collections
 
 class TrackDetail(val name: String, distancePoints: List<DistancePoint>?) {
-    val distancePoints: List<DistancePoint>
+    val distancePoints: List<DistancePoint> = TODO()
 
     init {
-        this.distancePoints = Collections.unmodifiableList(distancePoints)
+        if (distancePoints != null) {
+            this.distancePoints = distancePoints
+        }
     }
 }

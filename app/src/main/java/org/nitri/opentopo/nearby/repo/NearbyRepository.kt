@@ -3,7 +3,10 @@ package org.nitri.opentopo.nearby.repo
 import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.WorkerThread
-import androidx.lifecycle.LiveData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiApi
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiResponse
 import org.nitri.opentopo.nearby.da.NearbyDao
@@ -16,22 +19,26 @@ class NearbyRepository(
     private val mDao: NearbyDao?,
     private val mApi: MediaWikiApi?,
     private val mLatitude: Double,
-    private val mLongitude: Double
+    private val mLongitude: Double,
 ) {
     private val TAG = NearbyRepository::class.java.simpleName
-    fun loadNearbyItems(): LiveData<List<NearbyItem>> {
-        refresh()
+
+    private lateinit var viewModelScope: CoroutineScope
+
+    fun loadNearbyItems(viewModelScope: CoroutineScope): List<NearbyItem> {
+        refresh(viewModelScope)
         return mDao!!.loadAll()
     }
 
     @WorkerThread
-    private fun refresh() {
+    private fun refresh(viewModelScope: CoroutineScope) {
         if (mApi != null) {
             val call = mApi.getNearbyPages(
                 "query", "coordinates|pageimages|pageterms|info",
                 50, "thumbnail", 60, 50, "description", "geosearch",
                 "$mLatitude|$mLongitude", 10000, 50, "url", "json"
             )
+
             call?.enqueue(object : Callback<MediaWikiResponse?> {
                 override fun onResponse(
                     call: Call<MediaWikiResponse?>,
@@ -39,7 +46,11 @@ class NearbyRepository(
                 ) {
                     Log.d(TAG, response.toString())
                     if (response.body() != null) {
-                        insertNearby(response.body())
+                        viewModelScope.launch {
+                            withContext(Dispatchers.IO) {
+                                insertNearby(response.body())
+                            }
+                        }
                     }
                 }
 
@@ -47,42 +58,38 @@ class NearbyRepository(
                     Log.e(TAG, "refresh failed", t)
                 }
             })
+
         }
     }
 
     private fun insertNearby(mediaWikiResponse: MediaWikiResponse?) {
-        if (mediaWikiResponse == null || mDao == null || mediaWikiResponse.query == null || mediaWikiResponse.query!!.pages == null) {
-            return
-        }
-        val array = mediaWikiResponse.query?.pages?.size?.let { arrayOfNulls<NearbyItem>(it) }
-        var index = 0
-        for ((key, page) in mediaWikiResponse.query!!.pages!!) {
-            val item = NearbyItem()
-            item.pageid = key
-            item.index = page.index
-            item.title = page.title
-            item.url =
-                if (TextUtils.isEmpty(page.canonicalurl)) page.fullurl else page.canonicalurl
-            if (page.coordinates != null) {
-                item.lat = page.coordinates!![0].lat
-                item.lon = page.coordinates!![0].lon
+        mediaWikiResponse?.query?.pages?.let { pages ->
+            val items = pages.mapNotNull { (key, page) ->
+                NearbyItem().apply {
+                    pageid = key
+                    index = page.index
+                    title = page.title
+                    url =
+                        if (TextUtils.isEmpty(page.canonicalurl)) page.fullurl else page.canonicalurl
+                    page.coordinates?.firstOrNull()?.let { coords ->
+                        lat = coords.lat
+                        lon = coords.lon
+                    }
+                    description = page.terms?.description?.firstOrNull()
+                    page.thumbnail?.let { thumb ->
+                        thumbnail = thumb.source
+                        width = thumb.width
+                        height = thumb.height
+                    }
+                }
+            }.toTypedArray()
+
+
+            mDao?.let { dao ->
+                dao.delete()
+                dao.insertItems(*items)
             }
-            if (page.terms != null) {
-                item.description = page.terms!!.description?.get(0)
-            }
-            if (page.thumbnail != null) {
-                item.thumbnail = page.thumbnail!!.source
-                item.width = page.thumbnail!!.width
-                item.height = page.thumbnail!!.height
-            }
-            array?.set(index, item)
-            index++
-        }
-        Thread {
-            mDao.delete() // Fill with fresh nearby data
-            array?.let { items ->
-                mDao.insertItems(*items.filterNotNull().toTypedArray())
-            }
-        }.start()
+
+        } ?: return
     }
 }

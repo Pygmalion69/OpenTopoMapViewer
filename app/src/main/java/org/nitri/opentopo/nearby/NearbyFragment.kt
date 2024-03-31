@@ -1,5 +1,6 @@
 package org.nitri.opentopo.nearby
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -26,6 +27,7 @@ import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiApi
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.nearby.repo.NearbyRepository
 import org.nitri.opentopo.nearby.viewmodel.NearbyViewModel
+import org.nitri.opentopo.nearby.viewmodel.NearbyViewModelFactory
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -36,6 +38,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     private val gson = GsonBuilder().setLenient().create()
     private val mNearbyItems: MutableList<NearbyItem?> = ArrayList()
     private var mNearbyAdapter: NearbyAdapter? = null
+    @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -63,14 +66,12 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
             .build()
         mNearbyAdapter = NearbyAdapter(mNearbyItems, this)
         mNearbyAdapter!!.setHasStableIds(true)
-        val nearbyViewModel = ViewModelProvider(requireActivity()).get(
-            NearbyViewModel::class.java
-        )
         val api = retrofit.create(MediaWikiApi::class.java)
         val nearbyDatabase = getDatabase(requireActivity()) ?: return
         val dao = nearbyDatabase.nearbyDao()
         val nearbyRepository = NearbyRepository(dao, api, mLatitude, mLongitude)
-        nearbyViewModel.setRepository(nearbyRepository)
+        val factory = NearbyViewModelFactory(nearbyRepository)
+        val nearbyViewModel = ViewModelProvider(this, factory)[NearbyViewModel::class.java]
         val nearbyObserver = Observer { items: List<NearbyItem?>? ->
             mNearbyItems.clear()
             if (items != null) {
@@ -80,9 +81,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
                 mNearbyAdapter!!.notifyDataSetChanged()
             }
         }
-        if (nearbyViewModel.items != null) {
-            nearbyViewModel.items!!.observe(this, nearbyObserver)
-        }
+        nearbyViewModel.items.observe(this, nearbyObserver)
     }
 
     private fun setDistance() {

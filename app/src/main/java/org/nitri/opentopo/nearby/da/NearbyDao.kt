@@ -13,7 +13,7 @@ interface NearbyDao {
     fun insertItems(vararg nearbyItems: NearbyItem)
 
     @Query("SELECT * FROM Nearby")
-    fun loadAll(): LiveData<List<NearbyItem>>
+    fun loadAll(): List<NearbyItem>
 
     @Query("DELETE FROM Nearby")
     fun delete()
