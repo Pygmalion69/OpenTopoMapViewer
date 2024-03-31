@@ -2,6 +2,7 @@ package org.nitri.opentopo.nearby.api
 
 import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.Room.databaseBuilder
 import androidx.room.RoomDatabase
 import org.nitri.opentopo.nearby.da.NearbyDao
@@ -12,19 +13,22 @@ abstract class NearbyDatabase : RoomDatabase() {
     abstract fun nearbyDao(): NearbyDao?
 
     companion object {
+        @Volatile
         private var instance: NearbyDatabase? = null
-        @JvmStatic
-        @Synchronized
-        fun getDatabase(context: Context): NearbyDatabase? {
-            if (instance == null) {
-                instance = databaseBuilder(
-                    context.applicationContext,
-                    NearbyDatabase::class.java,
-                    "nearby-database"
-                )
-                    .build()
+
+        fun getDatabase(context: Context): NearbyDatabase {
+            return instance ?: synchronized(this) {
+                // Double-check in case 'instance' was initialized while this thread was blocked
+                instance ?: buildDatabase(context).also { instance = it }
             }
-            return instance
+        }
+
+        private fun buildDatabase(context: Context): NearbyDatabase {
+            return databaseBuilder(
+                context.applicationContext,
+                NearbyDatabase::class.java,
+                "nearby-database"
+            ).build()
         }
     }
 }

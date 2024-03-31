@@ -28,7 +28,6 @@ import org.nitri.opentopo.nearby.repo.NearbyRepository
 import org.nitri.opentopo.nearby.viewmodel.NearbyViewModel
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.Collections
 
 class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     private var mListener: OnFragmentInteractionListener? = null
