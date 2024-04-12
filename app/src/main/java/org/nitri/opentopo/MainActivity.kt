@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
@@ -248,7 +249,11 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            onBackPressed()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                onBackPressedDispatcher.onBackPressed()
+            } else {
+                onBackPressed()
+            }
         }
         return super.onOptionsItemSelected(item)
     }

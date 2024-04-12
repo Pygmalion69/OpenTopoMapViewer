@@ -35,6 +35,6 @@ class NearbyItem : Comparable<NearbyItem> {
     @Ignore
     var distance = 0
     override fun compareTo(other: NearbyItem): Int {
-        return Integer.compare(distance, other.distance)
+        return distance.compareTo(other.distance)
     }
 }

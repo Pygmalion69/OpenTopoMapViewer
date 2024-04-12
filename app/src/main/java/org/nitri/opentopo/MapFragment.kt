@@ -129,13 +129,11 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
         mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
         mLocationManager =
             requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        mLocationViewModel = ViewModelProvider(requireActivity()).get(
-            LocationViewModel::class.java
-        )
+        mLocationViewModel = ViewModelProvider(requireActivity())[LocationViewModel::class.java]
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val nmeaListener = OnNmeaMessageListener { s: String?, l: Long ->
+            val nmeaListener = OnNmeaMessageListener { s: String?, _: Long ->
                 if (mLocationViewModel != null) {
-                    mLocationViewModel!!.currentNmea.setValue(s)
+                    mLocationViewModel!!.currentNmea.value = s
                 }
             }
             if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -144,7 +142,7 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
         } else {
             val nmeaListener = NmeaListener { l: Long, s: String? ->
                 if (mLocationViewModel != null) {
-                    mLocationViewModel!!.currentNmea.setValue(s)
+                    mLocationViewModel!!.currentNmea.value = s
                 }
             }
             if (ActivityCompat.checkSelfPermission(
@@ -178,7 +176,7 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
                 Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_position, 204)
             mLocationOverlay!!.setPersonIcon(bmMapLocation)
             mLocationOverlay!!.setPersonHotspot(
-                bmMapLocation!!.width / 2f,
+                bmMapLocation.width / 2f,
                 bmMapLocation.height / 2f
             )
             val bmMapBearing =
@@ -228,18 +226,18 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mMapHandler = Handler(requireActivity().mainLooper)
-        mListener!!.setGpx()
+        mListener?.setGpx()
         val arguments = arguments
         // Move to received geo intent coordinates
-        if (arguments != null) {
-            if (arguments.containsKey(PARAM_LATITUDE) && arguments.containsKey(PARAM_LONGITUDE)) {
-                val lat = arguments.getDouble(PARAM_LATITUDE)
-                val lon = arguments.getDouble(PARAM_LONGITUDE)
+        arguments?.let {
+            if (it.containsKey(PARAM_LATITUDE) && it.containsKey(PARAM_LONGITUDE)) {
+                val lat = it.getDouble(PARAM_LATITUDE)
+                val lon = it.getDouble(PARAM_LONGITUDE)
                 animateToLatLon(lat, lon)
             }
         }
-        if (mListener!!.selectedNearbyPlace != null) {
-            showNearbyPlace(mListener!!.selectedNearbyPlace)
+        mListener?.selectedNearbyPlace?.let {
+            showNearbyPlace(it)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
@@ -255,14 +253,14 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
                 )
             )
         }
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(
+        savedInstanceState?.let {
+            if (it.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(
                     STATE_LONGITUDE
                 )
             ) {
                 mMapCenterState = GeoPoint(
-                    savedInstanceState.getDouble(STATE_LATITUDE, 0.0),
-                    savedInstanceState.getDouble(STATE_LONGITUDE, 0.0)
+                    it.getDouble(STATE_LATITUDE, 0.0),
+                    it.getDouble(STATE_LONGITUDE, 0.0)
                 )
                 Log.d(
                     TAG,
@@ -272,7 +270,7 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
                         mMapCenterState!!.longitude
                     )
                 )
-                mZoomState = savedInstanceState.getDouble(STATE_ZOOM, DEFAULT_ZOOM)
+                mZoomState = it.getDouble(STATE_ZOOM, DEFAULT_ZOOM)
             } else {
                 Log.d(TAG, "No center state delivered")
             }
@@ -284,15 +282,12 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
             mMapCenterState = GeoPoint(prefLat.toDouble(), prefLon.toDouble())
             Log.d(TAG, String.format("Restoring center state from prefs: %f, %f", prefLat, prefLon))
         }
-        if (mMapCenterState != null) {
-            mMapView.controller.setCenter(mMapCenterState)
-        } else if (mLocationViewModel!!.currentLocation != null && mLocationViewModel!!.currentLocation?.value != null) {
-            mMapView.controller.setCenter(
-                GeoPoint(
-                    mLocationViewModel!!.currentLocation?.value!!.latitude,
-                    mLocationViewModel!!.currentLocation?.value!!.longitude
-                )
-            )
+        mMapCenterState?.let {
+            mMapView.controller.setCenter(it)
+        } ?: run {
+            mLocationViewModel?.currentLocation?.value?.let { location ->
+                mMapView.controller.setCenter(GeoPoint(location.latitude, location.longitude))
+            }
         }
         mMapView.controller.setZoom(mZoomState)
         if (mPrefs.getBoolean(PREF_FOLLOW, false)) enableFollow()
@@ -350,29 +345,29 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
         }
         val copyRightNotice = copyrightStringBuilder.toString()
         if (!TextUtils.isEmpty(copyRightNotice)) {
-            mCopyRightView!!.text = copyRightNotice
-            mCopyRightView!!.visibility = View.VISIBLE
+            mCopyRightView?.text = copyRightNotice
+            mCopyRightView?.visibility = View.VISIBLE
         } else {
-            mCopyRightView!!.visibility = View.GONE
+            mCopyRightView?.visibility = View.GONE
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun initMap() {
         if (mFollow) {
-            mLocationOverlay!!.enableFollowLocation()
+            mLocationOverlay?.enableFollowLocation()
             mMapHandler.removeCallbacks(mCenterRunnable)
             mMapHandler.post(mCenterRunnable)
         }
-        mLocationOverlay!!.enableMyLocation()
-        mCompassOverlay!!.enableCompass()
-        mScaleBarOverlay!!.enableScaleBar()
+        mLocationOverlay?.enableMyLocation()
+        mCompassOverlay?.enableCompass()
+        mScaleBarOverlay?.enableScaleBar()
         mMapView.invalidate()
     }
 
     private fun enableFollow() {
         mFollow = true
-        if (activity != null) (activity as AppCompatActivity?)!!.supportInvalidateOptionsMenu()
+        activity?.let { (it as AppCompatActivity?)!!.supportInvalidateOptionsMenu() }
         mLocationOverlay!!.enableFollowLocation()
         mLocationOverlay!!.enableAutoStop = true
         mMapHandler.removeCallbacks(mCenterRunnable)
@@ -382,22 +377,22 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
 
     private fun disableFollow() {
         mFollow = false
-        if (activity != null) (activity as AppCompatActivity?)!!.supportInvalidateOptionsMenu()
+        activity?.let { (it as AppCompatActivity?)!!.supportInvalidateOptionsMenu() }
         mLocationOverlay!!.disableFollowLocation()
         mMapHandler.removeCallbacksAndMessages(null)
         mPrefs.edit().putBoolean(PREF_FOLLOW, false).apply()
     }
 
     private fun saveMapCenterPrefs() {
-        if (mMapCenterState != null) {
-            mPrefs.edit().putFloat(PREF_LATITUDE, mMapCenterState!!.latitude.toFloat()).apply()
-            mPrefs.edit().putFloat(PREF_LONGITUDE, mMapCenterState!!.longitude.toFloat()).apply()
+        mMapCenterState?.let {
+            mPrefs.edit().putFloat(PREF_LATITUDE, it.latitude.toFloat()).apply()
+            mPrefs.edit().putFloat(PREF_LONGITUDE, it.longitude.toFloat()).apply()
             Log.d(
                 TAG,
                 String.format(
                     "Saving center prefs: %f, %f",
-                    mMapCenterState!!.latitude,
-                    mMapCenterState!!.longitude
+                    it.latitude,
+                    it.longitude
                 )
             )
         }
@@ -410,20 +405,18 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
         val cache = Configuration.getInstance().osmdroidTileCache
         Log.d(TAG, "Cache: " + cache.absolutePath)
         initMap()
-        if (mMapCenterState != null) {
+        mMapCenterState?.let {
             mMapView.controller.setCenter(mMapCenterState)
             mMapCenterState = null // We're done with the old state
-        } else if (mLocationViewModel!!.currentLocation != null && mLocationViewModel!!.currentLocation?.value != null) {
-            mMapView.controller.setCenter(
-                GeoPoint(
-                    mLocationViewModel!!.currentLocation?.value!!.latitude,
-                    mLocationViewModel!!.currentLocation?.value!!.longitude
-                )
-            )
+        } ?: run {
+            mLocationViewModel?.currentLocation?.value?.let { location ->
+                val geoPoint = GeoPoint(location.latitude, location.longitude)
+                mMapView.controller.setCenter(geoPoint)
+            }
         }
-        if (mLocationManager != null) {
+        mLocationManager?.let {
             try {
-                mLocationManager!!.requestLocationUpdates(
+                it.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
                     0L,
                     0f,
@@ -433,7 +426,7 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
                 ex.printStackTrace()
             }
             try {
-                mLocationManager!!.requestLocationUpdates(
+                it.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER,
                     0L,
                     0f,
@@ -483,14 +476,13 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
     }
 
     fun setGpx(gpx: Gpx?, zoom: Boolean) {
-        if (gpx == null) {
-            return;
-        }
-        mOverlayHelper?.setGpx(gpx)
-        if (activity != null) (activity as AppCompatActivity?)!!.supportInvalidateOptionsMenu()
-        if (zoom) {
-            disableFollow()
-            zoomToBounds(Util.area(gpx))
+        gpx?.let {
+            mOverlayHelper?.setGpx(it)
+            if (activity != null) (activity as AppCompatActivity?)!!.supportInvalidateOptionsMenu()
+            if (zoom) {
+                disableFollow()
+                zoomToBounds(Util.area(it))
+            }
         }
     }
 
@@ -532,8 +524,8 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
     }
 
     fun setNearbyPlace() {
-        val nearbyPlace = mListener!!.selectedNearbyPlace
-        showNearbyPlace(nearbyPlace)
+        val nearbyPlace = mListener?.selectedNearbyPlace
+        nearbyPlace?.let { showNearbyPlace(it) }
     }
 
     fun showZoomControls(show: Boolean) {
@@ -558,13 +550,13 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        mListener!!.setUpNavigation(false)
-        inflater.inflate(R.menu.menu_main, menu)
-        val fullscreenItem = menu.findItem(R.id.action_fullscreen)
-        val keepScreenOnItem = menu.findItem(R.id.action_keep_screen_on)
-        if (mListener != null) {
-            fullscreenItem.isChecked = mListener!!.isFullscreenOnMapTap
-            keepScreenOnItem.isChecked = mListener!!.isKeepScreenOn
+        mListener?.let {
+            it.setUpNavigation(false)
+            inflater.inflate(R.menu.menu_main, menu)
+            val fullscreenItem = menu.findItem(R.id.action_fullscreen)
+            val keepScreenOnItem = menu.findItem(R.id.action_keep_screen_on)
+                fullscreenItem.isChecked = it.isFullscreenOnMapTap
+                keepScreenOnItem.isChecked = it.isKeepScreenOn
         }
     }
 
@@ -588,89 +580,102 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val fm: FragmentManager
         val itemId = item.itemId
-        if (itemId == R.id.action_gpx) {
-            if (mOverlayHelper != null && mOverlayHelper!!.hasGpx()) {
-                showGpxDialog()
-            } else {
-                mListener!!.selectGpx()
-            }
-            return true
-        } else if (itemId == R.id.action_location) {
-            if (mLocationViewModel!!.currentLocation != null && mLocationViewModel!!.currentLocation?.value != null) {
-                mMapView.controller.animateTo(GeoPoint(mLocationViewModel!!.currentLocation?.value))
-            }
-            return true
-        } else if (itemId == R.id.action_follow) {
-            enableFollow()
-            Toast.makeText(activity, R.string.follow_enabled, Toast.LENGTH_SHORT).show()
-            return true
-        } else if (itemId == R.id.action_no_follow) {
-            disableFollow()
-            Toast.makeText(activity, R.string.follow_disabled, Toast.LENGTH_SHORT).show()
-            return true
-        } else if (itemId == R.id.action_gpx_details) {
-            if (mListener != null) mListener!!.addGpxDetailFragment()
-            return true
-        } else if (itemId == R.id.action_location_details) {
-            fm = requireActivity().supportFragmentManager
-            val locationDetailFragment = LocationDetailFragment()
-            locationDetailFragment.show(fm, "location_detail")
-            return true
-        } else if (itemId == R.id.action_nearby) {
-            if (mListener != null) {
-                mListener!!.clearSelectedNearbyPlace()
-                val nearbyCenter = mMapView.mapCenter as GeoPoint
-                mListener!!.addNearbyFragment(nearbyCenter)
-                Toast.makeText(activity, R.string.location_unknown, Toast.LENGTH_SHORT).show()
-            }
-            return true
-        } else if (itemId == R.id.action_cache_settings) {
-            mMapCenterState = mMapView.mapCenter as GeoPoint
-            saveMapCenterPrefs()
-            fm = requireActivity().supportFragmentManager
-            val cacheSettingsFragment = CacheSettingsFragment()
-            cacheSettingsFragment.show(fm, "cache_settings")
-            return true
-        } else if (itemId == R.id.action_gpx_zoom) {
-            disableFollow()
-            zoomToBounds(Util.area(mListener!!.getGpx()))
-            return true
-        } else if (itemId == R.id.action_layers) {
-            if (activity != null) {
-                val anchorView = requireActivity().findViewById<View>(R.id.popupAnchorView)
-                val popup = PopupMenu(activity, anchorView)
-                val inflater = popup.menuInflater
-                inflater.inflate(R.menu.menu_tile_sources, popup.menu)
-                val openTopoMapItem = popup.menu.findItem(R.id.otm)
-                val openStreetMapItem = popup.menu.findItem(R.id.osm)
-                val overlayNoneItem = popup.menu.findItem(R.id.none)
-                val overlayHikingItem = popup.menu.findItem(R.id.lonvia_hiking)
-                val overlayCyclingItem = popup.menu.findItem(R.id.lonvia_cycling)
-                when (mBaseMap) {
-                    BASE_MAP_OTM -> openTopoMapItem.isChecked = true
-                    BASE_MAP_OSM -> openStreetMapItem.isChecked = true
+        when (itemId) {
+            R.id.action_gpx -> {
+                if (mOverlayHelper != null && mOverlayHelper!!.hasGpx()) {
+                    showGpxDialog()
+                } else {
+                    mListener!!.selectGpx()
                 }
-                when (mOverlay) {
-                    OverlayHelper.OVERLAY_NONE -> overlayNoneItem.isChecked = true
-                    OverlayHelper.OVERLAY_HIKING -> overlayHikingItem.isChecked = true
-                    OverlayHelper.OVERLAY_CYCLING -> overlayCyclingItem.isChecked = true
-                }
-                popup.setOnMenuItemClickListener(this@MapFragment)
-                popup.show()
                 return true
-            } else {
+            }
+            R.id.action_location -> {
+                if (mLocationViewModel!!.currentLocation != null && mLocationViewModel!!.currentLocation?.value != null) {
+                    mMapView.controller.animateTo(GeoPoint(mLocationViewModel!!.currentLocation?.value))
+                }
+                return true
+            }
+            R.id.action_follow -> {
+                enableFollow()
+                Toast.makeText(activity, R.string.follow_enabled, Toast.LENGTH_SHORT).show()
+                return true
+            }
+            R.id.action_no_follow -> {
+                disableFollow()
+                Toast.makeText(activity, R.string.follow_disabled, Toast.LENGTH_SHORT).show()
+                return true
+            }
+            R.id.action_gpx_details -> {
+                mListener?.let { mListener!!.addGpxDetailFragment() }
+                return true
+            }
+            R.id.action_location_details -> {
+                fm = requireActivity().supportFragmentManager
+                val locationDetailFragment = LocationDetailFragment()
+                locationDetailFragment.show(fm, "location_detail")
+                return true
+            }
+            R.id.action_nearby -> {
+                mListener?.let { listener ->
+                    listener.clearSelectedNearbyPlace()
+                    val nearbyCenter = mMapView.mapCenter as GeoPoint
+                    nearbyCenter.let { center ->
+                        listener.addNearbyFragment(center)
+                    }
+                }
+                return true
+            }
+            R.id.action_cache_settings -> {
+                mMapCenterState = mMapView.mapCenter as GeoPoint
+                saveMapCenterPrefs()
+                fm = requireActivity().supportFragmentManager
+                val cacheSettingsFragment = CacheSettingsFragment()
+                cacheSettingsFragment.show(fm, "cache_settings")
+                return true
+            }
+            R.id.action_gpx_zoom -> {
+                disableFollow()
+                mListener?.let {zoomToBounds(Util.area(it.getGpx())) }
+                return true
+            }
+            R.id.action_layers -> {
+                activity?.let {
+                    val anchorView = it.findViewById<View>(R.id.popupAnchorView)
+                    val popup = PopupMenu(activity, anchorView)
+                    val inflater = popup.menuInflater
+                    inflater.inflate(R.menu.menu_tile_sources, popup.menu)
+                    val openTopoMapItem = popup.menu.findItem(R.id.otm)
+                    val openStreetMapItem = popup.menu.findItem(R.id.osm)
+                    val overlayNoneItem = popup.menu.findItem(R.id.none)
+                    val overlayHikingItem = popup.menu.findItem(R.id.lonvia_hiking)
+                    val overlayCyclingItem = popup.menu.findItem(R.id.lonvia_cycling)
+                    when (mBaseMap) {
+                        BASE_MAP_OTM -> openTopoMapItem.isChecked = true
+                        BASE_MAP_OSM -> openStreetMapItem.isChecked = true
+                    }
+                    when (mOverlay) {
+                        OverlayHelper.OVERLAY_NONE -> overlayNoneItem.isChecked = true
+                        OverlayHelper.OVERLAY_HIKING -> overlayHikingItem.isChecked = true
+                        OverlayHelper.OVERLAY_CYCLING -> overlayCyclingItem.isChecked = true
+                    }
+                    popup.setOnMenuItemClickListener(this@MapFragment)
+                    popup.show()
+                    return true
+                }
                 return false
             }
-        } else if (itemId == R.id.action_fullscreen) {
-            if (mListener != null) {
-                item.isChecked = !item.isChecked
-                mListener!!.isFullscreenOnMapTap = item.isChecked
+            R.id.action_fullscreen -> {
+                mListener?.let {
+                    item.isChecked = !item.isChecked
+                    mListener!!.isFullscreenOnMapTap = item.isChecked
+                }
             }
-        } else if (itemId == R.id.action_keep_screen_on) {
-            if (mListener != null) {
-                item.isChecked = !item.isChecked
-                mListener!!.isKeepScreenOn = item.isChecked
-                mMapView.keepScreenOn = item.isChecked
+            R.id.action_keep_screen_on -> {
+                mListener?.let{
+                    item.isChecked = !item.isChecked
+                    mListener!!.isKeepScreenOn = item.isChecked
+                    mMapView.keepScreenOn = item.isChecked
+                }
             }
         }
         return super.onOptionsItemSelected(item)
@@ -686,16 +691,22 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
         if (!menuItem.isChecked) {
             menuItem.isChecked = true
             val itemId = menuItem.itemId
-            if (itemId == R.id.otm) {
-                mBaseMap = BASE_MAP_OTM
-            } else if (itemId == R.id.osm) {
-                mBaseMap = BASE_MAP_OSM
-            } else if (itemId == R.id.none) {
-                mOverlay = OverlayHelper.OVERLAY_NONE
-            } else if (itemId == R.id.lonvia_hiking) {
-                mOverlay = OverlayHelper.OVERLAY_HIKING
-            } else if (itemId == R.id.lonvia_cycling) {
-                mOverlay = OverlayHelper.OVERLAY_CYCLING
+            when (itemId) {
+                R.id.otm -> {
+                    mBaseMap = BASE_MAP_OTM
+                }
+                R.id.osm -> {
+                    mBaseMap = BASE_MAP_OSM
+                }
+                R.id.none -> {
+                    mOverlay = OverlayHelper.OVERLAY_NONE
+                }
+                R.id.lonvia_hiking -> {
+                    mOverlay = OverlayHelper.OVERLAY_HIKING
+                }
+                R.id.lonvia_cycling -> {
+                    mOverlay = OverlayHelper.OVERLAY_CYCLING
+                }
             }
             mPrefs.edit().putInt(PREF_BASE_MAP, mBaseMap).apply()
             mPrefs.edit().putInt(PREF_OVERLAY, mOverlay).apply()

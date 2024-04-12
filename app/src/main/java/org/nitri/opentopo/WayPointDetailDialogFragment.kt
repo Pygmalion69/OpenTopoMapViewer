@@ -30,7 +30,7 @@ class WayPointDetailDialogFragment : DialogFragment() {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         if (mCallback != null) {
             val item = mCallback!!.getSelectedWayPointItem()
-            if (item != null && item.wayPoint != null) {
+            if (item?.wayPoint != null) {
                 tvName.text = item.wayPoint.name
                 tvDescription.text =
                     fromHtml(item.wayPoint.desc.replace("href=\"//", "href=\"http://"))

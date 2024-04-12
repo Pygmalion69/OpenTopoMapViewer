@@ -24,7 +24,6 @@ import io.ticofab.androidgpxparser.parser.domain.Point
 import io.ticofab.androidgpxparser.parser.domain.WayPoint
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
-import java.util.Collections
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -137,7 +136,6 @@ object Util {
      * @param defaultType
      * @return
      */
-    @NonNull
     fun getWayPointTypes(gpx: Gpx, defaultType: String): List<String> {
         val types: MutableList<String> = ArrayList()
         if (gpx.wayPoints != null) {
@@ -247,14 +245,22 @@ object Util {
     fun getBitmapFromDrawable(context: Context?, @DrawableRes drawableId: Int, alpha: Int): Bitmap {
         val drawable = AppCompatResources.getDrawable(context!!, drawableId)
         drawable!!.alpha = alpha
-        return if (drawable is BitmapDrawable) {
-            drawable.bitmap
-        } else if (drawable is VectorDrawableCompat) {
-            createBitmap(drawable)
-        } else if (drawable is VectorDrawable) {
-            createBitmap(drawable)
-        } else {
-            throw IllegalArgumentException("unsupported drawable type")
+        return when (drawable) {
+            is BitmapDrawable -> {
+                drawable.bitmap
+            }
+
+            is VectorDrawableCompat -> {
+                createBitmap(drawable)
+            }
+
+            is VectorDrawable -> {
+                createBitmap(drawable)
+            }
+
+            else -> {
+                throw IllegalArgumentException("unsupported drawable type")
+            }
         }
     }
 

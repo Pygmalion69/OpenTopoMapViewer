@@ -5,7 +5,9 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.location.Location
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -22,20 +24,19 @@ class LocationDetailFragment : DialogFragment() {
         val builder = AlertDialog.Builder(requireActivity())
         val inflater = requireActivity().layoutInflater
         view = inflater.inflate(R.layout.fragment_location_detail, null)
-        bindView()
         builder.setView(view)
             .setPositiveButton(R.string.close) { _: DialogInterface?, _: Int -> dismiss() }
         val dialog = builder.create()
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        view?.let { bindView(it) }
         return dialog
     }
 
-    @SuppressLint("DefaultLocale")
-    private fun bindView() {
+    private fun bindView(view: View) {
         val locationViewModel = ViewModelProvider(requireActivity())[LocationViewModel::class.java]
-        val tvLatitude = requireView().findViewById<TextView>(R.id.textViewLatitude)
-        val tvLongitude = requireView().findViewById<TextView>(R.id.textViewLongitude)
-        val tvElevation = requireView().findViewById<TextView>(R.id.textViewElevation)
+        val tvLatitude = view.findViewById<TextView>(R.id.textViewLatitude)
+        val tvLongitude = view.findViewById<TextView>(R.id.textViewLongitude)
+        val tvElevation = view.findViewById<TextView>(R.id.textViewElevation)
         val locationObserver = Observer<Location> { location: Location? ->
             if (location != null) {
                 tvLatitude.text = String.format("%.5f", location.latitude)
@@ -52,5 +53,10 @@ class LocationDetailFragment : DialogFragment() {
         }
         locationViewModel.currentLocation?.observe(requireActivity(), locationObserver)
         locationViewModel.currentNmea.observe(requireActivity(), nmeaObserver)
+    }
+
+    @SuppressLint("DefaultLocale")
+    private fun bindView() {
+
     }
 }

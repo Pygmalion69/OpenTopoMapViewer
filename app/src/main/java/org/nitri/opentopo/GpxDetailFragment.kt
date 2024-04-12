@@ -272,7 +272,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         }
     }
 
-    override fun getSelectedWayPointItem(): WayPointItem? {
+    override fun getSelectedWayPointItem(): WayPointItem {
         return mWayPointListItems[mSelectedIndex] as WayPointItem
     }
 

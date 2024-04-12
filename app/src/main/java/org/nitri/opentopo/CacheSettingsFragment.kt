@@ -1,9 +1,12 @@
 package org.nitri.opentopo
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Window
@@ -65,7 +68,16 @@ class CacheSettingsFragment : DialogFragment() {
     private fun restart() {
         requireActivity().finish()
         startActivity(requireActivity().intent)
-        requireActivity().overridePendingTransition(0, 0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            requireActivity().overrideActivityTransition(
+                Activity.OVERRIDE_TRANSITION_CLOSE,
+                0,
+                0,
+                Color.TRANSPARENT
+            )
+        } else {
+            requireActivity().overridePendingTransition(0, 0)
+        }
     }
 
     override fun onResume() {

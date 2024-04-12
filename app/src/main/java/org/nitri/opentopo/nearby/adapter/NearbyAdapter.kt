@@ -45,7 +45,7 @@ class NearbyAdapter(
         var ivThumb: ImageView
         var tvTitle: TextView
         var tvDescription: TextView
-        var ivMap: ImageView
+        private var ivMap: ImageView
         var divider: View
 
         init {

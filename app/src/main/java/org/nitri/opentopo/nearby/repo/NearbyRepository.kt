@@ -21,9 +21,6 @@ class NearbyRepository(
     private val mLatitude: Double,
     private val mLongitude: Double,
 ) {
-    private val TAG = NearbyRepository::class.java.simpleName
-
-    private lateinit var viewModelScope: CoroutineScope
 
     fun loadNearbyItems(viewModelScope: CoroutineScope): List<NearbyItem> {
         refresh(viewModelScope)
@@ -84,12 +81,15 @@ class NearbyRepository(
                 }
             }.toTypedArray()
 
-
             mDao?.let { dao ->
                 dao.delete()
                 dao.insertItems(*items)
             }
 
         } ?: return
+    }
+
+    companion object {
+        private val TAG = NearbyRepository::class.java.simpleName
     }
 }

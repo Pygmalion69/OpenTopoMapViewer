@@ -22,21 +22,21 @@ class TrackOverlay
  * @param context
  * @param track
  * @see Track
- */ internal constructor(private val mContext: Context, private val mTrack: Track) : Overlay() {
+ */ internal constructor(private val context: Context, private val track: Track) : Overlay() {
     private val mPointsSegments: MutableList<List<Point>> = ArrayList()
     override fun draw(canvas: Canvas, osmv: MapView, shadow: Boolean) {
 
         //Log.d(TAG, "Zoom: " + osmv.getZoomLevelDouble());
         val routePaint = Paint()
-        routePaint.color = ContextCompat.getColor(mContext, R.color.colorTrack)
+        routePaint.color = ContextCompat.getColor(context, R.color.colorTrack)
         routePaint.isAntiAlias = true
         routePaint.alpha = 204
         routePaint.style = Paint.Style.STROKE
         routePaint.strokeJoin = Paint.Join.ROUND
         routePaint.strokeCap = Paint.Cap.ROUND
         routePaint.strokeWidth = 12f
-        if (mTrack.trackSegments != null) {
-            for (trackSegment in mTrack.trackSegments) {
+        if (track.trackSegments != null) {
+            for (trackSegment in track.trackSegments) {
                 val path = Path()
                 createPointsSegments(osmv, trackSegment)
                 //Log.d(TAG, "Point segments: " + mPointsSegments.size());
