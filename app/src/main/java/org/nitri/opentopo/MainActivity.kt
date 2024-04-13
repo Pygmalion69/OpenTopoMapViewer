@@ -328,6 +328,11 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
         return gpxViewModel.gpx
     }
 
+    override fun clearGpx() {
+        gpxViewModel.gpx = null
+        mGpxUriString = null
+    }
+
     override fun showNearbyPlace(nearbyItem: NearbyItem?) {
         selectedNearbyPlace = nearbyItem
         supportFragmentManager.popBackStack()

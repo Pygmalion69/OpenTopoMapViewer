@@ -492,12 +492,13 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
         builder.setTitle(getString(R.string.gpx))
             .setMessage(getString(R.string.discard_current_gpx))
             .setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
-                if (mOverlayHelper != null) {
-                    mOverlayHelper!!.clearGpx()
+                mOverlayHelper?.let {
+                    it.clearGpx()
                     if (activity != null) (activity as AppCompatActivity?)!!.supportInvalidateOptionsMenu()
                 }
-                if (mListener != null) {
-                    mListener!!.selectGpx()
+                mListener?.let {
+                    it.clearGpx()
+                    it.selectGpx()
                 }
                 dialog.dismiss()
             }
@@ -804,6 +805,11 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
          * @return Gpx
          */
         fun getGpx(): Gpx?
+
+        /**
+         * Clear GOX so it won't ne restored on config change
+         */
+        fun clearGpx()
 
         /**
          * Present GPX details

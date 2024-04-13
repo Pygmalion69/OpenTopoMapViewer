@@ -147,30 +147,28 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         mDistance = 0.0
         mElevation = false
         var prevTrackPoint: TrackPoint? = null
-        if (track.trackSegments != null) {
-            for (segment in track.trackSegments) {
-                if (segment.trackPoints != null) {
-                    mMaxElevation = segment.trackPoints[0].elevation
-                    mMinElevation = mMaxElevation
-                    for (trackPoint in segment.trackPoints) {
-                        if (prevTrackPoint != null) {
-                            mDistance += Util.distance(prevTrackPoint, trackPoint)
-                        }
-                        val builder = DistancePoint.Builder()
-                        builder.setDistance(mDistance)
-                        if (trackPoint.elevation != null) {
-                            val elevation = trackPoint.elevation
-                            if (elevation < mMinElevation) mMinElevation = elevation
-                            if (elevation > mMaxElevation) mMaxElevation = elevation
-                            builder.setElevation(elevation)
-                            mElevation = true
-                            mTrackDistanceLine.add(builder.build())
-                        }
-                        prevTrackPoint = trackPoint
+        track.trackSegments?.forEach { segment ->
+            segment.trackPoints?.let { points ->
+                mMaxElevation = points.first().elevation ?: 0.0
+                mMinElevation = mMaxElevation
+                points.forEach { trackPoint ->
+                    prevTrackPoint?.let { prevPoint ->
+                        mDistance += Util.distance(prevPoint, trackPoint)
                     }
+                    val builder = DistancePoint.Builder()
+                    builder.setDistance(mDistance)
+                    trackPoint.elevation?.also { elevation ->
+                        if (elevation < mMinElevation) mMinElevation = elevation
+                        if (elevation > mMaxElevation) mMaxElevation = elevation
+                        builder.setElevation(elevation)
+                        mElevation = true
+                        mTrackDistanceLine.add(builder.build())
+                    }
+                    prevTrackPoint = trackPoint
                 }
             }
         }
+
     }
 
     private fun buildWayPointList() {
