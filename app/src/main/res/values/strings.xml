@@ -47,4 +47,8 @@
 
     <string name="wiki_base_url">https://en.wikipedia.org/</string>
 
+    <string name="about">About</string>
+    <string name="app_version">Version %1$s</string>
+    <string name="app_author">By &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+
 </resources>

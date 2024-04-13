@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -677,8 +678,32 @@ class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickLis
                     mMapView.keepScreenOn = item.isChecked
                 }
             }
+            R.id.action_about -> {
+                showAboutDialog()
+            }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun showAboutDialog() {
+        activity?.let {
+            val dialogView = layoutInflater.inflate(R.layout.about_dialog, null)
+
+            val versionTextView = dialogView.findViewById<TextView>(R.id.appVersion)
+            versionTextView.text = getString(R.string.app_version, Util.getAppVersion(it))
+
+            val authorTextView = dialogView.findViewById<TextView>(R.id.authorName)
+            authorTextView.movementMethod = LinkMovementMethod.getInstance()
+            authorTextView.text = Util.fromHtml(
+                getString(R.string.app_author)
+            )
+
+            AlertDialog.Builder(it)
+                .setTitle(Util.getAppName(it))
+                .setView(dialogView)
+                .setPositiveButton(R.string.close) { dialog, _ -> dialog.dismiss() }
+                .show()
+        }
     }
 
     /**
