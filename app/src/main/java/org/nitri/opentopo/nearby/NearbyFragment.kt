@@ -67,7 +67,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
         mNearbyAdapter = NearbyAdapter(mNearbyItems, this)
         mNearbyAdapter!!.setHasStableIds(true)
         val api = retrofit.create(MediaWikiApi::class.java)
-        val nearbyDatabase = getDatabase(requireActivity()) ?: return
+        val nearbyDatabase = getDatabase(requireActivity())
         val dao = nearbyDatabase.nearbyDao()
         val nearbyRepository = NearbyRepository(dao, api, mLatitude, mLongitude)
         val factory = NearbyViewModelFactory(nearbyRepository)

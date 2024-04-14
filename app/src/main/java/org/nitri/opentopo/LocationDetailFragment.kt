@@ -5,9 +5,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.location.Location
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.Window
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -55,8 +53,4 @@ class LocationDetailFragment : DialogFragment() {
         locationViewModel.currentNmea.observe(requireActivity(), nmeaObserver)
     }
 
-    @SuppressLint("DefaultLocale")
-    private fun bindView() {
-
-    }
 }

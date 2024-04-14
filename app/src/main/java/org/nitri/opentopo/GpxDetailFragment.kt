@@ -291,10 +291,6 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         }
     }
 
-    override fun onDetach() {
-        super.onDetach()
-    }
-
     interface OnFragmentInteractionListener {
         /**
          * Retrieve the current GPX

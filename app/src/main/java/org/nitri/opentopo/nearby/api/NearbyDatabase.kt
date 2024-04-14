@@ -2,7 +2,6 @@ package org.nitri.opentopo.nearby.api
 
 import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.Room.databaseBuilder
 import androidx.room.RoomDatabase
 import org.nitri.opentopo.nearby.da.NearbyDao

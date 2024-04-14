@@ -60,7 +60,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
-class MapFragment() : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
+class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
     GestureCallback {
     private lateinit var mMapView: MapView
     private var mLocationOverlay: MyLocationNewOverlay? = null

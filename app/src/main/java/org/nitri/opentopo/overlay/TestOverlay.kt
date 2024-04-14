@@ -14,7 +14,7 @@ import org.osmdroid.views.overlay.Overlay
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TestOverlay(var mContext: Context) : Overlay() {
+class TestOverlay(private var mContext: Context) : Overlay() {
     override fun draw(canvas: Canvas, osmv: MapView, shadow: Boolean) {
         val routePaint = Paint()
         routePaint.color = ContextCompat.getColor(mContext, R.color.colorTrack)
