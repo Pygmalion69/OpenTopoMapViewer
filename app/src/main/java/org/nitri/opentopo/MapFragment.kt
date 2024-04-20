@@ -13,6 +13,7 @@ import android.location.LocationManager
 import android.location.OnNmeaMessageListener
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
@@ -59,6 +60,7 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
+
 
 class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
     GestureCallback {
@@ -117,10 +119,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mPrefs = requireActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE)
         val configuration = Configuration.getInstance()
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
-        val basePath = File(context.cacheDir.absolutePath, "osmdroid")
+        val basePath = Util.getOsmdroidBasePath(context, mPrefs.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false))
         configuration.osmdroidBasePath = basePath
-        val tileCache = File(configuration.osmdroidBasePath.absolutePath, "tile")
+        val tileCache = File(configuration.osmdroidBasePath.absolutePath,
+            mPrefs.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
+                ?: CacheSettingsFragment.DEFAULT_TILE_CACHE)
         configuration.osmdroidTileCache = tileCache
+        val maxCacheSize = mPrefs.getInt(CacheSettingsFragment.PREF_CACHE_SIZE, CacheSettingsFragment.DEFAULT_CACHE_SIZE)
+        configuration.tileFileSystemCacheMaxBytes =
+            maxCacheSize.toLong() * 1024 * 1024
         val edit = mPrefs.edit()
         edit.putString("osmdroid.basePath", basePath.absolutePath)
         edit.putString("osmdroid.cachePath", tileCache.absolutePath)

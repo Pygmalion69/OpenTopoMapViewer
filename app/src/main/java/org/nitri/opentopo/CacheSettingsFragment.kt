@@ -13,6 +13,7 @@ import android.view.Window
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.DialogFragment
 import org.osmdroid.config.Configuration
 import java.io.File
@@ -28,19 +29,24 @@ class CacheSettingsFragment : DialogFragment() {
         val prefs =
             requireActivity().getSharedPreferences(MapFragment.MAP_PREFS, Context.MODE_PRIVATE)
         val tvExternalStorageRoot = view.findViewById<TextView>(R.id.tvExternalStorageRoot)
+        val swExternalStorage = view.findViewById<SwitchCompat>(R.id.swExternalStorage)
         etTileCache = view.findViewById(R.id.etTileCache)
         etCacheSize = view.findViewById(R.id.etCacheSize)
         val storageRoot = Configuration.getInstance().osmdroidBasePath.absolutePath
         tvExternalStorageRoot.text = getString(R.string.storage_root, storageRoot)
+        val currentExternalStorage = prefs.getBoolean(PREF_EXTERNAL_STORAGE, false)
+        swExternalStorage.isChecked = currentExternalStorage
         val currentTileCache = prefs.getString(PREF_TILE_CACHE, DEFAULT_TILE_CACHE)
         val currentCacheSize = prefs.getInt(PREF_CACHE_SIZE, DEFAULT_CACHE_SIZE)
         etTileCache.setText(currentTileCache)
         etCacheSize.setText(currentCacheSize.toString())
         builder.setView(view)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                val newExternalStorage = swExternalStorage.isChecked
                 val newTileCache = etTileCache.text.toString()
                 val newCacheSize = etCacheSize.text.toString().toInt()
                 val editor = prefs.edit()
+                editor.putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage)
                 editor.putString(PREF_TILE_CACHE, newTileCache)
                 editor.putInt(PREF_CACHE_SIZE, newCacheSize)
                 editor.apply()
@@ -48,16 +54,22 @@ class CacheSettingsFragment : DialogFragment() {
                 if (cacheDir.mkdirs()) {
                     Log.i(TAG, "Tile cache created: $newTileCache")
                 }
-                Configuration.getInstance().osmdroidTileCache = cacheDir
-                Configuration.getInstance().tileFileSystemCacheMaxBytes =
+                val configuration = Configuration.getInstance()
+                configuration.osmdroidTileCache = cacheDir
+                configuration.tileFileSystemCacheMaxBytes =
                     newCacheSize.toLong() * 1024 * 1024
-                Configuration.getInstance().save(requireActivity().applicationContext, prefs)
-                if (newTileCache != currentTileCache || newCacheSize != currentCacheSize) restart()
+                configuration.save(requireActivity().applicationContext, prefs)
+                if (
+                    newExternalStorage != currentExternalStorage
+                    || newTileCache != currentTileCache
+                    || newCacheSize != currentCacheSize
+                ) restart()
                 dismiss()
             }
             .setNegativeButton(android.R.string.cancel) { _: DialogInterface?, _: Int -> dismiss() }
             .setNeutralButton(R.string.reset) { _: DialogInterface?, _: Int -> }
         val dialog = builder.create()
+        setCancelable(false)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         return dialog
     }
@@ -95,10 +107,11 @@ class CacheSettingsFragment : DialogFragment() {
     companion object {
         private val TAG = CacheSettingsFragment::class.java.simpleName
 
-        // Hardcoded in org.osmdroid.config.DefaultConfigurationProvider
-        private const val DEFAULT_TILE_CACHE = "osmdroid/tiles"
-        private const val DEFAULT_CACHE_SIZE = 600
-        private const val PREF_TILE_CACHE = "tile_cache"
-        private const val PREF_CACHE_SIZE = "cache_size"
+        public const val DEFAULT_TILE_CACHE =
+            "tiles"  // Hardcoded in org.osmdroid.config.DefaultConfigurationProvider
+        public const val DEFAULT_CACHE_SIZE = 600
+        public const val PREF_TILE_CACHE = "tile_cache"
+        public const val PREF_CACHE_SIZE = "cache_size"
+        public const val PREF_EXTERNAL_STORAGE = "external_storage"
     }
 }

@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.VectorDrawable
 import android.os.Build
+import android.os.Environment
 import android.text.Html
 import android.text.Spanned
 import android.text.TextUtils
@@ -24,6 +25,7 @@ import io.ticofab.androidgpxparser.parser.domain.Point
 import io.ticofab.androidgpxparser.parser.domain.WayPoint
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
+import java.io.File
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -274,6 +276,21 @@ object Util {
         drawable.setBounds(0, 0, canvas.width, canvas.height)
         drawable.draw(canvas)
         return bitmap
+    }
+
+    fun getOsmdroidBasePath(context: Context, externalStorage: Boolean) : File {
+        return if (externalStorage) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                    "osmdroid"
+                )
+            } else {
+                File(Environment.getExternalStorageDirectory().toString() + "/Download/osmdroid");
+            }
+        } else {
+            File(context.cacheDir.absolutePath, "osmdroid")
+        }
     }
 
     fun getAppName(context: Context): String {

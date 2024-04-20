@@ -23,6 +23,24 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="External storage root: /emulated/storage/0" />
 
+        <TextView
+            android:id="@+id/tvExternalStorage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/external_storage"
+            app:layout_constraintStart_toStartOf="@id/tvExternalStorageRoot"
+            app:layout_constraintTop_toBottomOf="@id/tvExternalStorageRoot" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/swExternalStorage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="@id/tvExternalStorage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvExternalStorage" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/textInputLayoutTileCache"
             android:layout_width="wrap_content"
@@ -31,7 +49,7 @@
             android:hint="@string/tile_cache"
             android:minWidth="240dp"
             app:layout_constraintStart_toStartOf="@+id/tvExternalStorageRoot"
-            app:layout_constraintTop_toBottomOf="@+id/tvExternalStorageRoot">
+            app:layout_constraintTop_toBottomOf="@+id/tvExternalStorage">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etTileCache"
