@@ -522,11 +522,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         if (mMapView.height > 0) {
             mMapView.zoomToBoundingBox(box, true, 64)
         } else {
-            val vto = mMapView.viewTreeObserver
-            vto.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            mMapView.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     mMapView.zoomToBoundingBox(box, true, 64)
-                    vto.removeOnGlobalLayoutListener(this)
+                    mMapView.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 }
             })
         }
