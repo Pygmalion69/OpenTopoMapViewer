@@ -2,8 +2,7 @@
 
 OpenTopoMap viewer for Android
 
-[![GitHub Release](https://img.shields.io/github/release/Pygmalion69/OpenTopoMapViewer.svg?logo=github)](https://github.com/Pygmalion69/OpenTopoMapViewer/releases) [![Build Status](https://travis-ci.com/Pygmalion69/OpenTopoMapViewer.svg?branch=master)](https://app.travis-ci.com/github/Pygmalion69/OpenTopoMapViewer)
-
+[![GitHub Release](https://img.shields.io/github/release/Pygmalion69/OpenTopoMapViewer.svg?logo=github)](https://github.com/Pygmalion69/OpenTopoMapViewer/releases)
 Note for v1.12.1: external storage has been restricted in this release.
 
 - Follow location
