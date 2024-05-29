@@ -15,14 +15,18 @@ import org.osmdroid.views.overlay.Overlay
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class TrackOverlay
 /**
  * Layer to display a track
  *
  * @param context
  * @param track
  * @see Track
- */ internal constructor(private val context: Context, private val track: Track) : Overlay() {
+ */
+class TrackOverlay(
+    private val context: Context,
+    private val track: Track
+) : Overlay() {
+
     private val mPointsSegments: MutableList<List<Point>> = ArrayList()
     override fun draw(canvas: Canvas, osmv: MapView, shadow: Boolean) {
 
