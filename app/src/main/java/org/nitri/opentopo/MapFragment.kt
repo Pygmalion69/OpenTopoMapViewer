@@ -308,7 +308,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             override fun longPressHelper(p: GeoPoint): Boolean {
                 mListener?.onMapLongPress()
                 val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
-                val seq = highestSeq + 1 // use our own id's
+                val seq = highestSeq + 1
                 val marker = MarkerModel(
                     seq = seq,
                     latitude = p.latitude,
