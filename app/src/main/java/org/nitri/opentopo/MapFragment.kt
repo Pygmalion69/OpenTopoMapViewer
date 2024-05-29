@@ -34,12 +34,11 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.model.LocationViewModel
-import org.nitri.opentopo.model.MarkerModel
-import org.nitri.opentopo.model.MarkerViewModel
+import org.nitri.opentopo.overlay.model.MarkerModel
+import org.nitri.opentopo.overlay.viewmodel.MarkerViewModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
@@ -308,9 +307,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
             override fun longPressHelper(p: GeoPoint): Boolean {
                 mListener?.onMapLongPress()
-                val highestId = markerViewModel.markers.value?.maxByOrNull { it.id }?.id ?: 0
-                val id = highestId + 1;
-                val marker = MarkerModel(id, p.latitude, p.longitude, getString(R.string.default_marker_name, id), "")
+                val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
+                val seq = highestSeq + 1 // use our own id's
+                val marker = MarkerModel(
+                    seq = seq,
+                    latitude = p.latitude,
+                    longitude = p.longitude,
+                    name = getString(R.string.default_marker_name, seq),
+                    description = "")
                 markerViewModel.addMarker(marker)
                 return true
             }

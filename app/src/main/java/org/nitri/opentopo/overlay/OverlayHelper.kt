@@ -11,7 +11,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.textfield.TextInputLayout
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.R
-import org.nitri.opentopo.model.MarkerModel
+import org.nitri.opentopo.overlay.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.osmdroid.tileprovider.MapTileProviderBasic
 import org.osmdroid.tileprovider.tilesource.ITileSource
