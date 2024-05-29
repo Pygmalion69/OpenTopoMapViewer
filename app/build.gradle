@@ -52,6 +52,7 @@ dependencies {
     implementation 'androidx.room:room-runtime:2.6.1'
     implementation 'androidx.test.ext:junit:1.1.5'
     annotationProcessor 'androidx.room:room-compiler:2.6.1'
+    implementation "androidx.room:room-ktx:2.6.1"
     kapt "androidx.room:room-compiler:2.6.1"
     implementation "androidx.preference:preference:1.2.1"
     implementation 'net.danlew:android.joda:2.10.9.1'

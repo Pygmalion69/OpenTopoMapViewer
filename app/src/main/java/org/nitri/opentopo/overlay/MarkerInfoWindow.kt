@@ -9,12 +9,12 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
 import org.nitri.opentopo.Util.fromHtml
+import org.nitri.opentopo.overlay.model.MarkerModel
 import org.osmdroid.api.IMapView
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.OverlayItem
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow
 
-class WayPointInfoWindow(
+class MarkerInfoWindow(
     layoutResId: Int,
     private val mTitleId: Int,
     private val mDescriptionId: Int,
@@ -24,17 +24,15 @@ class WayPointInfoWindow(
 ) : BasicInfoWindow(layoutResId, mapView) {
     @SuppressLint("ClickableViewAccessibility")
     override fun onOpen(item: Any) {
-        val overlayItem = item as OverlayItem
-        var title = overlayItem.title
-        if (title == null) title = ""
+        val markerModel = item as MarkerModel
+        val title = markerModel.name
         if (mView == null) {
-            Log.w(IMapView.LOGTAG, "Error trapped, WayPointInfoWindow.open, mView is null!")
+            Log.w(IMapView.LOGTAG, "Error trapped, MarkerInfoWindow.open, mView is null!")
             return
         }
         val temp = mView.findViewById<TextView>(mTitleId)
         if (temp != null) temp.text = title
-        var snippet = overlayItem.snippet
-        if (snippet == null) snippet = ""
+        val snippet = markerModel.description
         val snippetHtml = fromHtml(snippet.replace("href=\"//", "href=\"http://"))
         val snippetText = mView.findViewById<TextView>(mDescriptionId)
         snippetText.text = snippetHtml

@@ -9,34 +9,18 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 import org.osmdroid.views.overlay.OverlayItem
 
-class ItemizedIconInfoOverlay : ItemizedIconOverlay<OverlayItem?> {
-    var infoWindow: WayPointInfoWindow? = null
-        private set
+class ItemizedIconInfoOverlay(
+    pList: List<OverlayItem?>?,
+    pDefaultMarker: Drawable?,
+    pOnItemGestureListener: OnItemGestureListener<OverlayItem?>?,
+    pContext: Context?
+) : ItemizedIconOverlay<OverlayItem?>(pList, pDefaultMarker, pOnItemGestureListener, pContext) {
 
-    constructor(
-        pList: List<OverlayItem?>?,
-        pDefaultMarker: Drawable?,
-        pOnItemGestureListener: OnItemGestureListener<OverlayItem?>?,
-        pContext: Context?
-    ) : super(pList, pDefaultMarker, pOnItemGestureListener, pContext)
-
-    constructor(
-        pList: List<OverlayItem?>?,
-        pOnItemGestureListener: OnItemGestureListener<OverlayItem?>?,
-        pContext: Context?
-    ) : super(pList, pOnItemGestureListener, pContext)
-
-    constructor(
-        pContext: Context?,
-        pList: List<OverlayItem?>?,
-        pOnItemGestureListener: OnItemGestureListener<OverlayItem?>?
-    ) : super(pContext, pList, pOnItemGestureListener)
+    private var infoWindow: WayPointInfoWindow? = null
 
     override fun draw(canvas: Canvas, mapView: MapView, shadow: Boolean) {
         super.draw(canvas, mapView, shadow)
-        if (infoWindow != null && infoWindow!!.isOpen) {
-            infoWindow!!.draw()
-        }
+        infoWindow?.takeIf { it.isOpen }?.draw()
     }
 
     /**
@@ -46,15 +30,15 @@ class ItemizedIconInfoOverlay : ItemizedIconOverlay<OverlayItem?> {
      * @param item
      */
     fun showWayPointInfo(mapView: MapView?, item: OverlayItem) {
-        if (infoWindow != null && infoWindow!!.isOpen) {
-            infoWindow!!.close()
-        }
+        infoWindow?.takeIf { it.isOpen }?.close()
+
         infoWindow = WayPointInfoWindow(
             R.layout.bonuspack_bubble,
             R.id.bubble_title, R.id.bubble_description, R.id.bubble_subdescription, null, mapView
-        )
-        val windowLocation = item.point as GeoPoint
-        infoWindow!!.open(item, windowLocation, 0, 0)
+        ).apply {
+            val windowLocation = item.point as GeoPoint
+            open(item, windowLocation, 0, 0)
+        }
     }
 
     /**
@@ -68,8 +52,6 @@ class ItemizedIconInfoOverlay : ItemizedIconOverlay<OverlayItem?> {
     }
 
     fun hideWayPointInfo() {
-        if (infoWindow != null) {
-            infoWindow!!.close()
-        }
+        infoWindow?.takeIf { it.isOpen }?.close()
     }
 }

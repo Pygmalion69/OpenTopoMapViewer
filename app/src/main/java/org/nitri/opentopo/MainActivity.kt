@@ -133,28 +133,25 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
 
     private fun applyFullscreen(fullscreen: Boolean) {
         handler.removeCallbacksAndMessages(null)
-        if (windowInsetsController == null) return
+
+        // Return early if windowInsetsController is null
+        val insetsController = windowInsetsController ?: return
+
         if (fullscreen) {
-            windowInsetsController!!.hide(WindowInsetsCompat.Type.systemBars())
-            if (actionBar != null) {
-                actionBar!!.hide()
-            }
-            if (mMapFragment != null) {
-                handler.postDelayed({ mMapFragment!!.showZoomControls(false) }, 3000)
-            }
+            insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            actionBar?.hide()
+            handler.postDelayed({ mMapFragment?.showZoomControls(false) }, 3000)
         } else {
-            windowInsetsController!!.show(WindowInsetsCompat.Type.systemBars())
-            if (actionBar != null) {
-                actionBar!!.show()
-            }
-            if (mMapFragment != null) {
-                mMapFragment!!.showZoomControls(true)
-            }
+            insetsController.show(WindowInsetsCompat.Type.systemBars())
+            actionBar?.show()
+            mMapFragment?.showZoomControls(true)
         }
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val editor = preferences.edit()
-        editor.putBoolean(PREF_FULLSCREEN, this.isFullscreen)
-        editor.apply()
+
+        // Persist the fullscreen state preference
+        PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
+            putBoolean(PREF_FULLSCREEN, this@MainActivity.isFullscreen)
+            apply()
+        }
     }
 
     private fun toggleFullscreen() {

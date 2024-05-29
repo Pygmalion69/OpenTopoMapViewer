@@ -52,4 +52,15 @@
     <string name="app_version">Version %1$s</string>
     <string name="app_author">By &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
 
+    <string name="default_marker_name">Marker %1$d</string>
+    <string name="edit_marker">Edit Marker</string>
+    <string name="name">Name</string>
+    <string name="description">Description</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="confirm_delete">Confirm Delete</string>
+    <string name="prompt_confirm_delete">Are you sure you want to delete this item?"</string>
+
 </resources>
