@@ -37,7 +37,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     private var mLongitude = 0.0
     private val gson = GsonBuilder().setLenient().create()
     private val mNearbyItems: MutableList<NearbyItem?> = ArrayList()
-    private var mNearbyAdapter: NearbyAdapter? = null
+    private lateinit var mNearbyAdapter: NearbyAdapter
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +65,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
             .client(httpClient.build())
             .build()
         mNearbyAdapter = NearbyAdapter(mNearbyItems, this)
-        mNearbyAdapter!!.setHasStableIds(true)
+        mNearbyAdapter.setHasStableIds(true)
         val api = retrofit.create(MediaWikiApi::class.java)
         val nearbyDatabase = getDatabase(requireActivity())
         val dao = nearbyDatabase.nearbyDao()
@@ -74,11 +74,11 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
         val nearbyViewModel = ViewModelProvider(this, factory)[NearbyViewModel::class.java]
         val nearbyObserver = Observer { items: List<NearbyItem?>? ->
             mNearbyItems.clear()
-            if (items != null) {
+            items?.let {
                 mNearbyItems.addAll(items)
                 setDistance()
                 mNearbyItems.sortBy { it?.distance }
-                mNearbyAdapter!!.notifyDataSetChanged()
+                mNearbyAdapter.notifyDataSetChanged()
             }
         }
         nearbyViewModel.items.observe(this, nearbyObserver)
@@ -86,8 +86,10 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
 
     private fun setDistance() {
         for (item in mNearbyItems) {
-            item!!.distance =
-                Math.round(distance(mLatitude, mLongitude, item.lat, item.lon)).toInt()
+            item?.apply {
+                distance =
+                    Math.round(distance(mLatitude, mLongitude, item.lat, item.lon)).toInt()
+            }
         }
     }
 
@@ -106,7 +108,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        mListener!!.setUpNavigation(true)
+        mListener?.setUpNavigation(true)
     }
 
     override fun onAttach(context: Context) {
@@ -128,7 +130,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     }
 
     override fun onItemClick(index: Int) {
-        val uri = Uri.parse(mNearbyItems[index]!!.url)
+        val uri = mNearbyItems[index]?.url?.let { Uri.parse(it) } ?: Uri.EMPTY
         val browserIntent = Intent(Intent.ACTION_VIEW, uri)
         startActivity(browserIntent)
     }

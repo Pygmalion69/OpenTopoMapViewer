@@ -35,7 +35,7 @@ class WayPointListAdapter(
                 return ViewHolderWayPoint(view)
             }
 
-            else -> return DefaultViewHolder()  // Should never occur!
+            else -> return DefaultViewHolder(View(viewGroup.context))  // Should never occur!
         }
 
     }
@@ -49,9 +49,8 @@ class WayPointListAdapter(
         return mItems.size
     }
 
-    abstract class ViewHolder internal constructor(itemView: View?) : RecyclerView.ViewHolder(
-        itemView!!
-    ) {
+    abstract class ViewHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(
+        itemView) {
         abstract fun bindType(item: WayPointListItem)
     }
 
@@ -70,7 +69,7 @@ class WayPointListAdapter(
     /**
      * Class for non-null returns
      */
-    class DefaultViewHolder : ViewHolder(null) {
+    class DefaultViewHolder(view: View) : ViewHolder(view) {
         override fun bindType(item: WayPointListItem) {
             // NOP
         }
