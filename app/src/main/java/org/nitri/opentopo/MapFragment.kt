@@ -227,16 +227,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mMapHandler = Handler(requireActivity().mainLooper)
         mListener?.setGpx()
         val arguments = arguments
+        var mapCenterSet = false
         // Move to received geo intent coordinates
         arguments?.let {
             val lat = it.getDouble(PARAM_LATITUDE, Double.MIN_VALUE)
             val lon = it.getDouble(PARAM_LONGITUDE, Double.MIN_VALUE)
             if (lat != Double.MIN_VALUE && lon != Double.MIN_VALUE) {
+                mapCenterSet = true
                 animateToLatLon(lat, lon)
-            } else {
-                centerOnFirstFix()
             }
-        } ?: centerOnFirstFix()
+        }
         mListener?.selectedNearbyPlace?.let {
             showNearbyPlace(it)
         }
@@ -254,9 +254,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }
         savedInstanceState?.let {
-            if (it.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(
-                    STATE_LONGITUDE
-                )
+            if (it.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(STATE_LONGITUDE)
             ) {
                 mMapCenterState = GeoPoint(
                     it.getDouble(STATE_LATITUDE, 0.0),
@@ -284,10 +282,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         mMapCenterState?.let {
             mMapView.controller.setCenter(it)
+            mapCenterSet = true
         } ?: run {
             mLocationViewModel?.currentLocation?.value?.let { location ->
                 mMapView.controller.setCenter(GeoPoint(location.latitude, location.longitude))
+                mapCenterSet = true
             }
+        }
+        if (!mapCenterSet) {
+            centerOnFirstFix()
         }
         mMapView.controller.setZoom(mZoomState)
         if (mPrefs.getBoolean(PREF_FOLLOW, false)) enableFollow()
@@ -332,7 +335,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
     }
 
-    fun centerOnFirstFix() {
+    private fun centerOnFirstFix() {
         mLocationOverlay?.runOnFirstFix {
             val location = mLocationOverlay?.myLocation
             location?.let {
