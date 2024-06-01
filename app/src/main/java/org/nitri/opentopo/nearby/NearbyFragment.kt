@@ -136,7 +136,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     }
 
     override fun onMapItemClick(index: Int) {
-        mListener!!.showNearbyPlace(mNearbyItems[index])
+        mListener?.showNearbyPlace(mNearbyItems[index])
     }
 
     interface OnFragmentInteractionListener {

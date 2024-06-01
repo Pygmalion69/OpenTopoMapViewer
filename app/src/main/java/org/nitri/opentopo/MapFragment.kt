@@ -84,11 +84,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
     private val mEnableFollowRunnable: Runnable = object : Runnable {
         override fun run() {
-            mLocationOverlay?.let {
-                it.enableFollowLocation()
-                it.enableAutoStop = true
+            if (mFollow) {
+                mLocationOverlay?.let {
+                    it.enableFollowLocation()
+                    it.enableAutoStop = true
+                }
+                mMapHandler.postDelayed(this, 5000)
             }
-            mMapHandler.postDelayed(this, 5000)
         }
     }
     private val mDragListener: MapListener = object : MapListener {
@@ -217,18 +219,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mMapView.visibility = View.VISIBLE
         mOverlayHelper = OverlayHelper(requireContext(), mMapView)
         setTilesOverlay()
-        mLocationOverlay?.runOnFirstFix {
-            val location = mLocationOverlay!!.myLocation
-            if (location != null) {
-                try {
-                    requireActivity().runOnUiThread {
-                        mMapView.controller.animateTo(location)
-                    }
-                } catch (e: IllegalStateException) {
-                    e.printStackTrace()
-                }
-            }
-        }
         return view
     }
 
@@ -239,12 +229,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val arguments = arguments
         // Move to received geo intent coordinates
         arguments?.let {
-            if (it.containsKey(PARAM_LATITUDE) && it.containsKey(PARAM_LONGITUDE)) {
-                val lat = it.getDouble(PARAM_LATITUDE)
-                val lon = it.getDouble(PARAM_LONGITUDE)
+            val lat = it.getDouble(PARAM_LATITUDE, Double.MIN_VALUE)
+            val lon = it.getDouble(PARAM_LONGITUDE, Double.MIN_VALUE)
+            if (lat != Double.MIN_VALUE && lon != Double.MIN_VALUE) {
                 animateToLatLon(lat, lon)
+            } else {
+                centerOnFirstFix()
             }
-        }
+        } ?: centerOnFirstFix()
         mListener?.selectedNearbyPlace?.let {
             showNearbyPlace(it)
         }
@@ -320,7 +312,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }))
         mMapView.keepScreenOn = mListener?.isKeepScreenOn ?: false
-        mListener!!.isFullscreen = mPrefs.getBoolean(MainActivity.PREF_FULLSCREEN, false)
+        mListener?.isFullscreen = mPrefs.getBoolean(MainActivity.PREF_FULLSCREEN, false)
 
         markerViewModel.markers.observe(viewLifecycleOwner) { markers ->
             mOverlayHelper?.setMarkers(markers, object : OverlayHelper.MarkerInteractionListener {
@@ -337,6 +329,21 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
 
             })
+        }
+    }
+
+    fun centerOnFirstFix() {
+        mLocationOverlay?.runOnFirstFix {
+            val location = mLocationOverlay?.myLocation
+            location?.let {
+                try {
+                    requireActivity().runOnUiThread {
+                        mMapView.controller.animateTo(it)
+                    }
+                } catch (e: IllegalStateException) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 
@@ -382,26 +389,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun initMap() {
-        if (mFollow) {
-            mLocationOverlay?.enableFollowLocation()
-            mMapHandler.removeCallbacks(mCenterRunnable)
-            mMapHandler.post(mCenterRunnable)
-        }
-        mLocationOverlay?.enableMyLocation()
-        mCompassOverlay?.enableCompass()
-        mScaleBarOverlay?.enableScaleBar()
-        mMapView.invalidate()
-    }
-
     private fun enableFollow() {
         mFollow = true
         activity?.let { (it as AppCompatActivity?)!!.supportInvalidateOptionsMenu() }
         mLocationOverlay?.enableFollowLocation()
         mLocationOverlay?.enableAutoStop = true
         mMapHandler.removeCallbacks(mCenterRunnable)
-        //mMapHandler.post(mCenterRunnable);
+        mMapHandler.post(mCenterRunnable);
         mPrefs.edit().putBoolean(PREF_FOLLOW, true).apply()
     }
 
@@ -434,7 +428,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val basePath = Configuration.getInstance().osmdroidBasePath
         val cache = Configuration.getInstance().osmdroidTileCache
         Log.d(TAG, "Cache: " + cache.absolutePath)
-        initMap()
+        if (mFollow) {
+            mLocationOverlay?.enableFollowLocation()
+            mMapHandler.removeCallbacks(mCenterRunnable)
+            mMapHandler.post(mCenterRunnable)
+        }
+        mLocationOverlay?.enableMyLocation()
+        mCompassOverlay?.enableCompass()
+        mScaleBarOverlay?.enableScaleBar()
+        mMapView.invalidate()
         mMapCenterState?.let {
             mMapView.controller.setCenter(mMapCenterState)
             mMapCenterState = null // We're done with the old state
@@ -562,8 +564,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         if (nearbyPlace == null) {
             return
         }
-        mOverlayHelper!!.setNearby(nearbyPlace)
+        mOverlayHelper?.setNearby(nearbyPlace)
         if (nearbyPlace.id != mLastNearbyAnimateToId) {
+            disableFollow()
             // Animate only once
             animateToLatLon(nearbyPlace.lat, nearbyPlace.lon)
             mLastNearbyAnimateToId = nearbyPlace.id
@@ -598,7 +601,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             menu.findItem(R.id.action_follow).isVisible = true
             menu.findItem(R.id.action_no_follow).isVisible = false
         }
-        if (mOverlayHelper != null && mOverlayHelper!!.hasGpx()) {
+        if (mOverlayHelper != null && (mOverlayHelper?.hasGpx() == true)) {
             menu.findItem(R.id.action_gpx_details).isVisible = true
             menu.findItem(R.id.action_gpx_zoom).isVisible = true
         } else {
