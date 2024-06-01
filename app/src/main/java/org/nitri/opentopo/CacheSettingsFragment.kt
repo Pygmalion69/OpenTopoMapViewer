@@ -46,10 +46,12 @@ class CacheSettingsFragment : DialogFragment() {
                 val newTileCache = etTileCache.text.toString()
                 val newCacheSize = etCacheSize.text.toString().toInt()
                 val editor = prefs.edit()
-                editor.putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage)
-                editor.putString(PREF_TILE_CACHE, newTileCache)
-                editor.putInt(PREF_CACHE_SIZE, newCacheSize)
-                editor.apply()
+                editor.apply {
+                    putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage)
+                    putString(PREF_TILE_CACHE, newTileCache)
+                    putInt(PREF_CACHE_SIZE, newCacheSize)
+                    apply()
+                }
                 val cacheDir = File("$storageRoot/$newTileCache")
                 if (cacheDir.mkdirs()) {
                     Log.i(TAG, "Tile cache created: $newTileCache")

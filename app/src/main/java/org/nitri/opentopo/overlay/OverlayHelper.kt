@@ -285,8 +285,8 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
     fun setTilesOverlay(overlay: Int) {
         mOverlay = overlay
         var overlayTiles: ITileSource? = null
-        if (mTilesOverlay != null) {
-            mMapView!!.overlays.remove(mTilesOverlay)
+        mTilesOverlay?.let {
+            mMapView?.overlays?.remove(it)
         }
         when (mOverlay) {
             OVERLAY_NONE -> {}
@@ -302,17 +302,20 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 ), mContext.getString(R.string.lonvia_copy)
             )
         }
-        if (overlayTiles != null) {
-            mOverlayTileProvider = MapTileProviderBasic(mContext)
-            mOverlayTileProvider!!.setTileSource(overlayTiles)
-            mTilesOverlay = TilesOverlay(mOverlayTileProvider, mContext)
-            mTilesOverlay!!.loadingBackgroundColor = Color.TRANSPARENT
-            mTilesOverlay!!.setColorFilter(tileOverlayAlphaFilter)
-            mOverlayTileProvider!!.tileRequestCompleteHandlers.clear()
-            mOverlayTileProvider!!.tileRequestCompleteHandlers.add(mMapView!!.tileRequestCompleteHandler)
-            mMapView.overlays.add(0, mTilesOverlay)
+        overlayTiles?.let { tiles ->
+            val tileProvider = MapTileProviderBasic(mContext).apply {
+                setTileSource(tiles)
+                tileRequestCompleteHandlers.clear()
+                tileRequestCompleteHandlers.add(mMapView?.tileRequestCompleteHandler)
+            }
+
+            val tilesOverlay = TilesOverlay(tileProvider, mContext).apply {
+                loadingBackgroundColor = Color.TRANSPARENT
+                setColorFilter(tileOverlayAlphaFilter)
+            }
+            mMapView?.overlays?.add(0, tilesOverlay)
         }
-        mMapView!!.invalidate()
+        mMapView?.invalidate()
     }
 
     val copyrightNotice: String?
@@ -321,11 +324,9 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
          *
          * @return copyright notice or null
          */
-        get() {
-            return if (mOverlayTileProvider != null && mOverlay != OVERLAY_NONE) {
-                mOverlayTileProvider!!.tileSource.copyrightNotice
-            } else null
-        }
+        get() = if (mOverlayTileProvider != null && mOverlay != OVERLAY_NONE) {
+            mOverlayTileProvider?.tileSource?.copyrightNotice
+        } else null
 
     fun destroy() {
         mTilesOverlay = null

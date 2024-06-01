@@ -102,26 +102,31 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         }
 
         // For now, use title and description of first track
-        if (mGpxViewModel.gpx != null && mGpxViewModel.gpx?.tracks != null && mGpxViewModel.gpx?.tracks!![0] != null) {
-            if (TextUtils.isEmpty(mGpxViewModel.gpx!!.tracks[0].trackName)) {
+        mGpxViewModel.gpx?.tracks?.firstOrNull()?.let { firstTrack ->
+            if (TextUtils.isEmpty(firstTrack.trackName)) {
                 tvName.visibility = View.GONE
             } else {
-                tvName.text = mGpxViewModel.gpx!!.tracks[0].trackName
+                tvName.text = firstTrack.trackName
+                tvName.visibility = View.VISIBLE
             }
-            val description = mGpxViewModel.gpx!!.tracks[0].trackDesc
+
+            val description = firstTrack.trackDesc
             if (TextUtils.isEmpty(description)) {
                 tvDescription.visibility = View.GONE
                 wvDescription.visibility = View.GONE
             } else {
-                if (description.matches(".*<\\s*img\\s.*>.*".toRegex())) {
-                    tvDescription.visibility = View.GONE
-                    wvDescription.visibility = View.VISIBLE
-                    wvDescription.loadData(description, "text/html; charset=utf-8", "UTF-8")
-                } else {
-                    tvDescription.visibility = View.VISIBLE
-                    wvDescription.visibility = View.GONE
-                    tvDescription.text = Util.fromHtml(description)
-                    tvDescription.movementMethod = LinkMovementMethod.getInstance()
+                when {
+                    description.matches(".*<\\s*img\\s.*>.*".toRegex()) -> {
+                        tvDescription.visibility = View.GONE
+                        wvDescription.visibility = View.VISIBLE
+                        wvDescription.loadData(description, "text/html; charset=utf-8", "UTF-8")
+                    }
+                    else -> {
+                        tvDescription.visibility = View.VISIBLE
+                        wvDescription.visibility = View.GONE
+                        tvDescription.text = Util.fromHtml(description)
+                        tvDescription.movementMethod = LinkMovementMethod.getInstance()
+                    }
                 }
             }
         }
