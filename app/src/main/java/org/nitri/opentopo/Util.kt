@@ -245,24 +245,15 @@ object Util {
      * @return
      */
     fun getBitmapFromDrawable(context: Context?, @DrawableRes drawableId: Int, alpha: Int): Bitmap {
-        val drawable = AppCompatResources.getDrawable(context!!, drawableId)
-        drawable!!.alpha = alpha
+        if (context == null) throw IllegalArgumentException("Context cannot be null")
+        val drawable = AppCompatResources.getDrawable(context, drawableId)
+        drawable?.alpha = alpha
+
         return when (drawable) {
-            is BitmapDrawable -> {
-                drawable.bitmap
-            }
-
-            is VectorDrawableCompat -> {
-                createBitmap(drawable)
-            }
-
-            is VectorDrawable -> {
-                createBitmap(drawable)
-            }
-
-            else -> {
-                throw IllegalArgumentException("unsupported drawable type")
-            }
+            is BitmapDrawable -> drawable.bitmap
+            is VectorDrawableCompat, is VectorDrawable -> createBitmap(drawable)
+            null -> Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Return a default tiny transparent bitmap
+            else -> throw IllegalArgumentException("Unsupported drawable type")
         }
     }
 
