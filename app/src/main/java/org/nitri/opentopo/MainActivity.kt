@@ -104,8 +104,10 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
             ) as MapFragment?
         }
         windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-        windowInsetsController!!.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        windowInsetsController?.let {
+            it.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
         actionBar = supportActionBar
     }
 
@@ -115,18 +117,16 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
     }
 
     private fun handleIntent(intent: Intent) {
-        if (intent.data != null) {
-            val scheme = intent.data!!.scheme
-            if (scheme != null) {
-                when (scheme) {
-                    "geo" -> mGeoPointFromIntent = getGeoPointDtoFromIntent(intent)
-                    "file", "content" -> {
-                        mGpxUri = intent.data
-                        mGpxUriString = mGpxUri.toString()
-                        Log.i(TAG, "Uri: $mGpxUriString")
-                        mZoomToGpx = true
-                    }
+        intent.data?.let { uri ->
+            when (uri.scheme) {
+                "geo" -> mGeoPointFromIntent = getGeoPointDtoFromIntent(intent)
+                "file", "content" -> {
+                    mGpxUri = uri
+                    mGpxUriString = uri.toString()
+                    Log.i(TAG, "Uri: $mGpxUriString")
+                    mZoomToGpx = true
                 }
+                else -> Log.i(TAG, "Unsupported scheme: ${uri.scheme}")
             }
         }
     }
@@ -169,14 +169,19 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
                 mMapFragment = MapFragment.newInstance()
             }
         } else {
-            mMapFragment = MapFragment.newInstance(
-                mGeoPointFromIntent!!.latitude,
-                mGeoPointFromIntent!!.longitude
-            )
+            mGeoPointFromIntent?.let {
+                mMapFragment = MapFragment.newInstance(
+                    it.latitude,
+                    it.longitude
+                )
+            }
+
         }
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.map_container, mMapFragment!!, MAP_FRAGMENT_TAG)
-            .commit()
+        mMapFragment?.let {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.map_container, it, MAP_FRAGMENT_TAG)
+                .commit()
+        }
         setGpx()
     }
 
@@ -227,12 +232,12 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            if (result.data != null) {
-                mGpxUri = result.data!!.data
+            result.data?.let {data ->
+                mGpxUri = data.data
                 mZoomToGpx = true
-                if (mGpxUri != null) {
-                    Log.i(TAG, "Uri: $mGpxUri")
-                    parseGpx(mGpxUri!!)
+                mGpxUri?.let {
+                    Log.i(TAG, "Uri: $it")
+                    parseGpx(it)
                 }
             }
         }
@@ -259,19 +264,19 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
         if (!TextUtils.isEmpty(mGpxUriString)) {
             outState.putString(GPX_URI_STATE, mGpxUriString)
         }
-        supportFragmentManager.putFragment(outState, MAP_FRAGMENT_TAG, mMapFragment!!)
+        mMapFragment?.let {
+            supportFragmentManager.putFragment(outState, MAP_FRAGMENT_TAG, it)
+        }
         super.onSaveInstanceState(outState)
     }
 
     override fun setUpNavigation(upNavigation: Boolean) {
-        if (supportActionBar != null) {
-            if (upNavigation) {
-                supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-                supportActionBar!!.setDisplayShowHomeEnabled(true)
-            } else {
-                supportActionBar!!.setDisplayHomeAsUpEnabled(false)
-                supportActionBar!!.setDisplayShowHomeEnabled(false)
-            }
+        if (upNavigation) {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowHomeEnabled(true)
+        } else {
+            supportActionBar?.setDisplayHomeAsUpEnabled(false)
+            supportActionBar?.setDisplayShowHomeEnabled(false)
         }
     }
 

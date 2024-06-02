@@ -97,19 +97,20 @@ object Util {
      * @return BoundingBox
     </GeoPoint> */
     fun area(points: List<GeoPoint?>): BoundingBox {
-        var north = 0.0
-        var south = 0.0
-        var west = 0.0
-        var east = 0.0
-        for (i in points.indices) {
-            if (points[i] == null) continue
-            val lat = points[i]!!.latitude
-            val lon = points[i]!!.longitude
-            if (i == 0 || lat > north) north = lat
-            if (i == 0 || lat < south) south = lat
-            if (i == 0 || lon < west) west = lon
-            if (i == 0 || lon > east) east = lon
+        var north = Double.MIN_VALUE
+        var south = Double.MAX_VALUE
+        var west = Double.MAX_VALUE
+        var east = Double.MIN_VALUE
+
+        points.forEach { point ->
+            point?.let {
+                if (it.latitude > north) north = it.latitude
+                if (it.latitude < south) south = it.latitude
+                if (it.longitude < west) west = it.longitude
+                if (it.longitude > east) east = it.longitude
+            }
         }
+
         return BoundingBox(north, east, south, west)
     }
 

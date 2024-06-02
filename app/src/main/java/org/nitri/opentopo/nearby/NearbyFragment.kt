@@ -100,8 +100,9 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
         val rootView = inflater.inflate(R.layout.fragment_nearby, container, false)
         val nearbyRecyclerView = rootView.findViewById<RecyclerView>(R.id.nearby_recycler_view)
         nearbyRecyclerView.setLayoutManager(LinearLayoutManager(activity))
-        if (nearbyRecyclerView.itemAnimator != null) nearbyRecyclerView.itemAnimator!!.changeDuration =
-            0
+        nearbyRecyclerView.itemAnimator?.let {
+            it.changeDuration = 0
+        }
         nearbyRecyclerView.setAdapter(mNearbyAdapter)
         return rootView
     }

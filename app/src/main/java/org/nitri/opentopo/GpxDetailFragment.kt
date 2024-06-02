@@ -91,15 +91,13 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mGpxViewModel = ViewModelProvider(requireActivity())[GpxViewModel::class.java]
-        if (mGpxViewModel.gpx != null && mGpxViewModel.gpx?.tracks != null) {
-            for (track in mGpxViewModel.gpx!!.tracks) {
-                buildTrackDistanceLine(track)
-            }
-            /* if (getActivity() != null) {
-                mTfRegular = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
-                mTfLight = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf");
-            }*/
+        mGpxViewModel.gpx?.tracks?.forEach {
+            buildTrackDistanceLine(it)
         }
+        /* if (getActivity() != null) {
+            mTfRegular = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
+            mTfLight = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf");
+        }*/
 
         // For now, use title and description of first track
         mGpxViewModel.gpx?.tracks?.firstOrNull()?.let { firstTrack ->
@@ -141,7 +139,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         } else {
             tvLength.visibility = View.GONE
         }
-        if (mGpxViewModel.gpx != null && mGpxViewModel.gpx!!.wayPoints != null) {
+        mGpxViewModel.gpx?.wayPoints?.let {
             buildWayPointList()
             mWayPointListAdapter.notifyDataSetChanged()
         }
@@ -180,18 +178,23 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         val defaultType = getString(R.string.poi)
         var wayPoints: MutableList<WayPoint?>
         mWayPointListItems.clear()
-        for (type in mGpxViewModel.gpx?.let { Util.getWayPointTypes(it, defaultType) }!!) {
-            wayPoints = Util.getWayPointsByType(mGpxViewModel.gpx!!, type).toMutableList()
-            if (type == defaultType) wayPoints.addAll(
-                Util.getWayPointsByType(
-                    mGpxViewModel.gpx!!, null
+
+        var waypointTypes: List<String>?
+        mGpxViewModel.gpx?.let { gpx ->
+            waypointTypes = Util.getWayPointTypes(gpx, defaultType)
+            waypointTypes?.forEach { type ->
+                wayPoints = Util.getWayPointsByType(gpx, type).toMutableList()
+                if (type == defaultType) wayPoints.addAll(
+                    Util.getWayPointsByType(
+                        gpx, null
+                    )
                 )
-            )
-            if (wayPoints.isNotEmpty()) {
-                mWayPointListItems.add(WayPointHeaderItem(type))
-                for (wayPoint in wayPoints) {
-                    wayPoint?.let { WayPointItem(it)}
-                        ?.let { mWayPointListItems.add(it) }
+                if (wayPoints.isNotEmpty()) {
+                    mWayPointListItems.add(WayPointHeaderItem(type))
+                    for (wayPoint in wayPoints) {
+                        wayPoint?.let { WayPointItem(it)}
+                            ?.let { mWayPointListItems.add(it) }
+                    }
                 }
             }
         }

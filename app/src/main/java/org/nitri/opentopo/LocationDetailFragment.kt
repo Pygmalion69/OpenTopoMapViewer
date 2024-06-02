@@ -42,14 +42,12 @@ class LocationDetailFragment : DialogFragment() {
             }
         }
         val nmeaObserver = Observer<String> { nmea: String? ->
-            val elevation = elevationFromNmea(
-                nmea!!
-            )
+            val elevation = nmea?.let { elevationFromNmea(it) }
             if (elevation != Util.NO_ELEVATION_VALUE.toDouble()) {
                 tvElevation.text = String.format("%.1f m", elevation)
             }
         }
-        locationViewModel.currentLocation?.observe(requireActivity(), locationObserver)
+        locationViewModel.currentLocation.observe(requireActivity(), locationObserver)
         locationViewModel.currentNmea.observe(requireActivity(), nmeaObserver)
     }
 

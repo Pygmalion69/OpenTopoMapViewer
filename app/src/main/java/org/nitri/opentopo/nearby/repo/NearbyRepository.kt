@@ -24,7 +24,7 @@ class NearbyRepository(
 
     fun loadNearbyItems(viewModelScope: CoroutineScope): List<NearbyItem> {
         refresh(viewModelScope)
-        return mDao!!.loadAll()
+        return mDao?.loadAll() ?: emptyList()
     }
 
     @WorkerThread
