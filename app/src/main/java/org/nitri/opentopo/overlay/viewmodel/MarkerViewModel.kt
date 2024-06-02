@@ -12,10 +12,7 @@ import org.nitri.opentopo.overlay.OverlayDatabase
 import org.nitri.opentopo.overlay.model.MarkerModel
 
 class MarkerViewModel(application: Application) : AndroidViewModel(application) {
-    private val db: OverlayDatabase = Room.databaseBuilder(
-        application,
-        OverlayDatabase::class.java, "overlay.db"
-    ).build()
+    private val db: OverlayDatabase = OverlayDatabase.getDatabase(application)
 
     val markers: LiveData<List<MarkerModel>> = db.markerDao().getAllMarkers()
 

@@ -147,9 +147,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mLocationViewModel = ViewModelProvider(requireActivity())[LocationViewModel::class.java]
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val nmeaListener = OnNmeaMessageListener { s: String?, _: Long ->
-                if (mLocationViewModel != null) {
-                    mLocationViewModel!!.currentNmea.value = s
-                }
+                mLocationViewModel?.currentNmea?.value = s
+
             }
             if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mLocationManager?.addNmeaListener(nmeaListener)
@@ -237,9 +236,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 animateToLatLon(lat, lon)
             }
         }
-        mListener?.selectedNearbyPlace?.let {
-            showNearbyPlace(it)
-        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -376,8 +373,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val copyrightStringBuilder = StringBuilder()
         val mapCopyRightNotice = mMapView.tileProvider.tileSource.copyrightNotice
         copyrightStringBuilder.append(mapCopyRightNotice)
-        if (mOverlayHelper != null) {
-            val overlayCopyRightNotice = mOverlayHelper!!.copyrightNotice
+        mOverlayHelper?.let {
+            val overlayCopyRightNotice = it.copyrightNotice
             if (!TextUtils.isEmpty(mapCopyRightNotice) && !TextUtils.isEmpty(overlayCopyRightNotice)) {
                 copyrightStringBuilder.append(", ")
             }
@@ -394,7 +391,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     private fun enableFollow() {
         mFollow = true
-        activity?.let { (it as AppCompatActivity?)!!.supportInvalidateOptionsMenu() }
+        activity?.let { (it as AppCompatActivity).supportInvalidateOptionsMenu() }
         mLocationOverlay?.enableFollowLocation()
         mLocationOverlay?.enableAutoStop = true
         mMapHandler.removeCallbacks(mCenterRunnable)
@@ -404,7 +401,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     private fun disableFollow() {
         mFollow = false
-        activity?.let { (it as AppCompatActivity?)!!.supportInvalidateOptionsMenu() }
+        activity?.let { (it as AppCompatActivity).supportInvalidateOptionsMenu() }
         mLocationOverlay?.disableFollowLocation()
         mMapHandler.removeCallbacksAndMessages(null)
         mPrefs.edit().putBoolean(PREF_FOLLOW, false).apply()
@@ -491,16 +488,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     override fun onSaveInstanceState(outState: Bundle) {
         Log.d(TAG, "onSaveInstanceState()")
         mMapCenterState = mMapView.mapCenter as GeoPoint
-        outState.putDouble(STATE_LATITUDE, mMapCenterState!!.latitude)
-        outState.putDouble(STATE_LONGITUDE, mMapCenterState!!.longitude)
-        Log.d(
-            TAG,
-            String.format(
-                "Saving center state: %f, %f",
-                mMapCenterState?.latitude,
-                mMapCenterState?.longitude
+        mMapCenterState?.let {
+            outState.putDouble(STATE_LATITUDE, it.latitude)
+            outState.putDouble(STATE_LONGITUDE, it.longitude)
+            Log.d(
+                TAG,
+                String.format(
+                    "Saving center state: %f, %f",
+                    it.latitude,
+                    it.longitude
+                )
             )
-        )
+        }
         outState.putDouble(STATE_ZOOM, mMapView.zoomLevelDouble)
         super.onSaveInstanceState(outState)
     }
@@ -513,7 +512,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     fun setGpx(gpx: Gpx?, zoom: Boolean) {
         gpx?.let {
             mOverlayHelper?.setGpx(it)
-            if (activity != null) (activity as AppCompatActivity?)!!.supportInvalidateOptionsMenu()
+            if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
             if (zoom) {
                 disableFollow()
                 zoomToBounds(Util.area(it))
@@ -528,7 +527,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             .setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
                 mOverlayHelper?.let {
                     it.clearGpx()
-                    if (activity != null) (activity as AppCompatActivity?)!!.supportInvalidateOptionsMenu()
+                    if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
                 }
                 mListener?.let {
                     it.clearGpx()
@@ -567,10 +566,27 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         if (nearbyPlace == null) {
             return
         }
-        mOverlayHelper?.setNearby(nearbyPlace)
+
+        val existingMarker = markerViewModel.markers.value?.any {
+            it.nearbyId == nearbyPlace.id
+        } ?: false
+
+        if (!existingMarker) {
+            val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
+            val seq = highestSeq + 1
+            val marker = MarkerModel(
+                seq = seq,
+                latitude = nearbyPlace.lat,
+                longitude = nearbyPlace.lon,
+                name = nearbyPlace.title ?: "Marker $seq",
+                description = nearbyPlace.description ?: "",
+                nearbyId = nearbyPlace.id
+            )
+            markerViewModel.addMarker(marker)
+        }
+
         if (nearbyPlace.id != mLastNearbyAnimateToId) {
             disableFollow()
-            // Animate only once
             animateToLatLon(nearbyPlace.lat, nearbyPlace.lon)
             mLastNearbyAnimateToId = nearbyPlace.id
         }
@@ -701,14 +717,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             R.id.action_fullscreen -> {
                 mListener?.let {
                     item.isChecked = !item.isChecked
-                    mListener!!.isFullscreenOnMapTap = item.isChecked
+                    it.isFullscreenOnMapTap = item.isChecked
                 }
                 return true
             }
             R.id.action_keep_screen_on -> {
                 mListener?.let{
                     item.isChecked = !item.isChecked
-                    mListener!!.isKeepScreenOn = item.isChecked
+                    it.isKeepScreenOn = item.isChecked
                     mMapView.keepScreenOn = item.isChecked
                 }
                 return true
@@ -812,7 +828,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mScaleBarOverlay = null
         mRotationGestureOverlay = null
         mGestureOverlay = null
-        if (mOverlayHelper != null) mOverlayHelper!!.destroy()
+        mOverlayHelper?.apply { destroy() }
     }
 
     override fun onUserMapInteraction() {

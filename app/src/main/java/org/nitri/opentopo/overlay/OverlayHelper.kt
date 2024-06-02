@@ -249,6 +249,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         }
     }
 
+    @Deprecated(message ="Use MarkerViewModel instead", level = DeprecationLevel.WARNING)
     fun setNearby(item: NearbyItem) {
         clearNearby()
         val geoPoint = GeoPoint(item.lat, item.lon)
@@ -259,8 +260,8 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
             mNearbyItemGestureListener,
             mContext
         )
-        mMapView!!.overlays.add(mNearbyItemOverlay)
-        mMapView.invalidate()
+        mMapView?.overlays?.add(mNearbyItemOverlay)
+        mMapView?.invalidate()
     }
 
     /**

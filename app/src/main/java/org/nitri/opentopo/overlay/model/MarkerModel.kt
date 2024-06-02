@@ -10,5 +10,6 @@ data class MarkerModel(
     var latitude: Double,
     var longitude: Double,
     var name: String,
-    var description: String
+    var description: String,
+    var nearbyId: Int = 0
 )
