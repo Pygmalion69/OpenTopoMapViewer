@@ -273,8 +273,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             Log.d(TAG, "No saved center state")
             val prefLat = mPrefs.getFloat(PREF_LATITUDE, 0f)
             val prefLon = mPrefs.getFloat(PREF_LONGITUDE, 0f)
-            mMapCenterState = GeoPoint(prefLat.toDouble(), prefLon.toDouble())
-            Log.d(TAG, String.format("Restoring center state from prefs: %f, %f", prefLat, prefLon))
+            if (prefLat > 0 && prefLon > 0) {
+                mMapCenterState = GeoPoint(prefLat.toDouble(), prefLon.toDouble())
+                Log.d(
+                    TAG,
+                    String.format("Restoring center state from prefs: %f, %f", prefLat, prefLon)
+                )
+            }
         }
         mMapCenterState?.let {
             mMapView.controller.setCenter(it)
