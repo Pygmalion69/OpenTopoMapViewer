@@ -315,11 +315,11 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 tileRequestCompleteHandlers.add(mMapView?.tileRequestCompleteHandler)
             }
 
-            val tilesOverlay = TilesOverlay(tileProvider, mContext).apply {
+            mTilesOverlay = TilesOverlay(tileProvider, mContext).apply {
                 loadingBackgroundColor = Color.TRANSPARENT
                 setColorFilter(tileOverlayAlphaFilter)
             }
-            mMapView?.overlays?.add(0, tilesOverlay)
+            mMapView?.overlays?.add(0, mTilesOverlay)
         }
         mMapView?.invalidate()
     }
