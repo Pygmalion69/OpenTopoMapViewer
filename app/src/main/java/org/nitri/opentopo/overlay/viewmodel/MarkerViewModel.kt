@@ -3,10 +3,7 @@ package org.nitri.opentopo.overlay.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.Room
 import kotlinx.coroutines.launch
 import org.nitri.opentopo.overlay.OverlayDatabase
 import org.nitri.opentopo.overlay.model.MarkerModel

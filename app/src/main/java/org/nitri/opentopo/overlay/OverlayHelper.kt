@@ -20,7 +20,6 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay.OnItemGestureListener
 import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.Marker.OnMarkerClickListener
 import org.osmdroid.views.overlay.Marker.OnMarkerDragListener
 import org.osmdroid.views.overlay.OverlayItem
 import org.osmdroid.views.overlay.TilesOverlay
@@ -78,25 +77,30 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
 
     }
 
-    private val onMarkerClickListener : OnMarkerClickListener =
-        OnMarkerClickListener { marker, _ ->
-            //marker?.let {markerInteractionListener.onMarkerClicked(marker.relatedObject as MarkerModel)}
-            markerInfoWindow?.takeIf { it.isOpen }?.close()
+    private val onMarkerClickListener : CustomMarker.OnCustomMarkerClickListener =
+        object : CustomMarker.OnCustomMarkerClickListener {
+            override fun onMarkerClick(marker: CustomMarker?): Boolean {
+                markerInfoWindow?.takeIf { it.isOpen }?.close()
 
-            markerInfoWindow = MarkerInfoWindow(
-                R.layout.bonuspack_bubble,
-                R.id.bubble_title, R.id.bubble_description, R.id.bubble_subdescription, null, mMapView
-            ).apply {
-                val windowLocation = GeoPoint(marker.position.latitude, marker.position.longitude)
-                open(marker.relatedObject, windowLocation, 0, 0)
+                markerInfoWindow = MarkerInfoWindow(
+                    R.layout.custom_bubble,
+                    R.id.bubble_title, R.id.bubble_description, R.id.bubble_subdescription, null, mMapView
+                ).apply {
+                    onMarkerInfoEditClickListener = marker?.onMarkerInfoEditClickListener
+                    marker?.position?.let {
+                        val windowLocation =
+                            GeoPoint(it.latitude, it.longitude)
+                        open(marker.relatedObject, windowLocation, 0, 0)
+                    }
+                }
+                return true
             }
-            true
+
         }
 
-    private val onMarkerLongPressListener : CustomMarker.OnMarkerLongPressListener =
-        object : CustomMarker.OnMarkerLongPressListener {
-            override fun onMarkerLongPress(marker: Marker) {
-                val markerModel = marker.relatedObject as MarkerModel
+    private val onMarkerInfoEditClickListener : MarkerInfoWindow.OnMarkerInfoEditClickListener =
+        object : MarkerInfoWindow.OnMarkerInfoEditClickListener {
+            override fun onMarkerInfoEditClick(markerModel: MarkerModel) {
                 val dialogView =
                     LayoutInflater.from(mContext).inflate(R.layout.dialog_edit_marker, null)
                 val nameInput = dialogView.findViewById<TextInputLayout>(R.id.nameInput)
@@ -112,6 +116,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                     .setPositiveButton(mContext.getString(R.string.ok)) { _, _ ->
                         markerModel.name = nameInput.editText?.text.toString()
                         markerModel.description = descriptionInput.editText?.text.toString()
+                        markerInteractionListener.onMarkerUpdate(markerModel)
                     }
                     .setNegativeButton(mContext.getString(R.string.cancel)) { dialog, _ ->
                         dialog.dismiss()
@@ -230,8 +235,8 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 mapMarker.isDraggable = true
                 mapMarker.icon = ContextCompat.getDrawable(mContext, R.drawable.map_marker)
                 mapMarker.setOnMarkerDragListener(onMarkerDragListener)
-                mapMarker.setOnMarkerClickListener(onMarkerClickListener)
-                mapMarker.onMarkerLongPressListener = onMarkerLongPressListener
+                mapMarker.onCustomMarkerClickListener = onMarkerClickListener
+                mapMarker.onMarkerInfoEditClickListener = onMarkerInfoEditClickListener
                 mapMarkers.add(mapMarker)
                 mMapView.overlays?.add(mapMarker)
             }
@@ -339,6 +344,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         fun onMarkerMoved(markerModel: MarkerModel)
         fun onMarkerClicked(markerModel: MarkerModel)
         fun onMarkerDelete(markerModel: MarkerModel)
+        fun onMarkerUpdate(markerModel: MarkerModel)
     }
     companion object {
         /**

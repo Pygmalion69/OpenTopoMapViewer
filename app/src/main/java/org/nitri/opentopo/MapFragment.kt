@@ -63,7 +63,6 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
-
 class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
     GestureCallback {
     private lateinit var mMapView: MapView
@@ -326,6 +325,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
                 override fun onMarkerDelete(markerModel: MarkerModel) {
                     markerViewModel.removeMarker(markerModel.id)
+                }
+
+                override fun onMarkerUpdate(markerModel: MarkerModel) {
+                    markerViewModel.updateMarker(markerModel)
                 }
 
             })

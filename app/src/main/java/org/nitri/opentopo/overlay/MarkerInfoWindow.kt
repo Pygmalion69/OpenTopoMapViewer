@@ -7,7 +7,9 @@ import android.text.style.ClickableSpan
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.widget.ImageButton
 import android.widget.TextView
+import org.nitri.opentopo.R
 import org.nitri.opentopo.Util.fromHtml
 import org.nitri.opentopo.overlay.model.MarkerModel
 import org.osmdroid.api.IMapView
@@ -22,6 +24,9 @@ class MarkerInfoWindow(
     private val mSubDescription: String?,
     mapView: MapView?
 ) : BasicInfoWindow(layoutResId, mapView) {
+
+    var onMarkerInfoEditClickListener: OnMarkerInfoEditClickListener? = null
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onOpen(item: Any) {
         val markerModel = item as MarkerModel
@@ -30,8 +35,10 @@ class MarkerInfoWindow(
             Log.w(IMapView.LOGTAG, "Error trapped, MarkerInfoWindow.open, mView is null!")
             return
         }
-        val temp = mView.findViewById<TextView>(mTitleId)
-        if (temp != null) temp.text = title
+
+        val tvTitle = mView.findViewById<TextView>(mTitleId)
+        if (tvTitle != null) tvTitle.text = title
+
         val snippet = markerModel.description
         val snippetHtml = fromHtml(snippet.replace("href=\"//", "href=\"http://"))
         val snippetText = mView.findViewById<TextView>(mDescriptionId)
@@ -71,5 +78,17 @@ class MarkerInfoWindow(
         } else {
             subDescText.visibility = View.GONE
         }
+
+        val btnInfoEdit : ImageButton = mView.findViewById(R.id.bubble_edit)
+        btnInfoEdit.setOnClickListener {
+            onMarkerInfoEditClickListener?.onMarkerInfoEditClick(
+                markerModel
+            )
+            close()
+        }
+    }
+
+    interface OnMarkerInfoEditClickListener {
+        fun onMarkerInfoEditClick(markerModel: MarkerModel)
     }
 }

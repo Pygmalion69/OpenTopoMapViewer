@@ -6,22 +6,23 @@ import org.osmdroid.views.overlay.Marker
 
 class CustomMarker(mapView: MapView) : Marker(mapView) {
 
-    var onMarkerLongPressListener: OnMarkerLongPressListener? = null
+    var onMarkerInfoEditClickListener: MarkerInfoWindow.OnMarkerInfoEditClickListener? = null
+    var onCustomMarkerClickListener: OnCustomMarkerClickListener? = null
 
-    override fun onLongPress(event: MotionEvent?, mapView: MapView?): Boolean {
-        onMarkerLongPressListener?.let { listener ->
-            event?.let {
-                if (hitTest(it, mapView)) {
-                    listener.onMarkerLongPress(this)
-                    return true
-                }
-            }
+    override fun onSingleTapConfirmed(event: MotionEvent?, mapView: MapView?): Boolean {
+        val touched = hitTest(event, mapView)
+        return if (touched) {
+            onCustomMarkerClickListener?.onMarkerClick(this) ?: onMarkerClickDefault(this, mapView)
+        } else {
+            false
         }
-        return super.onLongPress(event, mapView)
     }
 
     interface OnMarkerLongPressListener {
         fun onMarkerLongPress(marker: Marker)
+    }
+    interface OnCustomMarkerClickListener{
+        fun onMarkerClick(marker: CustomMarker?): Boolean
     }
 
 }
