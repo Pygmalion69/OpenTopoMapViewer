@@ -26,6 +26,7 @@ import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
 import io.ticofab.androidgpxparser.parser.GPXParser
 import io.ticofab.androidgpxparser.parser.domain.Gpx
+import kotlinx.coroutines.CoroutineScope
 import org.nitri.opentopo.model.GpxViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
@@ -33,7 +34,7 @@ import org.osmdroid.util.GeoPoint
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 
-class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener,
+open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener,
     GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
     private var mGeoPointFromIntent: GeoPointDto? = null
     private var mGpxUriString: String? = null
@@ -65,6 +66,15 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
                 value
             ).apply()
         }
+
+    override fun isPrivacyOptionsRequired(): Boolean {
+        return false
+    }
+
+    override fun showPrivacyOptionsForm() {
+        // NOP
+    }
+
     private lateinit var mPrefs: SharedPreferences
     private lateinit var handler: Handler
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,6 +119,7 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
         actionBar = supportActionBar
+
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
@@ -149,12 +160,12 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
 
         // Persist the fullscreen state preference
         PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
-            putBoolean(PREF_FULLSCREEN, this@MainActivity.isFullscreen)
+            putBoolean(PREF_FULLSCREEN, this@BaseMainActivity.isFullscreen)
             apply()
         }
     }
 
-    private fun toggleFullscreen() {
+    open fun toggleFullscreen() {
         isFullscreen = !isFullscreen
     }
 
@@ -355,7 +366,7 @@ class MainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListe
     override fun onMapLongPress() {}
 
     companion object {
-        private val TAG = MainActivity::class.java.simpleName
+        private val TAG = BaseMainActivity::class.java.simpleName
         private const val MAP_FRAGMENT_TAG = "map_fragment"
         const val GPX_DETAIL_FRAGMENT_TAG = "gpx_detail_fragment"
         const val WAY_POINT_DETAIL_FRAGMENT_TAG = "way_point_detail_fragment"

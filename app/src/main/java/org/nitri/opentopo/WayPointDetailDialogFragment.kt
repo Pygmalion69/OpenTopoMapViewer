@@ -15,7 +15,7 @@ class WayPointDetailDialogFragment : DialogFragment() {
     private var mCallback: Callback? = null
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         mCallback =
-            requireActivity().supportFragmentManager.findFragmentByTag(MainActivity.GPX_DETAIL_FRAGMENT_TAG) as Callback?
+            requireActivity().supportFragmentManager.findFragmentByTag(BaseMainActivity.GPX_DETAIL_FRAGMENT_TAG) as Callback?
         val builder = AlertDialog.Builder(requireActivity())
         val inflater = requireActivity().layoutInflater
 

@@ -77,4 +77,9 @@
         android:title="@string/about"
         android:visible="true"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_privacy_settings"
+        android:title="@string/privacy_settings"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>
