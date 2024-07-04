@@ -33,7 +33,7 @@ class ItemizedIconInfoOverlay(
         infoWindow?.takeIf { it.isOpen }?.close()
 
         infoWindow = WayPointInfoWindow(
-            R.layout.bonuspack_bubble,
+            org.osmdroid.library.R.layout.bonuspack_bubble,
             R.id.bubble_title, R.id.bubble_description, R.id.bubble_subdescription, null, mapView
         ).apply {
             val windowLocation = item.point as GeoPoint

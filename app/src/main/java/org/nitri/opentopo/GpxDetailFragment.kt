@@ -273,7 +273,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
             val wayPointDetailDialogFragment = WayPointDetailDialogFragment()
             wayPointDetailDialogFragment.show(
                 requireActivity().supportFragmentManager,
-                MainActivity.WAY_POINT_DETAIL_FRAGMENT_TAG
+                BaseMainActivity.WAY_POINT_DETAIL_FRAGMENT_TAG
             )
         }
     }

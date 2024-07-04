@@ -109,11 +109,11 @@ class CacheSettingsFragment : DialogFragment() {
     companion object {
         private val TAG = CacheSettingsFragment::class.java.simpleName
 
-        public const val DEFAULT_TILE_CACHE =
+        const val DEFAULT_TILE_CACHE =
             "tiles"  // Hardcoded in org.osmdroid.config.DefaultConfigurationProvider
-        public const val DEFAULT_CACHE_SIZE = 600
-        public const val PREF_TILE_CACHE = "tile_cache"
-        public const val PREF_CACHE_SIZE = "cache_size"
-        public const val PREF_EXTERNAL_STORAGE = "external_storage"
+        const val DEFAULT_CACHE_SIZE = 600
+        const val PREF_TILE_CACHE = "tile_cache"
+        const val PREF_CACHE_SIZE = "cache_size"
+        const val PREF_EXTERNAL_STORAGE = "external_storage"
     }
 }

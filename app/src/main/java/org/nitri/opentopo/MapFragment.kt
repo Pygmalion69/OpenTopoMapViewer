@@ -316,7 +316,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }))
         mMapView.keepScreenOn = mListener?.isKeepScreenOn ?: false
-        mListener?.isFullscreen = mPrefs.getBoolean(MainActivity.PREF_FULLSCREEN, false)
+        mListener?.isFullscreen = mPrefs.getBoolean(BaseMainActivity.PREF_FULLSCREEN, false)
 
         markerViewModel.markers.observe(viewLifecycleOwner) { markers ->
             mOverlayHelper?.setMarkers(markers, object : OverlayHelper.MarkerInteractionListener {
@@ -628,12 +628,17 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             menu.findItem(R.id.action_follow).isVisible = true
             menu.findItem(R.id.action_no_follow).isVisible = false
         }
+
         if (mOverlayHelper != null && (mOverlayHelper?.hasGpx() == true)) {
             menu.findItem(R.id.action_gpx_details).isVisible = true
             menu.findItem(R.id.action_gpx_zoom).isVisible = true
         } else {
             menu.findItem(R.id.action_gpx_details).isVisible = false
             menu.findItem(R.id.action_gpx_zoom).isVisible = false
+        }
+
+        mListener?.let {
+            menu.findItem(R.id.action_privacy_settings).isVisible = it.isPrivacyOptionsRequired()
         }
     }
 
@@ -740,6 +745,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             R.id.action_about -> {
                 showAboutDialog()
                 return true
+            }
+            R.id.action_privacy_settings -> {
+                mListener?.showPrivacyOptionsForm()
             }
         }
         return super.onOptionsItemSelected(item)
@@ -912,6 +920,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
         var isFullscreen: Boolean
         var isKeepScreenOn: Boolean
+
+        /**
+         * Need to enable privacy stettings or not
+         */
+        fun isPrivacyOptionsRequired(): Boolean
+
+        /**
+         * Consent form
+         */
+        fun showPrivacyOptionsForm()
+
+
     }
 
     companion object {
