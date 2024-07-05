@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name">OpenTopoMap</string>
+    <string name="location">Ubicación</string>
+    <string name="follow">Seguir</string>
+    <string name="follow_enabled">Seguimiento activado</string>
+    <string name="follow_disabled">Seguimiento desactivado</string>
+    <string name="gpx">GPX</string>
+    <string name="discard_current_gpx">El GPX actual será descartado.</string>
+    <string name="gpx_details">Detalles del GPX</string>
+    <string name="gpx_zoom">Zoom al GPX</string>
+
+    <string name="location_details">Detalle de la ubicación</string>
+    <string name="label_latitude">Latitud:</string>
+    <string name="label_longitude">Longitud:</string>
+    <string name="label_elevation">Altitud:</string>
+    <string name="close">Cerrar</string>
+    <string name="unknown_symbol">-</string>
+
+    <string name="elevation">Altitud</string>
+    <string name="unit_m">m</string>
+    <string name="unit_km">km</string>
+    <string name="poi">POI</string>
+
+    <string name="layers">Capas</string>
+    <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_street_map">OpenStreetMap</string>
+    <string name="lonvia_hiking">Lonvia Senderismo</string>
+    <string name="lonvia_cycling">Lonvia Ciclismo</string>
+    <string name="base_map">Mapa base</string>
+    <string name="overlay">Superposición</string>
+    <string name="none">Ninguno</string>
+    <string name="lonvia_copy">Wanderwege &#169; Lonvia</string>
+
+    <string name="fullscreen_on_map_tap">Pantalla completa al tocar</string>
+    <string name="keep_screen_on">Mantener pantalla encendida</string>
+
+    <string name="nearby">Cerca</string>
+
+    <string name="cache_settings">Ajustes de caché</string>
+    <string name="tile_cache">Caché de teselas</string>
+    <string name="max_cache_size">Tamaño máx. de caché (MB)</string>
+    <string name="reset">Restablecer</string>
+    <string name="storage_root">Raíz del almacenamiento externo: %1$s</string>
+    <string name="external_storage">Almacenamiento externo</string>
+
+    <string name="privacy_settings">Ajustes de privacidad</string>
+
+    <string name="invalid_gpx">GPX inválido</string>
+    <string name="location_unknown">Ubicación desconocida</string>
+
+    <string name="wiki_base_url">https://es.wikipedia.org/</string>
+
+    <string name="about">Acerca de</string>
+    <string name="app_version">Versión %1$s</string>
+    <string name="app_author">Por &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+
+    <string name="default_marker_name">Marcador %1$d</string>
+    <string name="edit_marker">Editar marcador</string>
+    <string name="name">Nombre</string>
+    <string name="description">Descripción</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete">Eliminar</string>
+    <string name="confirm_delete">Confirmar eliminación</string>
+    <string name="prompt_confirm_delete">¿Está seguro de que desea eliminar este elemento?</string>
+
+</resources>

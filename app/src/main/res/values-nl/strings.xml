@@ -1,0 +1,68 @@
+<resources>
+    <string name="app_name">OpenTopoMap</string>
+    <string name="location">Locatie</string>
+    <string name="follow">Volgen</string>
+    <string name="follow_enabled">Volgen ingeschakeld</string>
+    <string name="follow_disabled">Volgen uitgeschakeld</string>
+    <string name="gpx">GPX</string>
+    <string name="discard_current_gpx">De huidige GPX wordt verwijderd.</string>
+    <string name="gpx_details">GPX details</string>
+    <string name="gpx_zoom">Zoom naar GPX</string>
+
+    <string name="location_details">Locatie-detail</string>
+    <string name="label_latitude">Breedtegraad:</string>
+    <string name="label_longitude">Lengtegraad:</string>
+    <string name="label_elevation">Hoogte:</string>
+    <string name="close">Sluiten</string>
+    <string name="unknown_symbol">-</string>
+
+    <string name="elevation">Hoogte</string>
+    <string name="unit_m">m</string>
+    <string name="unit_km">km</string>
+    <string name="poi">POI</string>
+
+    <string name="layers">Lagen</string>
+    <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_street_map">OpenStreetMap</string>
+    <string name="lonvia_hiking">Lonvia Wandelen</string>
+    <string name="lonvia_cycling">Lonvia Fietsen</string>
+    <string name="base_map">Basiskaart</string>
+    <string name="overlay">Overlay</string>
+    <string name="none">Geen</string>
+    <string name="lonvia_copy">Wandelwegen &#169; Lonvia</string>
+
+    <string name="fullscreen_on_map_tap">Volledig scherm bij tikken</string>
+    <string name="keep_screen_on">Scherm aan houden</string>
+
+    <string name="nearby">In de buurt</string>
+
+    <string name="cache_settings">Cache-instellingen</string>
+    <string name="tile_cache">Tegelcache</string>
+    <string name="max_cache_size">Max. cachegrootte (MB)</string>
+    <string name="reset">Resetten</string>
+    <string name="storage_root">Externe opslag root: %1$s</string>
+    <string name="external_storage">Externe opslag</string>
+
+    <string name="privacy_settings">Privacy-instellingen</string>
+
+    <string name="invalid_gpx">Ongeldige GPX</string>
+    <string name="location_unknown">Locatie onbekend</string>
+
+    <string name="wiki_base_url">https://nl.wikipedia.org/</string>
+
+    <string name="about">Over</string>
+    <string name="app_version">Versie %1$s</string>
+    <string name="app_author">Door &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+
+    <string name="default_marker_name">Markering %1$d</string>
+    <string name="edit_marker">Markering bewerken</string>
+    <string name="name">Naam</string>
+    <string name="description">Beschrijving</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Annuleren</string>
+    <string name="delete">Verwijderen</string>
+    <string name="confirm_delete">Verwijdering bevestigen</string>
+    <string name="prompt_confirm_delete">Weet u zeker dat u dit item wilt verwijderen?</string>
+
+</resources>
