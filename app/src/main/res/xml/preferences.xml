@@ -1,0 +1,24 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/screen_header">
+
+        <SwitchPreferenceCompat
+            app:key="fullscreen_on_map_tap"
+            app:title="@string/fullscreen_on_map_tap" />
+
+        <SwitchPreferenceCompat
+            app:key="keep_screen_on"
+            app:title="@string/keep_screen_on" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/cache_header">
+
+        <Preference
+            app:key="cache_settings"
+            app:title="@string/cache_settings"/>
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>
