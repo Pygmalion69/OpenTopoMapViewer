@@ -40,7 +40,7 @@
     <string name="tile_cache">Cache de tuiles</string>
     <string name="max_cache_size">Taille max. du cache (MB)</string>
     <string name="reset">Réinitialiser</string>
-    <string name="storage_root">Racine du stockage externe : %1$s</string>
+    <string name="storage_root">Racine du stockage : %1$s</string>
     <string name="external_storage">Stockage externe</string>
 
     <string name="privacy_settings">Paramètres de confidentialité</string>
@@ -64,5 +64,10 @@
     <string name="delete">Supprimer</string>
     <string name="confirm_delete">Confirmer la suppression</string>
     <string name="prompt_confirm_delete">Êtes-vous sûr de vouloir supprimer cet élément ?</string>
+
+    <string name="settings">Paramètres</string>
+    <string name="screen_header">Écran</string>
+    <string name="cache_header">Cache</string>
+
 
 </resources>

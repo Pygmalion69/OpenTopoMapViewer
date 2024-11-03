@@ -40,7 +40,7 @@
     <string name="tile_cache">Kachel-Cache</string>
     <string name="max_cache_size">Max. Cache-Größe (MB)</string>
     <string name="reset">Zurücksetzen</string>
-    <string name="storage_root">Externer Speicherpfad: %1$s</string>
+    <string name="storage_root">Speicherpfad: %1$s</string>
     <string name="external_storage">Externer Speicher</string>
 
     <string name="privacy_settings">Datenschutzeinstellungen</string>
@@ -64,4 +64,8 @@
     <string name="delete">Löschen</string>
     <string name="confirm_delete">Löschen bestätigen</string>
     <string name="prompt_confirm_delete">Sind Sie sicher, dass Sie dieses Element löschen möchten?</string>
+
+    <string name="settings">Einstellungen</string>
+    <string name="screen_header">Bildschirm</string>
+    <string name="cache_header">Cache</string>
 </resources>

@@ -1,12 +1,10 @@
 package org.nitri.opentopo
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.graphics.Color
-import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Window
@@ -15,12 +13,16 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.DialogFragment
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import org.osmdroid.config.Configuration
 import java.io.File
 
+
 class CacheSettingsFragment : DialogFragment() {
+
     private lateinit var etTileCache: EditText
     private lateinit var etCacheSize: EditText
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val builder = AlertDialog.Builder(requireActivity())
         val inflater = requireActivity().layoutInflater
@@ -61,12 +63,16 @@ class CacheSettingsFragment : DialogFragment() {
                 configuration.tileFileSystemCacheMaxBytes =
                     newCacheSize.toLong() * 1024 * 1024
                 configuration.save(requireActivity().applicationContext, prefs)
-                if (
-                    newExternalStorage != currentExternalStorage
-                    || newTileCache != currentTileCache
-                    || newCacheSize != currentCacheSize
-                ) restart()
+                val intent = Intent(ACTION_CACHE_CHANGED);
+                val localBroadcastManager = LocalBroadcastManager.getInstance(
+                    requireActivity()
+                )
+                if (currentExternalStorage != newExternalStorage  || currentTileCache != newTileCache || currentCacheSize != newCacheSize) {
+                    localBroadcastManager.sendBroadcast(intent)
+                    requireActivity().finish()
+                }
                 dismiss()
+
             }
             .setNegativeButton(android.R.string.cancel) { _: DialogInterface?, _: Int -> dismiss() }
             .setNeutralButton(R.string.reset) { _: DialogInterface?, _: Int -> }
@@ -76,23 +82,6 @@ class CacheSettingsFragment : DialogFragment() {
         return dialog
     }
 
-    /**
-     * Restart the rude way
-     */
-    private fun restart() {
-        requireActivity().finish()
-        startActivity(requireActivity().intent)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            requireActivity().overrideActivityTransition(
-                Activity.OVERRIDE_TRANSITION_CLOSE,
-                0,
-                0,
-                Color.TRANSPARENT
-            )
-        } else {
-            requireActivity().overridePendingTransition(0, 0)
-        }
-    }
 
     override fun onResume() {
         super.onResume()
@@ -115,5 +104,6 @@ class CacheSettingsFragment : DialogFragment() {
         const val PREF_TILE_CACHE = "tile_cache"
         const val PREF_CACHE_SIZE = "cache_size"
         const val PREF_EXTERNAL_STORAGE = "external_storage"
+        const val ACTION_CACHE_CHANGED = "cache_changed"
     }
 }
