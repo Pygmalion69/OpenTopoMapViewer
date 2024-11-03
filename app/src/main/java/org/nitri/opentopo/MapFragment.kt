@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.GpsStatus.NmeaListener
@@ -36,6 +37,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import io.ticofab.androidgpxparser.parser.domain.Gpx
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.model.LocationViewModel
 import org.nitri.opentopo.overlay.model.MarkerModel
 import org.nitri.opentopo.overlay.viewmodel.MarkerViewModel
@@ -102,6 +105,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             return false
         }
     }
+
+    fun setKeepScreenOn(value: Boolean) {
+        mMapView.keepScreenOn = value
+    }
+
     private var mFollow = false
     private var mListener: OnFragmentInteractionListener? = null
     private lateinit var mPrefs: SharedPreferences
@@ -315,8 +323,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
         }))
-        mMapView.keepScreenOn = mListener?.isKeepScreenOn ?: false
-        mListener?.isFullscreen = mPrefs.getBoolean(BaseMainActivity.PREF_FULLSCREEN, false)
+        setKeepScreenOn(mPrefs.getBoolean(PREF_KEEP_SCREEN_ON, false))
+        mListener?.isFullscreen = mPrefs.getBoolean(PREF_FULLSCREEN, false)
 
         markerViewModel.markers.observe(viewLifecycleOwner) { markers ->
             mOverlayHelper?.setMarkers(markers, object : OverlayHelper.MarkerInteractionListener {
@@ -613,10 +621,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mListener?.let {
             it.setUpNavigation(false)
             inflater.inflate(R.menu.menu_main, menu)
-            val fullscreenItem = menu.findItem(R.id.action_fullscreen)
-            val keepScreenOnItem = menu.findItem(R.id.action_keep_screen_on)
-                fullscreenItem.isChecked = it.isFullscreenOnMapTap
-                keepScreenOnItem.isChecked = it.isKeepScreenOn
         }
     }
 
@@ -688,17 +692,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
                 return true
             }
-            R.id.action_cache_settings -> {
-                mMapCenterState = mMapView.mapCenter as GeoPoint
-                saveMapCenterPrefs()
-                fm = requireActivity().supportFragmentManager
-                val cacheSettingsFragment = CacheSettingsFragment()
-                cacheSettingsFragment.show(fm, "cache_settings")
-                return true
-            }
             R.id.action_gpx_zoom -> {
                 disableFollow()
-                mListener?.let {zoomToBounds(Util.area(it.getGpx())) }
+                mListener?.let { zoomToBounds(Util.area(it.getGpx())) }
                 return true
             }
             R.id.action_layers -> {
@@ -727,20 +723,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
                 return false
             }
-            R.id.action_fullscreen -> {
-                mListener?.let {
-                    item.isChecked = !item.isChecked
-                    it.isFullscreenOnMapTap = item.isChecked
-                }
-                return true
-            }
-            R.id.action_keep_screen_on -> {
-                mListener?.let{
-                    item.isChecked = !item.isChecked
-                    it.isKeepScreenOn = item.isChecked
-                    mMapView.keepScreenOn = item.isChecked
-                }
-                return true
+            R.id.action_settings -> {
+                mMapCenterState = mMapView.mapCenter as GeoPoint
+                saveMapCenterPrefs()
+                val settingsIntent = Intent(activity, SettingsActivity::class.java)
+                startActivity(settingsIntent)
             }
             R.id.action_about -> {
                 showAboutDialog()
@@ -913,13 +900,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
          */
         fun onMapLongPress()
 
-        /**
-         * Fullscreen on map tap
-         */
-        var isFullscreenOnMapTap: Boolean
-
         var isFullscreen: Boolean
-        var isKeepScreenOn: Boolean
 
         /**
          * Need to enable privacy stettings or not

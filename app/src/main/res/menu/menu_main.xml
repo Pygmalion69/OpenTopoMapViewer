@@ -42,18 +42,6 @@
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_fullscreen"
-        android:checkable="true"
-        android:title="@string/fullscreen_on_map_tap"
-        app:actionViewClass="android.widget.CheckBox"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_keep_screen_on"
-        android:checkable="true"
-        android:title="@string/keep_screen_on"
-        app:actionViewClass="android.widget.CheckBox"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_location_details"
         android:icon="@drawable/ic_action_location_detail"
         android:title="@string/location_details"
@@ -66,9 +54,9 @@
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_cache_settings"
-        android:icon="@drawable/ic_action_cache_settings"
-        android:title="@string/cache_settings"
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_action_settings"
+        android:title="@string/settings"
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item

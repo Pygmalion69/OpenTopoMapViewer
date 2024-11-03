@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <!-- PROTECTION_NORMAL permissions, automatically granted -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- DANGEROUS PERMISSIONS, must request -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- DANGEROUS PERMISSIONS, must request -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
@@ -17,12 +14,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity
+            android:name=".SettingsActivity"
+            android:parentActivityName=".MainActivity"
+            android:exported="false"
+            android:label="@string/settings" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
@@ -33,10 +35,10 @@
 
                 <data android:scheme="geo" />
                 <data android:mimeType="application/gpx+xml" />
-
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <data android:scheme="content" />
@@ -64,10 +66,8 @@
 
                 <data android:host="*" />
                 <data android:scheme="file" />
-
                 <data android:scheme="content" />
                 <data android:mimeType="*/*" />
-
                 <data android:pathPattern=".*\\.gpx" />
                 <data android:pathPattern=".*\\..*\\.gpx" />
                 <data android:pathPattern=".*\\..*\\..*\\.gpx" />
@@ -87,7 +87,6 @@
 
                 <data android:host="*" />
                 <data android:scheme="file" />
-
                 <data android:pathPattern=".*\\.gpx" />
                 <data android:pathPattern=".*\\..*\\.gpx" />
                 <data android:pathPattern=".*\\..*\\..*\\.gpx" />

@@ -40,7 +40,7 @@
     <string name="tile_cache">Tegelcache</string>
     <string name="max_cache_size">Max. cachegrootte (MB)</string>
     <string name="reset">Resetten</string>
-    <string name="storage_root">Externe opslag root: %1$s</string>
+    <string name="storage_root">Opslag-root: %1$s</string>
     <string name="external_storage">Externe opslag</string>
 
     <string name="privacy_settings">Privacy-instellingen</string>
@@ -64,5 +64,9 @@
     <string name="delete">Verwijderen</string>
     <string name="confirm_delete">Verwijdering bevestigen</string>
     <string name="prompt_confirm_delete">Weet u zeker dat u dit item wilt verwijderen?</string>
+
+    <string name="settings">Instellingen</string>
+    <string name="screen_header">Scherm</string>
+    <string name="cache_header">Cache</string>
 
 </resources>

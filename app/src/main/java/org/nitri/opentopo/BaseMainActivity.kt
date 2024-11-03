@@ -1,9 +1,14 @@
 package org.nitri.opentopo
 
 import android.Manifest
+import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -18,15 +23,22 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
 import io.ticofab.androidgpxparser.parser.GPXParser
 import io.ticofab.androidgpxparser.parser.domain.Gpx
-import kotlinx.coroutines.CoroutineScope
+import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_CACHE_SIZE
+import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_EXTERNAL_STORAGE
+import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_TILE_CACHE
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN_ON_MAP_TAP
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.model.GpxViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
@@ -50,22 +62,21 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
     private var windowInsetsController: WindowInsetsControllerCompat? = null
     private var actionBar: ActionBar? = null
-    override var isFullscreenOnMapTap = false
-        set(value) {
-            field = value
-            mPrefs.edit().putBoolean(
-                PREF_FULLSCREEN_ON_MAP_TAP,
-                value
-            ).apply()
+
+    private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+        when (key) {
+            PREF_KEEP_SCREEN_ON -> {
+                mMapFragment?.setKeepScreenOn(sharedPreferences.getBoolean(key, false))
+            }
         }
-    override var isKeepScreenOn = false
-        set(value) {
-            field = value
-            mPrefs.edit().putBoolean(
-                PREF_KEEP_SCREEN_ON,
-                value
-            ).apply()
+    }
+
+    private val cacheChangedReceiver = object: BroadcastReceiver() {
+        override fun onReceive(p0: Context?, p1: Intent?) {
+            restart()
         }
+
+    }
 
     override fun isPrivacyOptionsRequired(): Boolean {
         return false
@@ -85,8 +96,6 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
         handler = Handler(mainLooper)
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this)
-        isFullscreenOnMapTap = mPrefs.getBoolean(PREF_FULLSCREEN_ON_MAP_TAP, false)
-        isKeepScreenOn = mPrefs.getBoolean(PREF_KEEP_SCREEN_ON, false)
         val intent = intent
         if (intent != null && intent.data != null) {
             handleIntent(intent)
@@ -119,6 +128,10 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
         actionBar = supportActionBar
+
+        mPrefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+        LocalBroadcastManager.getInstance(this).registerReceiver(cacheChangedReceiver, IntentFilter(CacheSettingsFragment.ACTION_CACHE_CHANGED))
+        Log.d(TAG, "SEMH receiver registered")
 
     }
 
@@ -334,6 +347,12 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         return pointFromIntent
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        mPrefs.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(cacheChangedReceiver)
+    }
+
     override fun getGpx(): Gpx? {
         return gpxViewModel.gpx
     }
@@ -357,7 +376,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun onMapTap() {
         if (mapFragmentAdded()) {
-            if (isFullscreenOnMapTap) {
+            if (mPrefs.getBoolean(PREF_FULLSCREEN_ON_MAP_TAP, false)) {
                 toggleFullscreen()
             }
         }
@@ -365,18 +384,31 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun onMapLongPress() {}
 
+    /**
+     * Restart the rude way
+     */
+    private fun restart() {
+        finish()
+        startActivity(intent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(
+                Activity.OVERRIDE_TRANSITION_CLOSE,
+                0,
+                0,
+                Color.TRANSPARENT
+            )
+        } else {
+            overridePendingTransition(0, 0)
+        }
+    }
+
     companion object {
         private val TAG = BaseMainActivity::class.java.simpleName
         private const val MAP_FRAGMENT_TAG = "map_fragment"
         const val GPX_DETAIL_FRAGMENT_TAG = "gpx_detail_fragment"
         const val WAY_POINT_DETAIL_FRAGMENT_TAG = "way_point_detail_fragment"
         private const val NEARBY_FRAGMENT_TAG = "nearby_fragment"
-        const val PREF_FULLSCREEN = "fullscreen"
-        private const val PREF_FULLSCREEN_ON_MAP_TAP = "fullscreen_on_map_tap"
-        private const val PREF_KEEP_SCREEN_ON = "keep_screen_on"
         private const val REQUEST_LOCATION_PERMISSION = 1
-        private const val REQUEST_STORAGE_PERMISSION = 2
-        private const val READ_REQUEST_CODE = 69
         private const val GPX_URI_STATE = "gpx_uri"
     }
 }

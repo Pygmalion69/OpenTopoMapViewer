@@ -40,7 +40,7 @@
     <string name="tile_cache">Caché de teselas</string>
     <string name="max_cache_size">Tamaño máx. de caché (MB)</string>
     <string name="reset">Restablecer</string>
-    <string name="storage_root">Raíz del almacenamiento externo: %1$s</string>
+    <string name="storage_root">Raíz del almacenamiento: %1$s</string>
     <string name="external_storage">Almacenamiento externo</string>
 
     <string name="privacy_settings">Ajustes de privacidad</string>
@@ -64,5 +64,9 @@
     <string name="delete">Eliminar</string>
     <string name="confirm_delete">Confirmar eliminación</string>
     <string name="prompt_confirm_delete">¿Está seguro de que desea eliminar este elemento?</string>
+
+    <string name="settings">Configuración</string>
+    <string name="screen_header">Pantalla</string>
+    <string name="cache_header">Caché</string>
 
 </resources>
