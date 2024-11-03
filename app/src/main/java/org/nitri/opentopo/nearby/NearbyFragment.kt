@@ -20,7 +20,6 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import org.nitri.opentopo.BuildConfig
 import org.nitri.opentopo.R
-import org.nitri.opentopo.Util.distance
 import org.nitri.opentopo.nearby.adapter.NearbyAdapter
 import org.nitri.opentopo.nearby.api.NearbyDatabase.Companion.getDatabase
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiApi
@@ -28,6 +27,7 @@ import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.nearby.repo.NearbyRepository
 import org.nitri.opentopo.nearby.viewmodel.NearbyViewModel
 import org.nitri.opentopo.nearby.viewmodel.NearbyViewModelFactory
+import org.nitri.opentopo.util.DistanceCalculator
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -88,7 +88,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
         for (item in mNearbyItems) {
             item?.apply {
                 distance =
-                    Math.round(distance(mLatitude, mLongitude, item.lat, item.lon)).toInt()
+                    Math.round(DistanceCalculator.distance(mLatitude, mLongitude, item.lat, item.lon)).toInt()
             }
         }
     }

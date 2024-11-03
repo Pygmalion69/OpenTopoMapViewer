@@ -38,6 +38,8 @@ import org.nitri.opentopo.model.GpxViewModel
 import org.nitri.opentopo.model.WayPointHeaderItem
 import org.nitri.opentopo.model.WayPointItem
 import org.nitri.opentopo.model.WayPointListItem
+import org.nitri.opentopo.util.DistanceCalculator
+import org.nitri.opentopo.util.Util
 import org.nitri.opentopo.view.ChartValueMarkerView
 import java.util.Locale
 
@@ -156,7 +158,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
                 mMinElevation = mMaxElevation
                 points.forEach { trackPoint ->
                     prevTrackPoint?.let { prevPoint ->
-                        mDistance += Util.distance(prevPoint, trackPoint)
+                        mDistance += DistanceCalculator.distance(prevPoint, trackPoint)
                     }
                     val builder = DistancePoint.Builder()
                     builder.setDistance(mDistance)

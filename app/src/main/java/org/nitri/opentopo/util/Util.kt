@@ -1,4 +1,4 @@
-package org.nitri.opentopo
+package org.nitri.opentopo.util
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -34,53 +34,6 @@ object Util {
     const val NO_ELEVATION_VALUE = -99999
 
     /**
-     * Distance between points
-     *
-     * @param point1
-     * @param point2
-     * @return meters
-     */
-    fun distance(point1: Point, point2: Point): Double {
-        val lat1 = point1.latitude
-        val lon1 = point1.longitude
-        val lat2 = point2.latitude
-        val lon2 = point2.longitude
-        return distance(lat1, lon1, lat2, lon2)
-    }
-
-    /**
-     * Distance between lat/lon pairs
-     *
-     * @param lat1
-     * @param lon1
-     * @param lat2
-     * @param lon2
-     * @return meters
-     */
-    @JvmStatic
-    fun distance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        if (lat1 == lat2 && lon1 == lon2) return 0.0
-        val theta = lon1 - lon2
-        var dist =
-            sin(deg2rad(lat1)) * sin(deg2rad(lat2)) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * cos(
-                deg2rad(theta)
-            )
-        dist = acos(dist)
-        dist = rad2deg(dist)
-        dist *= 60 * 1.1515
-        dist *= 1609.344
-        return dist
-    }
-
-    private fun deg2rad(deg: Double): Double {
-        return deg * Math.PI / 180.0
-    }
-
-    private fun rad2deg(rad: Double): Double {
-        return rad * 180.0 / Math.PI
-    }
-
-    /**
      * Get GPX bounds
      *
      * @param gpx Gpx
@@ -96,7 +49,7 @@ object Util {
      * @param points List<GeoPoint>
      * @return BoundingBox
     </GeoPoint> */
-    fun area(points: List<GeoPoint?>): BoundingBox {
+    private fun area(points: List<GeoPoint?>): BoundingBox {
         var north = Double.MIN_VALUE
         var south = Double.MAX_VALUE
         var west = Double.MAX_VALUE

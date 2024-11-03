@@ -12,8 +12,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import org.nitri.opentopo.Util.elevationFromNmea
+import org.nitri.opentopo.util.Util.elevationFromNmea
 import org.nitri.opentopo.model.LocationViewModel
+import org.nitri.opentopo.util.Util
 
 class LocationDetailFragment : DialogFragment() {
     private var view: View? = null

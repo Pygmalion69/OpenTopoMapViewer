@@ -10,7 +10,7 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import org.nitri.opentopo.R
-import org.nitri.opentopo.Util.fromHtml
+import org.nitri.opentopo.util.Util.fromHtml
 import org.nitri.opentopo.overlay.model.MarkerModel
 import org.osmdroid.api.IMapView
 import org.osmdroid.views.MapView

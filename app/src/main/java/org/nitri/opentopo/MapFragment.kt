@@ -46,6 +46,7 @@ import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
+import org.nitri.opentopo.util.Util
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.DelayedMapListener
 import org.osmdroid.events.MapEventsReceiver
