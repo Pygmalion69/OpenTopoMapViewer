@@ -562,15 +562,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun zoomToBounds(box: BoundingBox) {
-        if (mMapView.height > 0) {
-            mMapView.zoomToBoundingBox(box, true, 64)
-        } else {
-            mMapView.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-                override fun onGlobalLayout() {
-                    mMapView.zoomToBoundingBox(box, true, 64)
-                    mMapView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                }
-            })
+        mMapView.post {
+            if (mMapView.height > 0) {
+                mMapView.zoomToBoundingBox(box, true, 64)
+            } else {
+                mMapView.viewTreeObserver.addOnGlobalLayoutListener(object :
+                    OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        mMapView.zoomToBoundingBox(box, true, 64)
+                        mMapView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    }
+                })
+            }
         }
     }
 
@@ -805,8 +808,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mLocationViewModel?.currentLocation?.value = location
     }
 
+    @Deprecated("Deprecated in Java")
+    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+    }
+
     override fun onProviderEnabled(s: String) {}
+
     override fun onProviderDisabled(s: String) {}
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnFragmentInteractionListener) {
