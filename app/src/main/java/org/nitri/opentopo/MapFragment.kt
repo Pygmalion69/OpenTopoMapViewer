@@ -43,6 +43,7 @@ import org.nitri.opentopo.model.LocationViewModel
 import org.nitri.opentopo.overlay.model.MarkerModel
 import org.nitri.opentopo.overlay.viewmodel.MarkerViewModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
+import org.nitri.opentopo.overlay.ClickableCompassOverlay
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
@@ -183,7 +184,29 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mMapView = view.findViewById(R.id.mapview)
         val dm = this.resources.displayMetrics
         val activity = activity ?: return null
-        mCompassOverlay = CompassOverlay(
+
+        mMapView.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
+            override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
+                mListener?.onMapTap()
+                return true
+            }
+
+            override fun longPressHelper(p: GeoPoint): Boolean {
+                mListener?.onMapLongPress()
+                val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
+                val seq = highestSeq + 1
+                val marker = MarkerModel(
+                    seq = seq,
+                    latitude = p.latitude,
+                    longitude = p.longitude,
+                    name = getString(R.string.default_marker_name, seq),
+                    description = "")
+                markerViewModel.addMarker(marker)
+                return true
+            }
+        }))
+
+        mCompassOverlay = ClickableCompassOverlay(
             activity, InternalCompassOrientationProvider(activity),
             mMapView
         )
@@ -304,26 +327,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         mMapView.controller.setZoom(mZoomState)
         if (mPrefs.getBoolean(PREF_FOLLOW, false)) enableFollow()
-        mMapView.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
-            override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
-                mListener?.onMapTap()
-                return true
-            }
 
-            override fun longPressHelper(p: GeoPoint): Boolean {
-                mListener?.onMapLongPress()
-                val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
-                val seq = highestSeq + 1
-                val marker = MarkerModel(
-                    seq = seq,
-                    latitude = p.latitude,
-                    longitude = p.longitude,
-                    name = getString(R.string.default_marker_name, seq),
-                    description = "")
-                markerViewModel.addMarker(marker)
-                return true
-            }
-        }))
         setKeepScreenOn(mPrefs.getBoolean(PREF_KEEP_SCREEN_ON, false))
         mListener?.isFullscreen = mPrefs.getBoolean(PREF_FULLSCREEN, false)
 
