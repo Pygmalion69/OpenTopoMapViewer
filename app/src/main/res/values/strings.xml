@@ -4,6 +4,8 @@
     <string name="follow">Follow</string>
     <string name="follow_enabled">Follow enabled</string>
     <string name="follow_disabled">Follow disabled</string>
+    <string name="rotation_on">Rotation on</string>
+    <string name="rotation_off">Rotation off</string>
     <string name="gpx">GPX</string>
     <string name="discard_current_gpx">The current GPX will be discarded.</string>
     <string name="gpx_details">GPX details</string>

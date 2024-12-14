@@ -155,7 +155,6 @@ object Util {
      * @param source
      * @return
      */
-    @JvmStatic
     @Suppress("deprecation")
     fun fromHtml(source: String?): Spanned {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -171,7 +170,6 @@ object Util {
      * @param nmea NMEA
      * @return antenna altitude
      */
-    @JvmStatic
     fun elevationFromNmea(nmea: String): Double {
         if (!TextUtils.isEmpty(nmea) && nmea.startsWith("\$GPGGA")) {
             val tokens = nmea.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()

@@ -26,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.Window
+import android.view.WindowManager
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
@@ -36,6 +37,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.preference.PreferenceManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
@@ -47,6 +49,7 @@ import org.nitri.opentopo.overlay.ClickableCompassOverlay
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
+import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.Util
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.DelayedMapListener
@@ -69,7 +72,8 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
 class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
-    GestureCallback {
+    GestureCallback, ClickableCompassOverlay.OnCompassClickListener {
+    private var mapRotation: Boolean = false
     private lateinit var mMapView: MapView
     private var mLocationOverlay: MyLocationNewOverlay? = null
     private var mCompassOverlay: CompassOverlay? = null
@@ -109,7 +113,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     fun setKeepScreenOn(value: Boolean) {
+        Log.d(TAG, "keepScreenOn: $value")
         mMapView.keepScreenOn = value
+        if (value) {
+            requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
 
     private var mFollow = false
@@ -132,7 +142,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         val context = requireActivity().applicationContext
-        mPrefs = requireActivity().getSharedPreferences(MAP_PREFS, Context.MODE_PRIVATE)
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         val configuration = Configuration.getInstance()
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
         val basePath = Util.getOsmdroidBasePath(context, mPrefs.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false))
@@ -206,7 +216,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }))
 
-        mCompassOverlay = ClickableCompassOverlay(
+//        TODO: mCompassOverlay = ClickableCompassOverlay(
+//            activity, InternalCompassOrientationProvider(activity),
+//            mMapView, this
+//        )
+        mCompassOverlay = CompassOverlay(
             activity, InternalCompassOrientationProvider(activity),
             mMapView
         )
@@ -810,6 +824,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             String.format("Location: %f, %f", location.latitude, location.longitude)
         )
         mLocationViewModel?.currentLocation?.value = location
+        if (mapRotation) {
+            MapOrientation.setTargetMapOrientation(mMapView, location.bearing)
+        }
     }
 
     @Deprecated("Deprecated in Java")
@@ -853,6 +870,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             // follow disabled by gesture -> re-enable with delay
             mMapHandler.removeCallbacksAndMessages(null)
             mMapHandler.postDelayed(mEnableFollowRunnable, 5000)
+        }
+    }
+
+    override fun onCompassClicked() {
+        mapRotation = !mapRotation
+        if (mapRotation) {
+            Toast.makeText(requireContext(), R.string.rotation_on, Toast.LENGTH_SHORT).show()
+        } else {
+            MapOrientation.setTargetMapOrientation(mMapView, 0f)
+            Toast.makeText(requireContext(), R.string.rotation_off, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -935,7 +962,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         private const val STATE_LATITUDE = "latitude"
         private const val STATE_LONGITUDE = "longitude"
         private const val STATE_ZOOM = "zoom"
-        const val MAP_PREFS = "map_prefs"
         private const val PREF_BASE_MAP = "base_map"
         private const val PREF_OVERLAY = "overlay"
         private const val PREF_LATITUDE = "latitude"
@@ -958,4 +984,5 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             return mapFragment
         }
     }
+
 }

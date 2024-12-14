@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.DialogFragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import org.osmdroid.config.Configuration
 import java.io.File
 
@@ -28,8 +29,7 @@ class CacheSettingsFragment : DialogFragment() {
         val inflater = requireActivity().layoutInflater
         @SuppressLint("InflateParams") val view =
             inflater.inflate(R.layout.fragment_cache_settings, null)
-        val prefs =
-            requireActivity().getSharedPreferences(MapFragment.MAP_PREFS, Context.MODE_PRIVATE)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity().applicationContext)
         val tvExternalStorageRoot = view.findViewById<TextView>(R.id.tvExternalStorageRoot)
         val swExternalStorage = view.findViewById<SwitchCompat>(R.id.swExternalStorage)
         etTileCache = view.findViewById(R.id.etTileCache)

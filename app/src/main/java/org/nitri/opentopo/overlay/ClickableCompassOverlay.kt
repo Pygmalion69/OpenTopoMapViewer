@@ -10,7 +10,8 @@ import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 class ClickableCompassOverlay(
     context: Context,
     orientationProvider: InternalCompassOrientationProvider,
-    mapView: MapView
+    mapView: MapView,
+    private val onCompassClickListener: OnCompassClickListener
 ) : CompassOverlay(context, orientationProvider, mapView) {
 
 
@@ -18,11 +19,13 @@ class ClickableCompassOverlay(
         val reuse = Point()
         mapView.projection.rotateAndScalePoint(e.x.toInt(), e.y.toInt(), reuse)
         if (reuse.x < mCompassFrameCenterX * 2 && reuse.y < mCompassFrameCenterY * 2) {
-            mapView.controller?.animateTo(null, null, 300, 0f)
+            onCompassClickListener.onCompassClicked()
             return true
         }
-
         return super.onSingleTapConfirmed(e, mapView)
     }
 
+    interface OnCompassClickListener {
+        fun onCompassClicked()
+    }
 }

@@ -4,6 +4,8 @@
     <string name="follow">Volgen</string>
     <string name="follow_enabled">Volgen ingeschakeld</string>
     <string name="follow_disabled">Volgen uitgeschakeld</string>
+    <string name="rotation_on">Rotatie aan</string>
+    <string name="rotation_off">Rotatie uit</string>
     <string name="gpx">GPX</string>
     <string name="discard_current_gpx">De huidige GPX wordt verwijderd.</string>
     <string name="gpx_details">GPX details</string>
