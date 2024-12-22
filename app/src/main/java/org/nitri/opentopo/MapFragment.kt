@@ -50,6 +50,7 @@ import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
 import org.nitri.opentopo.util.MapOrientation
+import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Util
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.DelayedMapListener
@@ -73,6 +74,8 @@ import java.io.File
 
 class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
     GestureCallback, ClickableCompassOverlay.OnCompassClickListener {
+    private var orientationSensor: OrientationSensor? = null
+    @Volatile
     private var mapRotation: Boolean = false
     private lateinit var mMapView: MapView
     private var mLocationOverlay: MyLocationNewOverlay? = null
@@ -216,13 +219,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }))
 
-//        TODO: mCompassOverlay = ClickableCompassOverlay(
-//            activity, InternalCompassOrientationProvider(activity),
-//            mMapView, this
-//        )
-        mCompassOverlay = CompassOverlay(
+        mCompassOverlay = ClickableCompassOverlay(
             activity, InternalCompassOrientationProvider(activity),
-            mMapView
+            mMapView, this
         )
         mLocationOverlay = MyLocationNewOverlay(
             GpsMyLocationProvider(activity),
@@ -819,14 +818,30 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onLocationChanged(location: Location) {
-        if (BuildConfig.DEBUG) Log.d(
-            TAG,
-            String.format("Location: %f, %f", location.latitude, location.longitude)
-        )
-        mLocationViewModel?.currentLocation?.value = location
-        if (mapRotation) {
-            MapOrientation.setTargetMapOrientation(mMapView, location.bearing)
+
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}")
+
+        requireActivity().runOnUiThread {
+            mLocationViewModel?.currentLocation?.postValue(location)
+            if (mapRotation) {
+                if (location.hasBearing()) {
+                    stopOrientationSensor()
+                    MapOrientation.setTargetMapOrientation(mMapView, location.bearing)
+                } else {
+                    // Use device orientation
+                    orientationSensor =
+                        orientationSensor ?: OrientationSensor(requireContext(), mMapView)
+                }
+            } else {
+                stopOrientationSensor()
+            }
         }
+    }
+
+    private fun stopOrientationSensor() {
+        orientationSensor?.stop()
+        orientationSensor = null
     }
 
     @Deprecated("Deprecated in Java")
@@ -878,7 +893,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         if (mapRotation) {
             Toast.makeText(requireContext(), R.string.rotation_on, Toast.LENGTH_SHORT).show()
         } else {
-            MapOrientation.setTargetMapOrientation(mMapView, 0f)
+            MapOrientation.reset(mMapView)
             Toast.makeText(requireContext(), R.string.rotation_off, Toast.LENGTH_SHORT).show()
         }
     }

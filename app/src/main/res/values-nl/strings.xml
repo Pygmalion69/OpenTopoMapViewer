@@ -44,6 +44,7 @@
     <string name="reset">Resetten</string>
     <string name="storage_root">Opslag-root: %1$s</string>
     <string name="external_storage">Externe opslag</string>
+    <string name="invalid_cache_size">Voer een geldige cachegrootte in</string>
 
     <string name="privacy_settings">Privacy-instellingen</string>
 

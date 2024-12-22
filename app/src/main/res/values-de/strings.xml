@@ -44,6 +44,7 @@
     <string name="reset">Zurücksetzen</string>
     <string name="storage_root">Speicherpfad: %1$s</string>
     <string name="external_storage">Externer Speicher</string>
+    <string name="invalid_cache_size">Bitte geben Sie eine gültige Cache-Größe ein</string>
 
     <string name="privacy_settings">Datenschutzeinstellungen</string>
 

@@ -44,6 +44,7 @@
     <string name="reset">Reset</string>
     <string name="storage_root">Storage root: %1$s</string>
     <string name="external_storage">External storage</string>
+    <string name="invalid_cache_size">Please enter a valid cache size</string>
 
     <string name="privacy_settings">Privacy Settings</string>
 

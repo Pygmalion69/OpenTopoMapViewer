@@ -17,6 +17,7 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.MenuItem
 import android.view.MotionEvent
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -24,9 +25,11 @@ import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updatePadding
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import de.k3b.geo.api.GeoPointDto
@@ -88,12 +91,25 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     private lateinit var mPrefs: SharedPreferences
     private lateinit var handler: Handler
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         if (savedInstanceState != null) {
             mGpxUriString = savedInstanceState.getString(GPX_URI_STATE)
         }
+
+        val mapContainer = findViewById<View>(R.id.map_container)
+
+        ViewCompat.setOnApplyWindowInsetsListener(mapContainer) { view, insets ->
+            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(
+                top = systemBarsInsets.top,
+                bottom = systemBarsInsets.bottom
+            )
+            WindowInsetsCompat.CONSUMED
+        }
+
         handler = Handler(mainLooper)
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         val intent = intent

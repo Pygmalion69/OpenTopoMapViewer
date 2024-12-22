@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.Window
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.DialogFragment
@@ -34,7 +35,8 @@ class CacheSettingsFragment : DialogFragment() {
         val swExternalStorage = view.findViewById<SwitchCompat>(R.id.swExternalStorage)
         etTileCache = view.findViewById(R.id.etTileCache)
         etCacheSize = view.findViewById(R.id.etCacheSize)
-        val storageRoot = Configuration.getInstance().osmdroidBasePath.absolutePath
+        val basePath = Configuration.getInstance().osmdroidBasePath
+        val storageRoot = basePath?.absolutePath ?: getString(R.string.unknown_symbol)
         tvExternalStorageRoot.text = getString(R.string.storage_root, storageRoot)
         val currentExternalStorage = prefs.getBoolean(PREF_EXTERNAL_STORAGE, false)
         swExternalStorage.isChecked = currentExternalStorage
@@ -46,32 +48,42 @@ class CacheSettingsFragment : DialogFragment() {
             .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
                 val newExternalStorage = swExternalStorage.isChecked
                 val newTileCache = etTileCache.text.toString()
-                val newCacheSize = etCacheSize.text.toString().toInt()
-                val editor = prefs.edit()
-                editor.apply {
-                    putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage)
-                    putString(PREF_TILE_CACHE, newTileCache)
-                    putInt(PREF_CACHE_SIZE, newCacheSize)
-                    apply()
+                val newCacheSizeText = etCacheSize.text.toString()
+                val newCacheSize = try {
+                    newCacheSizeText.toInt()
+                } catch (e: NumberFormatException) {
+                    Log.e(TAG, "Invalid cache size: $newCacheSizeText", e)
                 }
-                val cacheDir = File("$storageRoot/$newTileCache")
-                if (cacheDir.mkdirs()) {
-                    Log.i(TAG, "Tile cache created: $newTileCache")
+
+                if (newCacheSize > 0) {
+                    val editor = prefs.edit()
+                    editor.apply {
+                        putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage)
+                        putString(PREF_TILE_CACHE, newTileCache)
+                        putInt(PREF_CACHE_SIZE, newCacheSize)
+                        apply()
+                    }
+                    val cacheDir = File("$storageRoot/$newTileCache")
+                    if (cacheDir.mkdirs()) {
+                        Log.i(TAG, "Tile cache created: $newTileCache")
+                    }
+                    val configuration = Configuration.getInstance()
+                    configuration.osmdroidTileCache = cacheDir
+                    configuration.tileFileSystemCacheMaxBytes =
+                        newCacheSize.toLong() * 1024 * 1024
+                    configuration.save(requireActivity().applicationContext, prefs)
+                    val intent = Intent(ACTION_CACHE_CHANGED);
+                    val localBroadcastManager = LocalBroadcastManager.getInstance(
+                        requireActivity()
+                    )
+                    if (currentExternalStorage != newExternalStorage || currentTileCache != newTileCache || currentCacheSize != newCacheSize) {
+                        localBroadcastManager.sendBroadcast(intent)
+                        requireActivity().finish()
+                    }
+                    dismiss()
+                } else {
+                    Toast.makeText(requireContext(), R.string.invalid_cache_size, Toast.LENGTH_SHORT).show()
                 }
-                val configuration = Configuration.getInstance()
-                configuration.osmdroidTileCache = cacheDir
-                configuration.tileFileSystemCacheMaxBytes =
-                    newCacheSize.toLong() * 1024 * 1024
-                configuration.save(requireActivity().applicationContext, prefs)
-                val intent = Intent(ACTION_CACHE_CHANGED);
-                val localBroadcastManager = LocalBroadcastManager.getInstance(
-                    requireActivity()
-                )
-                if (currentExternalStorage != newExternalStorage  || currentTileCache != newTileCache || currentCacheSize != newCacheSize) {
-                    localBroadcastManager.sendBroadcast(intent)
-                    requireActivity().finish()
-                }
-                dismiss()
 
             }
             .setNegativeButton(android.R.string.cancel) { _: DialogInterface?, _: Int -> dismiss() }
