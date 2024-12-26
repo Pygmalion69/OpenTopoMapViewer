@@ -25,7 +25,7 @@
 
     <string name="layers">Layers</string>
     <string name="open_topo_map">OpenTopoMap</string>
-    <string name="open_street_map">OpenSteetMap</string>
+    <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Hiking</string>
     <string name="lonvia_cycling">Lonvia Cycling</string>
     <string name="base_map">Base Map</string>
