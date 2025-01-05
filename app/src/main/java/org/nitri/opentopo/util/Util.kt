@@ -21,14 +21,10 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import io.ticofab.androidgpxparser.parser.domain.Gpx
-import io.ticofab.androidgpxparser.parser.domain.Point
 import io.ticofab.androidgpxparser.parser.domain.WayPoint
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import java.io.File
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.sin
 
 object Util {
     const val NO_ELEVATION_VALUE = -99999
@@ -255,4 +251,5 @@ object Util {
             "N/A"
         }
     }
+
 }

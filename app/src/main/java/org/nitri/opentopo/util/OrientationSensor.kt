@@ -17,6 +17,7 @@ class OrientationSensor(private val context: Context, private val mapView: MapVi
     private var gravity: FloatArray? = null
     private var geomagnetic: FloatArray? = null
     private val orientationSample: ArrayList<Float> = ArrayList()
+    @Volatile private var stopped = false
 
     init {
         sensorManager.registerListener(
@@ -32,6 +33,7 @@ class OrientationSensor(private val context: Context, private val mapView: MapVi
     }
 
     fun stop() {
+        stopped = true
         sensorManager.unregisterListener(this)
     }
 
@@ -41,6 +43,8 @@ class OrientationSensor(private val context: Context, private val mapView: MapVi
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
+        //Log.d(TAG, "onSensorChanged, stopped: $stopped")
+        if (stopped) return
         if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) gravity = event.values
 
         if (event?.sensor?.type == Sensor.TYPE_MAGNETIC_FIELD) geomagnetic = event.values

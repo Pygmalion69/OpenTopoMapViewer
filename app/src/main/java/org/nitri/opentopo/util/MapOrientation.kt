@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.nitri.opentopo.BuildConfig
 import org.osmdroid.views.MapView
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -41,6 +42,9 @@ object MapOrientation {
      * @param degrees 0 - 360 degrees
      */
     fun setTargetMapOrientation(mapView: MapView, degrees: Float) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "setTargetMapOrientation(), set orientation to $degrees")
+        }
         targetMapOrientation = degrees
 
         debounceJob?.cancel()
@@ -48,9 +52,7 @@ object MapOrientation {
             delay(DEBOUNCE_DELAY)
 
             if (abs(targetMapOrientation - previousMapOrientation) > ORIENTATION_EPSILON) {
-                if (!mMapOrientationAnimationRunning) {
-                    animateToMapOrientation(mapView, mapView.mapOrientation, 360 - targetMapOrientation)
-                }
+                animateToMapOrientation(mapView, mapView.mapOrientation, 360 - targetMapOrientation)
             }
         }
     }
@@ -67,7 +69,7 @@ object MapOrientation {
         targetMapOrientation: Float
     ) {
 
-        Log.d(TAG, "SEMH Animate from $originalOrientation to $targetMapOrientation")
+        // Log.d(TAG, "Animate from $originalOrientation to $targetMapOrientation")
 
         animationJob?.cancel()
 
@@ -75,7 +77,6 @@ object MapOrientation {
         val numberOfSteps = (abs(angularDistance) / ORIENTATION_ANIMATION_STEP_SIZE).toInt()
 
         animationJob = CoroutineScope(Dispatchers.Main).launch {
-            mMapOrientationAnimationRunning = true
 
             for (step in 1..numberOfSteps) {
                 val timeIndex = step.toFloat() / numberOfSteps
@@ -90,7 +91,6 @@ object MapOrientation {
                 delay(ORIENTATION_ANIMATION_DELTA_TIME.toLong())
             }
 
-            mMapOrientationAnimationRunning = false
         }
     }
 
@@ -101,6 +101,7 @@ object MapOrientation {
     }
 
     fun reset(mapView: MapView) {
+        // Log.d(TAG, "reset orientation")
         debounceJob?.cancel()
         animationJob?.cancel()
         targetMapOrientation = 0f

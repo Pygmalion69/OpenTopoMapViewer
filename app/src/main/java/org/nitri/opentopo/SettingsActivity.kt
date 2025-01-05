@@ -3,7 +3,9 @@ package org.nitri.opentopo
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NavUtils
+import androidx.core.content.ContextCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 
@@ -12,13 +14,22 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
+
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setTitleTextColor(ContextCompat.getColor(this, android.R.color.white))
+        toolbar.navigationIcon?.setTint(ContextCompat.getColor(this, android.R.color.white))
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white);
+        setSupportActionBar(toolbar)
+
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         if (savedInstanceState == null) {
             supportFragmentManager
                 .beginTransaction()
                 .replace(R.id.settings, SettingsFragment())
                 .commit()
         }
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -56,5 +67,7 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_FULLSCREEN = "fullscreen"
         const val PREF_FULLSCREEN_ON_MAP_TAP = "fullscreen_on_map_tap"
         const val PREF_KEEP_SCREEN_ON = "keep_screen_on"
+        const val PREF_TAP_COMPASS_TO_ROTATE = "tap_compass_to_rotate"
+        const val PREF_ROTATE = "rotate"
     }
 }

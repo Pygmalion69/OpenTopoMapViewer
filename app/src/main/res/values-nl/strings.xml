@@ -35,6 +35,7 @@
 
     <string name="fullscreen_on_map_tap">Volledig scherm bij tikken</string>
     <string name="keep_screen_on">Scherm aan houden</string>
+    <string name="tap_compass_to_rotate">Tik op het kompas om de kaart te draaien</string>
 
     <string name="nearby">In de buurt</string>
 

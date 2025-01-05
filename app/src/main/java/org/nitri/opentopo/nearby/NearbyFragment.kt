@@ -38,6 +38,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     private val gson = GsonBuilder().setLenient().create()
     private val mNearbyItems: MutableList<NearbyItem?> = ArrayList()
     private lateinit var mNearbyAdapter: NearbyAdapter
+
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

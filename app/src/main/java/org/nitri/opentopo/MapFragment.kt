@@ -39,16 +39,15 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
-import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.model.LocationViewModel
-import org.nitri.opentopo.overlay.model.MarkerModel
-import org.nitri.opentopo.overlay.viewmodel.MarkerViewModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.overlay.ClickableCompassOverlay
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
+import org.nitri.opentopo.overlay.model.MarkerModel
+import org.nitri.opentopo.overlay.viewmodel.MarkerViewModel
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Util
@@ -164,6 +163,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         configuration.load(context, mPrefs)
         mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
         mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
+        mapRotation = mPrefs.getBoolean(SettingsActivity.PREF_ROTATE, false)
         mLocationManager =
             requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         mLocationViewModel = ViewModelProvider(requireActivity())[LocationViewModel::class.java]
@@ -342,7 +342,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         if (mPrefs.getBoolean(PREF_FOLLOW, false)) enableFollow()
 
         setKeepScreenOn(mPrefs.getBoolean(PREF_KEEP_SCREEN_ON, false))
-        mListener?.isFullscreen = mPrefs.getBoolean(PREF_FULLSCREEN, false)
 
         markerViewModel.markers.observe(viewLifecycleOwner) { markers ->
             mOverlayHelper?.setMarkers(markers, object : OverlayHelper.MarkerInteractionListener {
@@ -630,6 +629,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     fun showZoomControls(show: Boolean) {
+        if (!::mMapView.isInitialized) return
         if (show) {
             mMapView.zoomController.setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT)
         } else {
@@ -820,7 +820,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     override fun onLocationChanged(location: Location) {
 
         if (BuildConfig.DEBUG)
-            Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}")
+            Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}, mapRotation: $mapRotation")
 
         requireActivity().runOnUiThread {
             mLocationViewModel?.currentLocation?.postValue(location)
@@ -835,11 +835,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
             } else {
                 stopOrientationSensor()
+                if (mMapView.mapOrientation != 0f) MapOrientation.reset(mMapView)
             }
         }
     }
 
     private fun stopOrientationSensor() {
+        // Log.d(TAG, "stopOrientationSensor()")
         orientationSensor?.stop()
         orientationSensor = null
     }
@@ -889,10 +891,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onCompassClicked() {
+        if (!mPrefs.getBoolean(SettingsActivity.PREF_TAP_COMPASS_TO_ROTATE, false)) {
+            return
+        }
         mapRotation = !mapRotation
+        //Log.d(TAG, "map rotation set to $mapRotation")
+        mPrefs.edit().putBoolean(SettingsActivity.PREF_ROTATE, mapRotation).apply()
         if (mapRotation) {
             Toast.makeText(requireContext(), R.string.rotation_on, Toast.LENGTH_SHORT).show()
         } else {
+            stopOrientationSensor()
             MapOrientation.reset(mMapView)
             Toast.makeText(requireContext(), R.string.rotation_off, Toast.LENGTH_SHORT).show()
         }

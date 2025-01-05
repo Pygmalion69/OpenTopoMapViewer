@@ -18,11 +18,14 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -45,6 +48,7 @@ import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.model.GpxViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
+import org.nitri.opentopo.util.Util
 import org.osmdroid.util.GeoPoint
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -59,12 +63,10 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     private var mMapFragment: MapFragment? = null
     private val gpxViewModel: GpxViewModel by viewModels()
     override var isFullscreen = false
-        set(value) {
-            applyFullscreen(value)
-            field = value
-        }
+
     private var windowInsetsController: WindowInsetsControllerCompat? = null
     private var actionBar: ActionBar? = null
+    private lateinit var mapContainer: ViewGroup
 
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         when (key) {
@@ -95,13 +97,22 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setTitleTextColor(ContextCompat.getColor(this, android.R.color.white))
+        toolbar.navigationIcon?.setTint(ContextCompat.getColor(this, android.R.color.white))
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white)
+
+        setSupportActionBar(toolbar)
+
         if (savedInstanceState != null) {
             mGpxUriString = savedInstanceState.getString(GPX_URI_STATE)
         }
 
-        val mapContainer = findViewById<View>(R.id.map_container)
+        mapContainer = findViewById(R.id.map_container)
+        val mainContainer = findViewById<ViewGroup>(R.id.main_container)
 
-        ViewCompat.setOnApplyWindowInsetsListener(mapContainer) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(mainContainer) { view, insets ->
             val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.updatePadding(
                 top = systemBarsInsets.top,
@@ -145,10 +156,12 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
         actionBar = supportActionBar
 
+        isFullscreen = mPrefs.getBoolean(PREF_FULLSCREEN, false)
+        applyFullscreen()
+
+
         mPrefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
         LocalBroadcastManager.getInstance(this).registerReceiver(cacheChangedReceiver, IntentFilter(CacheSettingsFragment.ACTION_CACHE_CHANGED))
-        Log.d(TAG, "SEMH receiver registered")
-
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
@@ -171,31 +184,56 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
     }
 
-    private fun applyFullscreen(fullscreen: Boolean) {
+    private fun applyFullscreen() {
         handler.removeCallbacksAndMessages(null)
 
         // Return early if windowInsetsController is null
         val insetsController = windowInsetsController ?: return
 
-        if (fullscreen) {
+        if (isFullscreen) {
             insetsController.hide(WindowInsetsCompat.Type.systemBars())
             actionBar?.hide()
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                mapContainer.apply {
+                    layoutParams = (layoutParams as ViewGroup.MarginLayoutParams).apply {
+                        topMargin = 0
+                    }
+                }
+            }
+
             handler.postDelayed({ mMapFragment?.showZoomControls(false) }, 3000)
         } else {
             insetsController.show(WindowInsetsCompat.Type.systemBars())
             actionBar?.show()
-            mMapFragment?.showZoomControls(true)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                actionBar?.height?.let { actionBarHeight ->
+                    if (actionBarHeight > 0) {
+                        mapContainer.apply {
+                            layoutParams = (layoutParams as ViewGroup.MarginLayoutParams).apply {
+                                topMargin = actionBarHeight
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (mMapFragment?.isAdded == true) {
+                mMapFragment?.showZoomControls(true)
+            }
         }
 
         // Persist the fullscreen state preference
         PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
-            putBoolean(PREF_FULLSCREEN, this@BaseMainActivity.isFullscreen)
+            putBoolean(PREF_FULLSCREEN, isFullscreen)
             apply()
         }
     }
 
     open fun toggleFullscreen() {
         isFullscreen = !isFullscreen
+        applyFullscreen()
     }
 
     private fun addMapFragment() {
