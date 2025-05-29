@@ -33,12 +33,14 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
 import io.ticofab.androidgpxparser.parser.GPXParser
 import io.ticofab.androidgpxparser.parser.domain.Gpx
+import kotlinx.coroutines.launch
 import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_CACHE_SIZE
 import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_EXTERNAL_STORAGE
 import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_TILE_CACHE
@@ -49,6 +51,7 @@ import org.nitri.opentopo.model.GpxViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.util.Util
+import org.nitri.ors.OpenRouteService
 import org.osmdroid.util.GeoPoint
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -162,6 +165,17 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
         mPrefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
         LocalBroadcastManager.getInstance(this).registerReceiver(cacheChangedReceiver, IntentFilter(CacheSettingsFragment.ACTION_CACHE_CHANGED))
+
+        // Test ORS
+        val ors = OpenRouteService(getString(R.string.ors_api_key))
+        lifecycleScope.launch {
+            val result = ors.routeRepository.getRoute(
+                start = Pair(8.681495, 49.41461),
+                end = Pair(8.687872, 49.420318),
+                profile = "driving-car"
+            )
+            Log.d("ORS", "Distance: ${result.routes.firstOrNull()?.summary?.distance} m")
+        }
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
