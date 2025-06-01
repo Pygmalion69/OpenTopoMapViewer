@@ -2,15 +2,16 @@ package org.nitri.ors
 
 
 import kotlinx.coroutines.test.runTest
-import net.bytebuddy.build.Plugin
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.nitri.ors.api.OpenRouteServiceApi
-import org.nitri.ors.model.Route
-import org.nitri.ors.model.RouteRequest
-import org.nitri.ors.model.RouteResponse
-import org.nitri.ors.model.RouteSummary
+import org.nitri.ors.model.route.Route
+import org.nitri.ors.model.route.RouteRequest
+import org.nitri.ors.model.route.RouteResponse
+import org.nitri.ors.model.route.Summary
 import org.nitri.ors.repository.RouteRepository
 
 class RouteRepositoryTest {
@@ -33,12 +34,12 @@ class RouteRepositoryTest {
         val expectedResponse = RouteResponse(
             routes = listOf(
                 Route(
-                    summary = RouteSummary(1000.0, 600.0),
+                    summary = Summary(1000.0, 600.0),
                     geometry = "encodedPolyline",
                     segments = emptyList()
                 )
             ),
-            bbox = listOf(0.0, 0.0, 1.0, 1.0) 
+            bbox = listOf(0.0, 0.0, 1.0, 1.0)
         )
 
         val expectedRequest = RouteRequest(
