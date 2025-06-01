@@ -16,7 +16,8 @@ data class RouteResponse(
 @Serializable
 data class Route(
     val summary: RouteSummary,
-    val segments: List<Segment>
+    val segments: List<Segment>,
+    val geometry: String
 )
 
 @Serializable
