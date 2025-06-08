@@ -11,7 +11,7 @@ import org.nitri.ors.api.OpenRouteServiceApi
 import org.nitri.ors.model.route.Route
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
-import org.nitri.ors.model.route.Summary
+import org.nitri.ors.model.route.RouteSummary
 import org.nitri.ors.repository.RouteRepository
 
 class RouteRepositoryTest {
@@ -34,7 +34,7 @@ class RouteRepositoryTest {
         val expectedResponse = RouteResponse(
             routes = listOf(
                 Route(
-                    summary = Summary(1000.0, 600.0),
+                    summary = RouteSummary(1000.0, 600.0),
                     geometry = "encodedPolyline",
                     segments = emptyList()
                 )

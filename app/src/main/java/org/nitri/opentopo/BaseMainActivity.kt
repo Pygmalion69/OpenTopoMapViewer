@@ -167,7 +167,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         LocalBroadcastManager.getInstance(this).registerReceiver(cacheChangedReceiver, IntentFilter(CacheSettingsFragment.ACTION_CACHE_CHANGED))
 
         // Test ORS
-        val ors = OpenRouteService(getString(R.string.ors_api_key))
+        val ors = OpenRouteService(getString(R.string.ors_api_key), this)
         lifecycleScope.launch {
             val result = ors.routeRepository.getRoute(
                 start = Pair(8.681495, 49.41461),

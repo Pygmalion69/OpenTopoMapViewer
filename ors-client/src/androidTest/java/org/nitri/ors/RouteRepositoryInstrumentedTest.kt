@@ -17,7 +17,7 @@ class RouteRepositoryInstrumentedTest {
     fun testFetchRoute_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val apiKey = context.getString(R.string.ors_api_key)
-        val client = OpenRouteServiceClient.create(apiKey)
+        val client = OpenRouteServiceClient.create(apiKey, context)
         val repository = RouteRepository(client)
 
         val start = Pair(8.681495, 49.41461)

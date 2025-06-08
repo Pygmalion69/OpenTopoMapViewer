@@ -1,5 +1,6 @@
 package org.nitri.ors.client
 
+import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
@@ -10,7 +11,12 @@ import org.nitri.ors.api.OpenRouteServiceApi
 import okhttp3.MediaType.Companion.toMediaType
 
 object OpenRouteServiceClient {
-    fun create(apiKey: String): OpenRouteServiceApi {
+    fun create(apiKey: String, context: Context): OpenRouteServiceApi {
+
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        val appVersion = packageInfo.versionName ?: "unknown"
+        val userAgent = "${packageInfo.packageName}/$appVersion (ORS-Android-Client)"
+
         val json = Json { ignoreUnknownKeys = true }
 
         val client = OkHttpClient.Builder()
@@ -27,6 +33,7 @@ object OpenRouteServiceClient {
 
                 val newRequest = original.newBuilder()
                     .url(newUrl)
+                    .addHeader("User-Agent", userAgent)
                     .build()
 
                 chain.proceed(newRequest)
