@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Point
+import android.util.Log
 import androidx.core.content.ContextCompat
 import io.ticofab.androidgpxparser.parser.domain.Track
 import io.ticofab.androidgpxparser.parser.domain.TrackSegment
@@ -43,7 +44,7 @@ class TrackOverlay(
             for (trackSegment in track.trackSegments) {
                 val path = Path()
                 createPointsSegments(osmv, trackSegment)
-                //Log.d(TAG, "Point segments: " + mPointsSegments.size());
+                //Log.d(TAG, "Points segments: " + mPointsSegments.size);
                 if (mPointsSegments.isNotEmpty()) {
                     for (pointSegment in mPointsSegments) {
                         val firstPoint = pointSegment[0]
@@ -77,7 +78,7 @@ class TrackOverlay(
         val mapCenter = Point(mapView.width / 2, mapView.height / 2)
         val offCenterLimit =
             (if (mapCenter.x > mapCenter.y) mapCenter.x * 2.5 else mapCenter.y * 2.5).toInt()
-        val projection = mapView.getProjection()
+        val projection = mapView.projection
         var adding = false
         val pointsSegment: MutableList<Point> = ArrayList()
         for (trackPoint in trackSegment.trackPoints) {
@@ -88,6 +89,7 @@ class TrackOverlay(
                     adding = true
                     pointsSegment.clear()
                 }
+
                 pointsSegment.add(point)
             } else {
                 if (adding) {
@@ -99,6 +101,14 @@ class TrackOverlay(
         }
         if (pointsSegment.isNotEmpty()) {
             mPointsSegments.add(pointsSegment)
+        }
+
+        // fallback
+        if (mPointsSegments.isEmpty() && trackSegment.trackPoints.isNotEmpty()) {
+            val fallbackPoints = trackSegment.trackPoints.map {
+                projection.toPixels(GeoPoint(it.latitude, it.longitude), null)
+            }
+            mPointsSegments.add(fallbackPoints)
         }
     }
 

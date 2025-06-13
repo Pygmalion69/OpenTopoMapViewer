@@ -22,6 +22,7 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay.OnItemGestureListener
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Marker.OnMarkerDragListener
 import org.osmdroid.views.overlay.OverlayItem
+import org.osmdroid.views.overlay.OverlayItem.HotspotPlace
 import org.osmdroid.views.overlay.TilesOverlay
 
 class OverlayHelper(private val mContext: Context, private val mMapView: MapView?) {
@@ -179,21 +180,45 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
      */
     fun setGpx(gpx: Gpx) {
         clearGpx()
-        gpx.tracks?.forEach { track ->
-            mTrackOverlay = TrackOverlay(mContext, track)
-            mMapView?.overlays?.add(0, mTrackOverlay)
+
+        val tracks = gpx.tracks
+        val routes = gpx.routes
+
+        if (!tracks.isNullOrEmpty()) {
+            tracks?.forEach { track ->
+                mTrackOverlay = TrackOverlay(mContext, track)
+                mMapView?.overlays?.add(0, mTrackOverlay)
+            }
         }
 
         val wayPointItems = mutableListOf<OverlayItem>()
+
         gpx.wayPoints?.forEach { wayPoint ->
             val gp = GeoPoint(wayPoint.latitude, wayPoint.longitude)
-            val item = OverlayItem(wayPoint.name, wayPoint.desc, gp)
+            val item = OverlayItem(wayPoint.name, wayPoint.desc, gp).apply {
+                setMarker(ContextCompat.getDrawable(mContext, R.drawable.map_marker))
+                markerHotspot = HotspotPlace.BOTTOM_CENTER
+            }
             wayPointItems.add(item)
         }
+
+        if (!routes.isNullOrEmpty()) {
+            routes.forEach { route ->
+                route.routePoints?.forEach { rtePt ->
+                    val gp = GeoPoint(rtePt.latitude, rtePt.longitude)
+                    val item = OverlayItem(rtePt.name, rtePt.desc, gp).apply {
+                        setMarker(ContextCompat.getDrawable(mContext, R.drawable.route_point_marker))
+                        markerHotspot = HotspotPlace.CENTER
+                    }
+                    wayPointItems.add(item)
+                }
+            }
+        }
+
         if (wayPointItems.isNotEmpty()) {
             mWayPointOverlay = ItemizedIconInfoOverlay(
                 wayPointItems,
-                ContextCompat.getDrawable(mContext, R.drawable.ic_default_marker),
+                ContextCompat.getDrawable(mContext, R.drawable.map_marker),
                 mWayPointItemGestureListener,
                 mContext
             )
@@ -347,6 +372,9 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         fun onMarkerUpdate(markerModel: MarkerModel)
     }
     companion object {
+
+        val TAG : String = OverlayHelper::class.java.simpleName
+
         /**
          * Tiles Overlays
          */
