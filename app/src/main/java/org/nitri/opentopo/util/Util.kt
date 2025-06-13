@@ -36,8 +36,20 @@ object Util {
      * @return BoundingBox
      */
     fun area(gpx: Gpx?): BoundingBox {
-        return area(getAllTrackGeoPoints(gpx))
+        val trackPoints = getAllTrackGeoPoints(gpx)
+        if (trackPoints.isNotEmpty()) {
+            return area(trackPoints)
+        }
+
+        val routePoints = getAllRouteGeoPoints(gpx)
+        if (routePoints.isNotEmpty()) {
+            return area(routePoints)
+        }
+
+        val wayPoints = getAllWayPointGeoPoints(gpx)
+        return area(wayPoints)
     }
+
 
     /**
      * Get geo points bounds
@@ -63,20 +75,28 @@ object Util {
         return BoundingBox(north, east, south, west)
     }
 
-    private fun getAllTrackGeoPoints(gpx: Gpx?): List<GeoPoint?> {
+    private fun getAllTrackGeoPoints(gpx: Gpx?): List<GeoPoint> {
+        return gpx?.tracks
+            ?.flatMap { it.trackSegments.orEmpty() }
+            ?.flatMap { it.trackPoints.orEmpty() }
+            ?.map { GeoPoint(it.latitude, it.longitude) }
+            ?: emptyList()
+    }
+
+    private fun getAllRouteGeoPoints(gpx: Gpx?): List<GeoPoint?> {
         val geoPoints: MutableList<GeoPoint?> = ArrayList()
-        if (gpx != null && gpx.tracks != null) {
-            for (track in gpx.tracks) {
-                if (track.trackSegments != null) {
-                    for (segment in track.trackSegments) {
-                        if (segment.trackPoints != null) {
-                            for (trackPoint in segment.trackPoints) {
-                                geoPoints.add(GeoPoint(trackPoint.latitude, trackPoint.longitude))
-                            }
-                        }
-                    }
-                }
+        gpx?.routes?.forEach { route ->
+            route.routePoints?.forEach { rtePt ->
+                geoPoints.add(GeoPoint(rtePt.latitude, rtePt.longitude))
             }
+        }
+        return geoPoints
+    }
+
+    private fun getAllWayPointGeoPoints(gpx: Gpx?): List<GeoPoint?> {
+        val geoPoints: MutableList<GeoPoint?> = ArrayList()
+        gpx?.wayPoints?.forEach { wpt ->
+            geoPoints.add(GeoPoint(wpt.latitude, wpt.longitude))
         }
         return geoPoints
     }
