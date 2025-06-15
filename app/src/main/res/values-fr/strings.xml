@@ -73,5 +73,22 @@
     <string name="screen_header">Écran</string>
     <string name="cache_header">Cache</string>
 
+    <string name="ors">OpenRouteService (ORS)</string>
+    <string name="ors_api_key_title">Clé API ORS</string>
+    <string name="ors_explanation_html">
+    OpenRouteService est un service d\'itinéraires gratuit et open-source.
+    L\'inscription est gratuite sur &lt;a href="https://account.heigit.org/manage/key"&gt;account.heigit.org/manage/key&lt;/a&gt;.
+</string>
+    <string name="ors_key_prompt">Définir la clé API ORS pour activer l\'itinéraire</string>
+    <string name="ors_hint">Collez la clé API ORS ici</string>
+    <string name="erase_key">Effacer la clé API</string>
+    <string name="ors_key_prompt_explanation">OpenRouteService est FOSS. L\'inscription est gratuite :</string>
+    <string name="ors_key_link">https://account.heigit.org/manage/key</string>
+    <string name="erase_api_key">Effacer la clé API</string>
+    <string name="ors_erase_confirm">Voulez-vous vraiment effacer la clé API ORS ?</string>
+    <string name="key_erased">Clé effacée</string>
+    <string name="ors_profile">Profil d\'itinéraire</string>
+    <string name="select_ors_profile">Sélectionner le profil d\'itinéraire ORS</string>
+    <string name="profile_set">Profil défini : %1$s</string>
 
 </resources>

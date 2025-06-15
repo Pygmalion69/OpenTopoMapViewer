@@ -72,4 +72,23 @@
     <string name="settings">Einstellungen</string>
     <string name="screen_header">Bildschirm</string>
     <string name="cache_header">Cache</string>
+
+    <string name="ors">OpenRouteService (ORS)</string>
+    <string name="ors_api_key_title">ORS API-Schlüssel</string>
+    <string name="ors_explanation_html">
+    OpenRouteService ist ein kostenloser Open-Source-Routingdienst.
+    Die Registrierung ist kostenlos unter &lt;a href="https://account.heigit.org/manage/key"&gt;account.heigit.org/manage/key&lt;/a&gt;.
+</string>
+    <string name="ors_key_prompt">ORS-API-Schlüssel festlegen, um Routing zu aktivieren</string>
+    <string name="ors_hint">ORS-API-Schlüssel hier einfügen</string>
+    <string name="erase_key">API-Schlüssel löschen</string>
+    <string name="ors_key_prompt_explanation">OpenRouteService ist FOSS. Die Registrierung ist kostenlos:</string>
+    <string name="ors_key_link">https://account.heigit.org/manage/key</string>
+    <string name="erase_api_key">API-Schlüssel löschen</string>
+    <string name="ors_erase_confirm">Möchten Sie den ORS-API-Schlüssel wirklich löschen?</string>
+    <string name="key_erased">Schlüssel gelöscht</string>
+    <string name="ors_profile">Routing-Profil</string>
+    <string name="select_ors_profile">ORS-Routing-Profil auswählen</string>
+    <string name="profile_set">Profil gesetzt: %1$s</string>
+
 </resources>

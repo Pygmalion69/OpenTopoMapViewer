@@ -774,11 +774,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 getString(R.string.app_author)
             )
 
-            AlertDialog.Builder(it)
+            val dialog = AlertDialog.Builder(it, R.style.AlertDialogTheme)
                 .setTitle(Util.getAppName(it))
                 .setView(dialogView)
-                .setPositiveButton(R.string.close) { dialog, _ -> dialog.dismiss() }
-                .show()
+                .setPositiveButton(R.string.close) { dialog, _ -> dialog.dismiss() }.create()
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+            dialog.show()
         }
     }
 

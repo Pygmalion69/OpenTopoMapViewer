@@ -73,4 +73,22 @@
     <string name="screen_header">Pantalla</string>
     <string name="cache_header">Caché</string>
 
+    <string name="ors">OpenRouteService (ORS)</string>
+    <string name="ors_api_key_title">Clave API de ORS</string>
+    <string name="ors_explanation_html">
+    OpenRouteService es un servicio de enrutamiento gratuito y de código abierto.
+    El registro es gratuito en &lt;a href="https://account.heigit.org/manage/key"&gt;account.heigit.org/manage/key&lt;/a&gt;.
+</string>
+    <string name="ors_key_prompt">Establecer la clave API de ORS para habilitar el enrutamiento</string>
+    <string name="ors_hint">Pega aquí la clave API de ORS</string>
+    <string name="erase_key">Borrar clave API</string>
+    <string name="ors_key_prompt_explanation">OpenRouteService es FOSS. El registro es gratuito:</string>
+    <string name="ors_key_link">https://account.heigit.org/manage/key</string>
+    <string name="erase_api_key">Borrar clave API</string>
+    <string name="ors_erase_confirm">¿Estás seguro de que deseas borrar la clave API de ORS?</string>
+    <string name="key_erased">Clave borrada</string>
+    <string name="ors_profile">Perfil de enrutamiento</string>
+    <string name="select_ors_profile">Seleccionar perfil de enrutamiento de ORS</string>
+    <string name="profile_set">Perfil establecido: %1$s</string>
+
 </resources>
