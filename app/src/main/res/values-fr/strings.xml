@@ -35,6 +35,7 @@
 
     <string name="fullscreen_on_map_tap">Plein écran au toucher</string>
     <string name="keep_screen_on">Garder l\'écran allumé</string>
+    <string name="map_rotation">Rotation de la carte</string>
     <string name="tap_compass_to_rotate">Appuyez sur la boussole pour faire pivoter la carte</string>
 
     <string name="nearby">À proximité</string>

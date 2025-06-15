@@ -13,7 +13,8 @@
 
         <SwitchPreferenceCompat
             app:key="tap_compass_to_rotate"
-            app:title="@string/tap_compass_to_rotate" />
+            app:title="@string/map_rotation"
+            app:summary="@string/tap_compass_to_rotate" />
 
     </PreferenceCategory>
 

@@ -35,7 +35,8 @@
 
     <string name="fullscreen_on_map_tap">Pantalla completa al tocar</string>
     <string name="keep_screen_on">Mantener pantalla encendida</string>
-    <string name="tap_compass_to_rotate">Toque la brújula para girar el mapa</string>
+    <string name="map_rotation">Rotación del mapa</string>
+    <string name="tap_compass_to_rotate">Toca la brújula para girar el mapa</string>
 
     <string name="nearby">Cerca</string>
 
