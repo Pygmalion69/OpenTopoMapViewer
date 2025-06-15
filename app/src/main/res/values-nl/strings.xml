@@ -91,4 +91,14 @@
     <string name="select_ors_profile">Selecteer ORS-routeringsprofiel</string>
     <string name="profile_set">Profiel ingesteld: %1$s</string>
 
+    <string name="profile_driving_car">Auto</string>
+    <string name="profile_driving_hgv">Vrachtwagen</string>
+    <string name="profile_cycling_regular">Fiets</string>
+    <string name="profile_cycling_road">Racefiets</string>
+    <string name="profile_cycling_mountain">Mountainbike</string>
+    <string name="profile_cycling_electric">E-bike</string>
+    <string name="profile_foot_walking">Te voet</string>
+    <string name="profile_foot_hiking">Wandelen</string>
+    <string name="profile_wheelchair">Rolstoel</string>
+
 </resources>

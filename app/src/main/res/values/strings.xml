@@ -90,4 +90,15 @@
     <string name="ors_profile">Routing profile</string>
     <string name="select_ors_profile">Select ORS Routing Profile</string>
     <string name="profile_set">Profile set: %1$s</string>
+
+    <string name="profile_driving_car">Car</string>
+    <string name="profile_driving_hgv">Truck</string>
+    <string name="profile_cycling_regular">Bike</string>
+    <string name="profile_cycling_road">Road bike</string>
+    <string name="profile_cycling_mountain">Mountain bike</string>
+    <string name="profile_cycling_electric">E-bike</string>
+    <string name="profile_foot_walking">Walking</string>
+    <string name="profile_foot_hiking">Hiking</string>
+    <string name="profile_wheelchair">Wheelchair</string>
+
 </resources>

@@ -1,5 +1,6 @@
 package org.nitri.opentopo
 
+import android.content.Context
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -50,11 +51,20 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
+
+        private val profileKeys = listOf(
+            "driving-car", "driving-hgv",
+            "cycling-regular", "cycling-road", "cycling-mountain", "cycling-electric",
+            "foot-walking", "foot-hiking",
+            "wheelchair"
+        )
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
             val apiKey = prefs.getString(PREF_ORS_API_KEY, null)
+            val currentProfile = prefs.getString(PREF_ORS_PROFILE, "driving-car")
 
             val setKeyPref = findPreference<Preference>("ors_set_key")
             val eraseKeyPref = findPreference<Preference>("ors_erase_key")
@@ -79,7 +89,12 @@ class SettingsActivity : AppCompatActivity() {
                     true
                 }
 
-                profilePref?.summary = prefs.getString("ors_profile", "driving-car")
+                context?.let { ctx ->
+                    val profileIndex = profileKeys.indexOf(currentProfile)
+                    val label = getProfileLabels(ctx).getOrNull(profileIndex) ?: currentProfile
+                    profilePref?.summary = label
+                }
+
                 profilePref?.setOnPreferenceClickListener {
                     showRoutingProfileDialog()
                     true
@@ -137,18 +152,34 @@ class SettingsActivity : AppCompatActivity() {
 
         private fun showRoutingProfileDialog() {
             val context = requireContext()
-            val profiles = arrayOf("driving-car", "cycling-regular", "foot-walking")
+            val profiles = profileKeys
+            val labels = getProfileLabels(context)
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
             val dialog = AlertDialog.Builder(context)
                 .setTitle(R.string.select_ors_profile)
-                .setItems(profiles) { _, which ->
-                    prefs.edit { putString(PREF_ORS_PROFILE, profiles[which]) }
-                    Toast.makeText(context, getString(R.string .profile_set, profiles[which]), Toast.LENGTH_SHORT).show()
+                .setItems(labels) { _, which ->
+                    val selectedKey = profiles[which]
+                    prefs.edit { putString("ors_profile", selectedKey) }
+                    Toast.makeText(context, context.getString(R.string.profile_set, labels[which]), Toast.LENGTH_SHORT).show()
                     recreate()
                 }
                 .create()
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
             dialog.show()
+        }
+
+        private fun getProfileLabels(context: Context): Array<String> {
+            return arrayOf(
+                context.getString(R.string.profile_driving_car),
+                context.getString(R.string.profile_driving_hgv),
+                context.getString(R.string.profile_cycling_regular),
+                context.getString(R.string.profile_cycling_road),
+                context.getString(R.string.profile_cycling_mountain),
+                context.getString(R.string.profile_cycling_electric),
+                context.getString(R.string.profile_foot_walking),
+                context.getString(R.string.profile_foot_hiking),
+                context.getString(R.string.profile_wheelchair)
+            )
         }
 
         private fun showEraseConfirmationDialog() {

@@ -91,4 +91,14 @@
     <string name="select_ors_profile">Seleccionar perfil de enrutamiento de ORS</string>
     <string name="profile_set">Perfil establecido: %1$s</string>
 
+    <string name="profile_driving_car">Coche</string>
+    <string name="profile_driving_hgv">Camión</string>
+    <string name="profile_cycling_regular">Bicicleta</string>
+    <string name="profile_cycling_road">Bicicleta de carretera</string>
+    <string name="profile_cycling_mountain">Bicicleta de montaña</string>
+    <string name="profile_cycling_electric">Bicicleta eléctrica</string>
+    <string name="profile_foot_walking">A pie</string>
+    <string name="profile_foot_hiking">Senderismo</string>
+    <string name="profile_wheelchair">Silla de ruedas</string>
+
 </resources>

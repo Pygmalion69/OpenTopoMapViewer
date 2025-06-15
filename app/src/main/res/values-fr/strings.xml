@@ -91,4 +91,14 @@
     <string name="select_ors_profile">Sélectionner le profil d\'itinéraire ORS</string>
     <string name="profile_set">Profil défini : %1$s</string>
 
+    <string name="profile_driving_car">Voiture</string>
+    <string name="profile_driving_hgv">Camion</string>
+    <string name="profile_cycling_regular">Vélo</string>
+    <string name="profile_cycling_road">Vélo de route</string>
+    <string name="profile_cycling_mountain">VTT</string>
+    <string name="profile_cycling_electric">Vélo électrique</string>
+    <string name="profile_foot_walking">À pied</string>
+    <string name="profile_foot_hiking">Randonnée</string>
+    <string name="profile_wheelchair">Fauteuil roulant</string>
+
 </resources>
