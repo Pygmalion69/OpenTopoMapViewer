@@ -7,12 +7,10 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.location.GpsStatus.NmeaListener
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.location.OnNmeaMessageListener
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
@@ -32,7 +30,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -73,6 +71,17 @@ import java.io.File
 
 class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
     GestureCallback, ClickableCompassOverlay.OnCompassClickListener {
+
+    /**
+     * Enum representing the possible states of the map display regarding GPX tracks
+     */
+    enum class GpxDisplayState {
+        IDLE,           // Nothing on display
+        LOADED_FROM_FILE, // GPX loaded from file
+        CALCULATED      // GPX calculated from routing service
+    }
+
+    private var gpxDisplayState: GpxDisplayState = GpxDisplayState.IDLE
     private var orientationSensor: OrientationSensor? = null
     @Volatile
     private var mapRotation: Boolean = false
@@ -156,10 +165,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val maxCacheSize = mPrefs.getInt(CacheSettingsFragment.PREF_CACHE_SIZE, CacheSettingsFragment.DEFAULT_CACHE_SIZE)
         configuration.tileFileSystemCacheMaxBytes =
             maxCacheSize.toLong() * 1024 * 1024
-        val edit = mPrefs.edit()
-        edit.putString("osmdroid.basePath", basePath.absolutePath)
-        edit.putString("osmdroid.cachePath", tileCache.absolutePath)
-        edit.commit()
+        mPrefs.edit(commit = true) {
+            putString("osmdroid.basePath", basePath.absolutePath)
+            putString("osmdroid.cachePath", tileCache.absolutePath)
+        }
         configuration.load(context, mPrefs)
         mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
         mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
@@ -167,25 +176,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mLocationManager =
             requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         mLocationViewModel = ViewModelProvider(requireActivity())[LocationViewModel::class.java]
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val nmeaListener = OnNmeaMessageListener { s: String?, _: Long ->
-                mLocationViewModel?.currentNmea?.value = s
+        val nmeaListener = OnNmeaMessageListener { s: String?, _: Long ->
+            mLocationViewModel?.currentNmea?.value = s
 
-            }
-            if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mLocationManager?.addNmeaListener(nmeaListener)
-            }
-        } else {
-            val nmeaListener = NmeaListener { _: Long, s: String? ->
-                    mLocationViewModel?.currentNmea?.value = s
-            }
-            if (ActivityCompat.checkSelfPermission(
-                    requireActivity(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                mLocationManager?.addNmeaListener(nmeaListener)
-            }
+        }
+        if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mLocationManager?.addNmeaListener(nmeaListener)
         }
     }
 
@@ -269,6 +265,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         super.onViewCreated(view, savedInstanceState)
         mMapHandler = Handler(requireActivity().mainLooper)
         mListener?.setGpx()
+
+        // Check if there's already a GPX track loaded and update the state accordingly
+        if (mOverlayHelper?.hasGpx() == true) {
+            gpxDisplayState = GpxDisplayState.LOADED_FROM_FILE
+        }
+
         val arguments = arguments
         var mapCenterSet = false
         // Move to received geo intent coordinates
@@ -281,16 +283,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            ) {
-                mLocationViewModel?.let {
-                    it.currentLocation.value = mLocationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
-                }
-            }
-        } else {
-            mLocationViewModel?.let{
+        if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ) {
+            mLocationViewModel?.let {
                 it.currentLocation.value = mLocationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
             }
         }
@@ -429,7 +425,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mLocationOverlay?.enableAutoStop = true
         mMapHandler.removeCallbacks(mCenterRunnable)
         mMapHandler.post(mCenterRunnable);
-        mPrefs.edit().putBoolean(PREF_FOLLOW, true).apply()
+        mPrefs.edit { putBoolean(PREF_FOLLOW, true) }
     }
 
     private fun disableFollow() {
@@ -437,13 +433,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         activity?.let { (it as AppCompatActivity).supportInvalidateOptionsMenu() }
         mLocationOverlay?.disableFollowLocation()
         mMapHandler.removeCallbacksAndMessages(null)
-        mPrefs.edit().putBoolean(PREF_FOLLOW, false).apply()
+        mPrefs.edit { putBoolean(PREF_FOLLOW, false) }
     }
 
     private fun saveMapCenterPrefs() {
         mMapCenterState?.let {
-            mPrefs.edit().putFloat(PREF_LATITUDE, it.latitude.toFloat()).apply()
-            mPrefs.edit().putFloat(PREF_LONGITUDE, it.longitude.toFloat()).apply()
+            mPrefs.edit { putFloat(PREF_LATITUDE, it.latitude.toFloat()) }
+            mPrefs.edit { putFloat(PREF_LONGITUDE, it.longitude.toFloat()) }
             Log.d(
                 TAG,
                 String.format(
@@ -458,7 +454,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     @SuppressLint("MissingPermission")
     override fun onResume() {
         super.onResume()
-        val basePath = Configuration.getInstance().osmdroidBasePath
+        // val basePath = Configuration.getInstance().osmdroidBasePath
         val cache = Configuration.getInstance().osmdroidTileCache
         Log.d(TAG, "Cache: " + cache.absolutePath)
         if (mFollow) {
@@ -545,6 +541,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     fun setGpx(gpx: Gpx?, zoom: Boolean) {
         gpx?.let {
             mOverlayHelper?.setGpx(it)
+            gpxDisplayState = GpxDisplayState.LOADED_FROM_FILE
             if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
             if (zoom) {
                 disableFollow()
@@ -560,6 +557,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             .setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
                 mOverlayHelper?.let {
                     it.clearGpx()
+                    gpxDisplayState = GpxDisplayState.IDLE
                     if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
                 }
                 mListener?.let {
@@ -654,13 +652,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             menu.findItem(R.id.action_no_follow).isVisible = false
         }
 
-        if (mOverlayHelper != null && (mOverlayHelper?.hasGpx() == true)) {
-            menu.findItem(R.id.action_gpx_details).isVisible = true
-            menu.findItem(R.id.action_gpx_zoom).isVisible = true
-        } else {
-            menu.findItem(R.id.action_gpx_details).isVisible = false
-            menu.findItem(R.id.action_gpx_zoom).isVisible = false
-        }
+        val gpxVisible = gpxDisplayState != GpxDisplayState.IDLE
+        menu.findItem(R.id.action_gpx_details).isVisible = gpxVisible
+        menu.findItem(R.id.action_gpx_zoom).isVisible = gpxVisible
 
         mListener?.let {
             menu.findItem(R.id.action_privacy_settings).isVisible = it.isPrivacyOptionsRequired()
@@ -672,9 +666,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val itemId = item.itemId
         when (itemId) {
             R.id.action_gpx -> {
-                mOverlayHelper?.takeIf { it.hasGpx() }?.let {
+                if (gpxDisplayState != GpxDisplayState.IDLE) {
                     showGpxDialog()
-                } ?: mListener?.selectGpx()
+                } else {
+                    mListener?.selectGpx()
+                }
                 return true
             }
             R.id.action_location -> {
@@ -811,8 +807,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     mOverlay = OverlayHelper.OVERLAY_CYCLING
                 }
             }
-            mPrefs.edit().putInt(PREF_BASE_MAP, mBaseMap).apply()
-            mPrefs.edit().putInt(PREF_OVERLAY, mOverlay).apply()
+            mPrefs.edit { putInt(PREF_BASE_MAP, mBaseMap) }
+            mPrefs.edit { putInt(PREF_OVERLAY, mOverlay) }
             setBaseMap()
             setTilesOverlay()
         }
@@ -875,6 +871,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     override fun onDestroy() {
         super.onDestroy()
+        gpxDisplayState = GpxDisplayState.IDLE
         mLocationManager = null
         mLocationOverlay = null
         mCompassOverlay = null
@@ -898,7 +895,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         mapRotation = !mapRotation
         //Log.d(TAG, "map rotation set to $mapRotation")
-        mPrefs.edit().putBoolean(SettingsActivity.PREF_ROTATE, mapRotation).apply()
+        mPrefs.edit { putBoolean(SettingsActivity.PREF_ROTATE, mapRotation) }
         if (mapRotation) {
             Toast.makeText(requireContext(), R.string.rotation_on, Toast.LENGTH_SHORT).show()
         } else {
