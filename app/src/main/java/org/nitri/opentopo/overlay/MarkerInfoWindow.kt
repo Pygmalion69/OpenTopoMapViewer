@@ -26,6 +26,8 @@ class MarkerInfoWindow(
 ) : BasicInfoWindow(layoutResId, mapView) {
 
     var onMarkerInfoEditClickListener: OnMarkerInfoEditClickListener? = null
+    var onMarkerWaypointClickListener: OnMarkerWaypointClickListener? = null
+    private var isWaypoint = false
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onOpen(item: Any) {
@@ -86,9 +88,31 @@ class MarkerInfoWindow(
             )
             close()
         }
+
+        val btnWaypoint : ImageButton = mView.findViewById(R.id.bubble_waypoint)
+
+        // Set the appropriate icon based on whether it's a waypoint or not
+        btnWaypoint.setImageResource(
+            if (markerModel.routeWaypoint) R.drawable.ic_action_remove_waypoint
+            else R.drawable.ic_action_add_waypoint
+        )
+
+        btnWaypoint.setOnClickListener {
+            if (markerModel.routeWaypoint) {
+                onMarkerWaypointClickListener?.onMarkerWaypointRemoveClick(markerModel)
+            } else {
+                onMarkerWaypointClickListener?.onMarkerWaypointAddClick(markerModel)
+            }
+            close()
+        }
     }
 
     interface OnMarkerInfoEditClickListener {
         fun onMarkerInfoEditClick(markerModel: MarkerModel)
+    }
+
+    interface OnMarkerWaypointClickListener {
+        fun onMarkerWaypointAddClick(markerModel: MarkerModel)
+        fun onMarkerWaypointRemoveClick(markerModel: MarkerModel)
     }
 }

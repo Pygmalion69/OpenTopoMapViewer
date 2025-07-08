@@ -1,6 +1,7 @@
 package org.nitri.opentopo
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -138,6 +139,8 @@ class SettingsActivity : AppCompatActivity() {
                         PreferenceManager.getDefaultSharedPreferences(context)
                             .edit { putString(PREF_ORS_API_KEY, key) }
                         Toast.makeText(context, "Key saved", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(ACTION_API_KEY_CHANGED)
+                        context.sendBroadcast(intent)
                         recreate()
                     }
                     dialog.dismiss()
@@ -159,7 +162,7 @@ class SettingsActivity : AppCompatActivity() {
                 .setTitle(R.string.select_ors_profile)
                 .setItems(labels) { _, which ->
                     val selectedKey = profiles[which]
-                    prefs.edit { putString("ors_profile", selectedKey) }
+                    prefs.edit { putString(PREF_ORS_PROFILE, selectedKey) }
                     Toast.makeText(context, context.getString(R.string.profile_set, labels[which]), Toast.LENGTH_SHORT).show()
                     recreate()
                 }
@@ -190,6 +193,8 @@ class SettingsActivity : AppCompatActivity() {
                 .setPositiveButton(android.R.string.ok) { dialog, _ ->
                     PreferenceManager.getDefaultSharedPreferences(context)
                         .edit { remove(PREF_ORS_API_KEY) }
+                    val intent = Intent(ACTION_API_KEY_CHANGED)
+                    context.sendBroadcast(intent)
                     Toast.makeText(context, R.string.key_erased, Toast.LENGTH_SHORT).show()
                     recreate()
                     dialog.dismiss()
@@ -215,5 +220,6 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_ROTATE = "rotate"
         const val PREF_ORS_API_KEY = "ors_api_key"
         const val PREF_ORS_PROFILE = "ors_profile"
+        const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
     }
 }

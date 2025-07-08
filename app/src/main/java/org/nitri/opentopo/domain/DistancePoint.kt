@@ -9,17 +9,12 @@ class DistancePoint internal constructor(builder: Builder) {
     /**
      * @return the distance in meters
      */
-    val distance: Double?
+    val distance: Double? = builder.mDistance
 
     /**
      * @return the elevation in meters
      */
-    val elevation: Double?
-
-    init {
-        distance = builder.mDistance
-        elevation = builder.mElevation
-    }
+    val elevation: Double? = builder.mElevation
 
     class Builder {
         var mDistance: Double? = null
