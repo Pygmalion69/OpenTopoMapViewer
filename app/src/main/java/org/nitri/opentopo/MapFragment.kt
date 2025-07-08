@@ -931,6 +931,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         //Log.d(TAG, "map rotation set to $mapRotation")
         sharedPreferences.edit { putBoolean(SettingsActivity.PREF_ROTATE, mapRotation) }
         if (mapRotation) {
+            val lastLocation = mLocationViewModel?.currentLocation?.value
+            if (lastLocation?.hasBearing() == true) {
+                stopOrientationSensor()
+                MapOrientation.setTargetMapOrientation(mMapView, lastLocation.bearing)
+            } else {
+                orientationSensor = orientationSensor ?: OrientationSensor(requireContext(), mMapView)
+            }
             Toast.makeText(requireContext(), R.string.rotation_on, Toast.LENGTH_SHORT).show()
         } else {
             stopOrientationSensor()
