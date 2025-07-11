@@ -55,7 +55,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
                     "User-Agent", getString(R.string.app_name) + " "
                             + BuildConfig.VERSION_NAME
                 )
-                .method(original.method(), original.body())
+                .method(original.method, original.body)
                 .build()
             chain.proceed(request)
         }
