@@ -7,7 +7,7 @@
     <string name="rotation_on">Rotazione on</string>
     <string name="rotation_off">Rotazione off</string>
     <string name="gpx">GPX</string>
-    <string name="discard_current_gpx">Il GPX corrente verrà sostituito.</string>
+    <string name="discard_current_gpx">Il GPX caricato verrà sostituito</string>
     <string name="gpx_details">Dettagli GPX</string>
     <string name="gpx_zoom">Centra GPX</string>
 
@@ -23,7 +23,7 @@
     <string name="unit_km">km</string>
     <string name="poi">POI</string>
 
-    <string name="layers">Strati</string>
+    <string name="layers">Sovrapposizioni</string>
     <string name="open_topo_map">OpenTopoMap</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Escursionismo</string>
@@ -42,7 +42,7 @@
 
     <string name="cache_settings">Impostazione cache</string>
     <string name="tile_cache">Cache dei tile</string>
-    <string name="max_cache_size">Max. dimensione cache (MB)</string>
+    <string name="max_cache_size">Dimensione max cache (MB)</string>
     <string name="reset">Ripristina</string>
     <string name="storage_root">Root memoria: %1$s</string>
     <string name="external_storage">Memoria esterna</string>
@@ -59,8 +59,8 @@
     <string name="app_version">Versione %1$s</string>
     <string name="app_author">Di &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
 
-    <string name="default_marker_name">Marker %1$d</string>
-    <string name="edit_marker">Modifica Marker</string>
+    <string name="default_marker_name">Segnaposto %1$d</string>
+    <string name="edit_marker">Modifica Segnaposto</string>
     <string name="name">Nome</string>
     <string name="description">Descrizione</string>
 
