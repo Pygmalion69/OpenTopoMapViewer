@@ -1,11 +1,11 @@
-package org.nitri.opentopo.overlay.da
+package org.nitri.opentopo.da
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import org.nitri.opentopo.overlay.model.MarkerModel
+import org.nitri.opentopo.model.MarkerModel
 
 @Dao
 interface MarkerDao {

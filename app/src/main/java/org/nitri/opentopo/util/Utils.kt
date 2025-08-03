@@ -21,12 +21,16 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import io.ticofab.androidgpxparser.parser.domain.Gpx
+import io.ticofab.androidgpxparser.parser.domain.Route
+import io.ticofab.androidgpxparser.parser.domain.Track
+import io.ticofab.androidgpxparser.parser.domain.TrackPoint
+import io.ticofab.androidgpxparser.parser.domain.TrackSegment
 import io.ticofab.androidgpxparser.parser.domain.WayPoint
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import java.io.File
 
-object Util {
+object Utils {
     const val NO_ELEVATION_VALUE = -99999
 
     /**
@@ -122,7 +126,7 @@ object Util {
     }
 
     /**
-     * Get a list of way points by type (categpry)
+     * Get a list of way points by type (category)
      *
      * @param gpx
      * @param type
@@ -140,6 +144,61 @@ object Util {
             }
         }
         return wayPoints
+    }
+
+    /**
+     * Convert a route to a track
+     *
+     * @param gpx
+     * @return
+     */
+    fun convertRouteToTrack(gpx: Gpx): Gpx {
+        if (!gpx.tracks.isNullOrEmpty()) return gpx // Track already present
+
+        val routePoints = gpx.routes?.flatMap { it.routePoints ?: emptyList() }.orEmpty()
+
+        val distinctRoutePoints = gpx.routes
+            ?.flatMap { it.routePoints ?: emptyList() }
+            .orEmpty()
+            .distinctByConsecutive { it.desc?.trim() }
+
+        val route = Route.Builder()
+            .setRoutePoints(distinctRoutePoints)
+            .build()
+
+        val trackPoints = routePoints.map {
+            TrackPoint.Builder()
+                .setLatitude(it.latitude)
+                .setLongitude(it.longitude)
+                .setElevation(it.elevation)
+                .setTime(it.time)
+                .setName(it.name)
+                .setDesc(it.desc)
+                .setType(it.type)
+                .setSym(it.sym)
+                .setCmt(it.cmt)
+                .setExtensions(it.extensions)
+                .build() as TrackPoint
+        }
+
+        val trackSegment = TrackSegment.Builder()
+            .setTrackPoints(trackPoints)
+            .build()
+
+        val pseudoTrack = Track.Builder()
+            .setTrackName("ORS Route")
+            .setTrackDesc("Synthetic track from route points")
+            .setTrackSegments(listOf(trackSegment))
+            .build()
+
+        return Gpx.Builder()
+            .setCreator(gpx.creator)
+            .setMetadata(gpx.metadata)
+            .setVersion(gpx.version)
+            .setWayPoints(gpx.wayPoints)
+            .setRoutes(listOf(route))
+            .setTracks(listOf(pseudoTrack))
+            .build()
     }
 
     private fun resolveThemeAttr(context: Context, @AttrRes attrRes: Int): TypedValue {

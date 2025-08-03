@@ -19,7 +19,7 @@ import androidx.core.content.edit
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
-import org.nitri.opentopo.util.Util
+import org.nitri.opentopo.util.Utils
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -127,7 +127,7 @@ class SettingsActivity : AppCompatActivity() {
             val input = dialogView.findViewById<EditText>(R.id.input_ors_key)
             val explanation = dialogView.findViewById<TextView>(R.id.ors_explanation)
 
-            explanation.text = Util.fromHtml(getString(R.string.ors_explanation_html))
+            explanation.text = Utils.fromHtml(getString(R.string.ors_explanation_html))
             explanation.movementMethod = LinkMovementMethod.getInstance()
 
             val dialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)

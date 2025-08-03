@@ -1,4 +1,4 @@
-package org.nitri.opentopo.overlay.model
+package org.nitri.opentopo.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

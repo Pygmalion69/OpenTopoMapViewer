@@ -6,14 +6,15 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.view.LayoutInflater
 import android.view.Window
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import com.google.android.material.textfield.TextInputLayout
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.R
-import org.nitri.opentopo.model.GpxViewModel
-import org.nitri.opentopo.overlay.model.MarkerModel
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
+import org.nitri.opentopo.viewmodel.GpxViewModel
+import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.osmdroid.tileprovider.MapTileProviderBasic
 import org.osmdroid.tileprovider.tilesource.ITileSource
@@ -87,9 +88,13 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
             override fun onMarkerClick(marker: CustomMarker?): Boolean {
                 markerInfoWindow?.takeIf { it.isOpen }?.close()
 
+                val prefs = PreferenceManager.getDefaultSharedPreferences(mContext)
+                val orsEnabled = !prefs.getString(PREF_ORS_API_KEY, null).isNullOrEmpty()
+
                 markerInfoWindow = MarkerInfoWindow(
                     R.layout.custom_bubble,
-                    R.id.bubble_title, R.id.bubble_description, R.id.bubble_subdescription, null, mMapView
+                    R.id.bubble_title, R.id.bubble_description, R.id.bubble_subdescription, null,
+                    mMapView, orsEnabled
                 ).apply {
                     onMarkerInfoEditClickListener = marker?.onMarkerInfoEditClickListener
                     onMarkerWaypointClickListener = marker?.onMarkerWaypointClickListener
@@ -129,6 +134,9 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                     }
                     .setNeutralButton(mContext.getString(R.string.delete)) { _, _ ->
                         showDeleteConfirmationDialog(mContext) {
+                            if (markerModel.routeWaypoint) {
+                                removeWaypoint(markerModel)
+                            }
                             markerInteractionListener.onMarkerDelete(markerModel)
                         }
                     }
@@ -201,7 +209,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         val routes = gpx.routes
 
         if (!tracks.isNullOrEmpty()) {
-            tracks?.forEach { track ->
+            tracks.forEach { track ->
                 trackOverlay = TrackOverlay(mContext, track)
                 mMapView?.overlays?.add(0, trackOverlay)
             }

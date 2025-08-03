@@ -1,12 +1,12 @@
-package org.nitri.opentopo.overlay.viewmodel
+package org.nitri.opentopo.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.overlay.OverlayDatabase
-import org.nitri.opentopo.overlay.model.MarkerModel
 
 class MarkerViewModel(application: Application) : AndroidViewModel(application) {
     private val db: OverlayDatabase = OverlayDatabase.getDatabase(application)
@@ -23,5 +23,9 @@ class MarkerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun updateMarker(marker: MarkerModel) = viewModelScope.launch {
         db.markerDao().updateMarker(marker)
+    }
+
+    fun hasRoutePoints(): Boolean {
+        return markers.value?.any { it.routeWaypoint } ?: false
     }
 }

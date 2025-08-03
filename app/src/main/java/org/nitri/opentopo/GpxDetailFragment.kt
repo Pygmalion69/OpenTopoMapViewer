@@ -34,12 +34,12 @@ import io.ticofab.androidgpxparser.parser.domain.TrackPoint
 import io.ticofab.androidgpxparser.parser.domain.WayPoint
 import org.nitri.opentopo.adapter.WayPointListAdapter
 import org.nitri.opentopo.domain.DistancePoint
-import org.nitri.opentopo.model.GpxViewModel
+import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.model.WayPointHeaderItem
 import org.nitri.opentopo.model.WayPointItem
 import org.nitri.opentopo.model.WayPointListItem
 import org.nitri.opentopo.util.DistanceCalculator
-import org.nitri.opentopo.util.Util
+import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.view.ChartValueMarkerView
 import java.util.Locale
 
@@ -124,7 +124,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
                     else -> {
                         tvDescription.visibility = View.VISIBLE
                         wvDescription.visibility = View.GONE
-                        tvDescription.text = Util.fromHtml(description)
+                        tvDescription.text = Utils.fromHtml(description)
                         tvDescription.movementMethod = LinkMovementMethod.getInstance()
                     }
                 }
@@ -183,11 +183,11 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
 
         var waypointTypes: List<String>?
         mGpxViewModel.gpx?.let { gpx ->
-            waypointTypes = Util.getWayPointTypes(gpx, defaultType)
+            waypointTypes = Utils.getWayPointTypes(gpx, defaultType)
             waypointTypes?.forEach { type ->
-                wayPoints = Util.getWayPointsByType(gpx, type).toMutableList()
+                wayPoints = Utils.getWayPointsByType(gpx, type).toMutableList()
                 if (type == defaultType) wayPoints.addAll(
-                    Util.getWayPointsByType(
+                    Utils.getWayPointsByType(
                         gpx, null
                     )
                 )
@@ -209,7 +209,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         val mv = ChartValueMarkerView(activity, R.layout.chart_value_marker_view)
         mv.chartView = mElevationChart
         mElevationChart.marker = mv
-        val primaryTextColorInt = context?.let { Util.resolveColorAttr(it, android.R.attr.textColorPrimary) }
+        val primaryTextColorInt = context?.let { Utils.resolveColorAttr(it, android.R.attr.textColorPrimary) }
         val xAxis = mElevationChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.typeface = mTfLight

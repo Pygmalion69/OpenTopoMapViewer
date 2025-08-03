@@ -39,18 +39,18 @@ import androidx.preference.PreferenceManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_PROFILE
-import org.nitri.opentopo.model.LocationViewModel
+import org.nitri.opentopo.viewmodel.LocationViewModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.ors.Directions
 import org.nitri.opentopo.overlay.ClickableCompassOverlay
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
-import org.nitri.opentopo.overlay.model.MarkerModel
-import org.nitri.opentopo.overlay.viewmodel.MarkerViewModel
+import org.nitri.opentopo.model.MarkerModel
+import org.nitri.opentopo.viewmodel.MarkerViewModel
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
-import org.nitri.opentopo.util.Util
+import org.nitri.opentopo.util.Utils
 import org.nitri.ors.api.OpenRouteServiceApi
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.DelayedMapListener
@@ -159,7 +159,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val configuration = Configuration.getInstance()
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
-        val basePath = Util.getOsmdroidBasePath(context, sharedPreferences.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false))
+        val basePath = Utils.getOsmdroidBasePath(context, sharedPreferences.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false))
         configuration.osmdroidBasePath = basePath
         val tileCache = File(configuration.osmdroidBasePath.absolutePath,
             sharedPreferences.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
@@ -227,14 +227,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             mapView
         )
         val bmMapLocation =
-            Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_position, 204)
+            Utils.getBitmapFromDrawable(requireActivity(), R.drawable.ic_position, 204)
         locationOverlay?.setPersonIcon(bmMapLocation)
         locationOverlay?.setPersonHotspot(
             bmMapLocation.width / 2f,
             bmMapLocation.height / 2f
         )
         val bmMapBearing =
-            Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_direction, 204)
+            Utils.getBitmapFromDrawable(requireActivity(), R.drawable.ic_direction, 204)
         locationOverlay?.setDirectionArrow(bmMapLocation, bmMapBearing)
         scaleBarOverlay = ScaleBarOverlay(mapView)
         scaleBarOverlay?.setCentred(true)
@@ -361,37 +361,70 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
 
                 override fun onMarkerWaypointsChanged() {
-                    val coordinates = mutableListOf<List<Double>>()
-                    val currentLocation = locationViewModel?.currentLocation?.value
-                    currentLocation?.let {
-                        coordinates.add(listOf(it.longitude, it.latitude))
-                    }
-                    markerViewModel.markers.value?.forEach { marker ->
-                        if (marker.routeWaypoint) {
-                            coordinates.add(listOf(marker.longitude, marker.latitude))
-                        }
-                        listener?.getOpenRouteServiceApi()?.let { api ->
-                            val profile = sharedPreferences.getString(PREF_ORS_PROFILE, "driving-car")
-                            profile?.let {
-                                val directions = Directions(api, it)
-                                directions.getRouteGpx(coordinates, object : Directions.RouteGpResult {
-                                    override fun onSuccess(gpx: String) {
-                                        Log.d(TAG, "GPX: $gpx")
-                                    }
+                    calculateRoute()
+                }
+            })
+            if (markerViewModel.hasRoutePoints()) {
+                calculateRoute()
+            }
+        }
+    }
 
-                                    override fun onError(message: String) {
-                                        Log.e(TAG, "Error fetching GPX: $message")
-                                        Toast.makeText(requireContext(), "Error fetching GPX: $message", Toast.LENGTH_LONG).show()
-                                    }
-                                }
-                                )
+    private fun calculateRoute() {
+        val coordinates = mutableListOf<List<Double>>()
+        val currentLocation = locationViewModel?.currentLocation?.value
+        currentLocation?.let {
+            coordinates.add(listOf(it.longitude, it.latitude))
+        }
+        if (coordinates.isEmpty()) {
+            if (gpxDisplayState == GpxDisplayState.CALCULATED) {
+                listener?.clearGpx()
+            }
+            return
+        }
+        markerViewModel.markers.value?.forEach { marker ->
+            if (marker.routeWaypoint) {
+                coordinates.add(listOf(marker.longitude, marker.latitude))
+            }
+        }
+        if (coordinates.size < 2) {
+            // Insufficient coordinates; nothing to do
+            if (gpxDisplayState != GpxDisplayState.LOADED_FROM_FILE) {
+                removeGpx()
+                listener?.clearGpx()
+            }
+            return
+        }
+        listener?.getOpenRouteServiceApi()?.let { api ->
+            val profile = sharedPreferences.getString(PREF_ORS_PROFILE, "driving-car")
+            profile?.let {
+                val directions = Directions(api, it)
+                directions.getRouteGpx(coordinates, object : Directions.RouteGpResult {
+                    override fun onSuccess(gpx: String) {
+                        Log.d(TAG, "GPX: $gpx")
+                        if (gpxDisplayState == GpxDisplayState.LOADED_FROM_FILE) {
+                            showGpxDialog {
+                                listener?.clearGpx()
+                                listener?.parseCalculatedGpx(gpx)
                             }
-
+                        } else {
+                            removeGpx()
+                            listener?.clearGpx()
+                            listener?.parseCalculatedGpx(gpx)
                         }
+                    }
+
+                    override fun onError(message: String) {
+                        Log.e(TAG, "Error fetching GPX: $message")
+                        Toast.makeText(
+                            requireContext(),
+                            "Error fetching GPX: $message",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
-
-            })
+                )
+            }
         }
     }
 
@@ -572,32 +605,33 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         super.onStop()
     }
 
-    fun setGpx(gpx: Gpx?, zoom: Boolean) {
+    fun setGpx(gpx: Gpx?, displayState: GpxDisplayState, zoom: Boolean) {
         gpx?.let {
             overlayHelper?.setGpx(it)
-            gpxDisplayState = GpxDisplayState.LOADED_FROM_FILE
+            gpxDisplayState = displayState
             if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
             if (zoom) {
                 disableFollow()
-                zoomToBounds(Util.area(it))
+                zoomToBounds(Utils.area(it))
             }
         }
     }
 
-    private fun showGpxDialog() {
+    private fun removeGpx() {
+        overlayHelper?.let {
+            it.clearGpx()
+            gpxDisplayState = GpxDisplayState.IDLE
+            if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
+        }
+    }
+
+    private fun showGpxDialog(onConfirmed: (() -> Unit)? = null) {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity(), R.style.AlertDialogTheme)
         builder.setTitle(getString(R.string.gpx))
             .setMessage(getString(R.string.discard_current_gpx))
             .setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
-                overlayHelper?.let {
-                    it.clearGpx()
-                    gpxDisplayState = GpxDisplayState.IDLE
-                    if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
-                }
-                listener?.let {
-                    it.clearGpx()
-                    it.selectGpx()
-                }
+                removeGpx()
+                onConfirmed?.invoke()
                 dialog.dismiss()
             }
             .setNegativeButton(
@@ -701,7 +735,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         when (itemId) {
             R.id.action_gpx -> {
                 if (gpxDisplayState != GpxDisplayState.IDLE) {
-                    showGpxDialog()
+                    showGpxDialog {
+                        markerViewModel.markers.value?.forEach {
+                            it.routeWaypoint = false
+                        }
+                        listener?.clearGpx()
+                        listener?.selectGpx()
+                    }
                 } else {
                     listener?.selectGpx()
                 }
@@ -745,7 +785,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
             R.id.action_gpx_zoom -> {
                 disableFollow()
-                listener?.let { zoomToBounds(Util.area(it.getGpx())) }
+                listener?.let { zoomToBounds(Utils.area(it.getGpx())) }
                 return true
             }
             R.id.action_layers -> {
@@ -796,16 +836,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             val dialogView = layoutInflater.inflate(R.layout.dialog_about, null)
 
             val versionTextView = dialogView.findViewById<TextView>(R.id.appVersion)
-            versionTextView.text = getString(R.string.app_version, Util.getAppVersion(it))
+            versionTextView.text = getString(R.string.app_version, Utils.getAppVersion(it))
 
             val authorTextView = dialogView.findViewById<TextView>(R.id.authorName)
             authorTextView.movementMethod = LinkMovementMethod.getInstance()
-            authorTextView.text = Util.fromHtml(
+            authorTextView.text = Utils.fromHtml(
                 getString(R.string.app_author)
             )
 
             val dialog = AlertDialog.Builder(it)
-                .setTitle(Util.getAppName(it))
+                .setTitle(Utils.getAppName(it))
                 .setView(dialogView)
                 .setPositiveButton(R.string.close) { dialog, _ -> dialog.dismiss() }
                 .create()
@@ -1007,7 +1047,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         var isFullscreen: Boolean
 
         /**
-         * Need to enable privacy stettings or not
+         * Need to enable privacy settings or not
          */
         fun isPrivacyOptionsRequired(): Boolean
 
@@ -1021,6 +1061,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
          */
         fun getOpenRouteServiceApi(): OpenRouteServiceApi?
 
+        /**
+         * Parse GPX string
+         */
+        fun parseCalculatedGpx(gpxString: String)
 
     }
 

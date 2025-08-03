@@ -31,30 +31,28 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
-import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
 import io.ticofab.androidgpxparser.parser.GPXParser
 import io.ticofab.androidgpxparser.parser.domain.Gpx
-import kotlinx.coroutines.launch
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN_ON_MAP_TAP
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
-import org.nitri.opentopo.model.GpxViewModel
+import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
-import org.nitri.ors.OpenRouteService
+import org.nitri.opentopo.util.Utils
 import org.nitri.ors.api.OpenRouteServiceApi
 import org.nitri.ors.client.OpenRouteServiceClient
 import org.osmdroid.util.GeoPoint
-import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
+import androidx.core.net.toUri
 
 open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener,
     GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
+    private val parser = GPXParser()
     private var openRouteServiceApi: OpenRouteServiceApi? = null
     private var geoPointFromIntent: GeoPointDto? = null
     private var gpxUriString: String? = null
@@ -169,21 +167,20 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         isFullscreen = sharedPreferences.getBoolean(PREF_FULLSCREEN, false)
         applyFullscreen()
 
-
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
         LocalBroadcastManager.getInstance(this).registerReceiver(cacheChangedReceiver, IntentFilter(CacheSettingsFragment.ACTION_CACHE_CHANGED))
         LocalBroadcastManager.getInstance(this).registerReceiver(orsApiKeyChangesReceiver, IntentFilter(SettingsActivity.ACTION_API_KEY_CHANGED))
 
         // Test ORS
-        val ors = OpenRouteService(getString(R.string.ors_api_key), this)
-        lifecycleScope.launch {
-            val result = ors.routeRepository.getRoute(
-                start = Pair(8.681495, 49.41461),
-                end = Pair(8.687872, 49.420318),
-                profile = "driving-car"
-            )
-            Log.d("ORS", "Distance: ${result.routes.firstOrNull()?.summary?.distance} m")
-        }
+//        val ors = OpenRouteService(getString(R.string.ors_api_key), this)
+//        lifecycleScope.launch {
+//            val result = ors.routeRepository.getRoute(
+//                start = Pair(8.681495, 49.41461),
+//                end = Pair(8.687872, 49.420318),
+//                profile = "driving-car"
+//            )
+//            Log.d("ORS", "Distance: ${result.routes.firstOrNull()?.summary?.distance} m")
+//        }
 
         createOrsApi()
     }
@@ -353,8 +350,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun setGpx() {
-        if (!TextUtils.isEmpty(gpxUriString)) {
-            parseGpx(Uri.parse(gpxUriString))
+        gpxUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
+            parseGpx(uriString.toUri())
         }
     }
 
@@ -390,35 +387,42 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     private fun parseGpx(uri: Uri) {
-        val parser = GPXParser()
-        val contentResolver = contentResolver
-        if (contentResolver != null) {
-            try {
-                val inputStream = contentResolver.openInputStream(uri)
-                if (inputStream != null) {
-                    gpxViewModel.gpx = parser.parse(inputStream)
-                    val mapFragment =
-                        supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as MapFragment?
-                    if (mapFragment != null && gpxViewModel.gpx != null) {
-                        mapFragment.setGpx(gpxViewModel.gpx, shouldZoomToGpx)
-                        gpxUriString = uri.toString()
-                        shouldZoomToGpx = false
-                    }
-                }
-            } catch (e: XmlPullParserException) {
-                e.printStackTrace()
-                Toast.makeText(
-                    this, getString(R.string.invalid_gpx) + ": " + e.message,
-                    Toast.LENGTH_LONG
-                ).show()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                Toast.makeText(
-                    this, getString(R.string.invalid_gpx) + ": " + e.message,
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+        try {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                val gpx = parser.parse(inputStream)
+                handleParsedGpx(gpx, MapFragment.GpxDisplayState.LOADED_FROM_FILE, uri.toString())
+            } ?: showGpxError(getString(R.string.invalid_gpx) + ": empty input stream")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
         }
+    }
+
+    override fun parseCalculatedGpx(gpxString: String) {
+        try {
+            val inputStream = gpxString.byteInputStream()
+            val gpx = parser.parse(inputStream)
+            val convertedGpx = Utils.convertRouteToTrack(gpx)
+            handleParsedGpx(convertedGpx, MapFragment.GpxDisplayState.CALCULATED, null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+        }
+    }
+
+    private fun handleParsedGpx(parsedGpx: Gpx?, displayState: MapFragment.GpxDisplayState, gpxUriString: String?) {
+        parsedGpx?.let { validGpx ->
+            gpxViewModel.gpx = validGpx
+            (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.let { mapFragment ->
+                mapFragment.setGpx(validGpx, displayState, shouldZoomToGpx)
+                gpxUriString?.let { this.gpxUriString = it }
+                shouldZoomToGpx = false
+            }
+        } ?: showGpxError(getString(R.string.invalid_gpx) + ": no GPX data")
+    }
+
+    private fun showGpxError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun getGeoPointDtoFromIntent(intent: Intent?): GeoPointDto? {
