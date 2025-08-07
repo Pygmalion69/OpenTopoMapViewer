@@ -11,9 +11,9 @@ import retrofit2.Response
 
 class Directions(val api: OpenRouteServiceApi, private val profile: String) {
 
-    fun getRouteGpx(coordinates: List<List<Double>>, result: RouteGpResult) {
+    fun getRouteGpx(coordinates: List<List<Double>>, language: String, result: RouteGpResult) {
         CoroutineScope(Dispatchers.IO).launch {
-            val request = RouteRequest(coordinates = coordinates)
+            val request = RouteRequest(coordinates = coordinates, language = language)
             try {
                 val response : Response<ResponseBody> = api.getRouteGpx(profile, request)
                 withContext(Dispatchers.Main) {

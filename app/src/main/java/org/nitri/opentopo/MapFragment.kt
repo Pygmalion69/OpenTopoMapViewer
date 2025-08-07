@@ -7,10 +7,12 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.location.OnNmeaMessageListener
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
@@ -395,11 +397,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
             return
         }
+        val locale =  Resources.getSystem().configuration.locales.get(0)
+        val language = locale.toLanguageTag().lowercase()
         listener?.getOpenRouteServiceApi()?.let { api ->
             val profile = sharedPreferences.getString(PREF_ORS_PROFILE, "driving-car")
             profile?.let {
                 val directions = Directions(api, it)
-                directions.getRouteGpx(coordinates, object : Directions.RouteGpResult {
+                directions.getRouteGpx(coordinates, language, object : Directions.RouteGpResult {
                     override fun onSuccess(gpx: String) {
                         Log.d(TAG, "GPX: $gpx")
                         if (gpxDisplayState == GpxDisplayState.LOADED_FROM_FILE) {
