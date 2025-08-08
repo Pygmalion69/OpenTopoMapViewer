@@ -292,7 +292,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
         ) {
             locationViewModel?.let {
-                it.currentLocation.value = locationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+                it.currentLocation.value = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             }
         }
         savedInstanceState?.let {
