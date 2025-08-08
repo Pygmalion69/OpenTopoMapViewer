@@ -74,6 +74,9 @@
     <string name="screen_header">Pantalla</string>
     <string name="cache_header">Caché</string>
 
+    <string name="waypoint_added">Punto de ruta añadido</string>
+    <string name="waypoint_removed">Punto de ruta eliminado</string>
+
     <string name="ors">OpenRouteService (ORS)</string>
     <string name="ors_api_key_title">Clave API de ORS</string>
     <string name="ors_explanation_html">

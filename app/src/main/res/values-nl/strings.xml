@@ -74,6 +74,9 @@
     <string name="screen_header">Scherm</string>
     <string name="cache_header">Cache</string>
 
+    <string name="waypoint_added">Routepunt toegevoegd</string>
+    <string name="waypoint_removed">Routepunt verwijderd</string>
+
     <string name="ors">OpenRouteService (ORS)</string>
     <string name="ors_api_key_title">ORS API-sleutel</string>
     <string name="ors_explanation_html">

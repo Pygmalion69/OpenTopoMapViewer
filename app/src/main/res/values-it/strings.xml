@@ -74,4 +74,35 @@
     <string name="screen_header">Schermo</string>
     <string name="cache_header">Cache</string>
 
+    <string name="waypoint_added">Waypoint aggiunto</string>
+    <string name="waypoint_removed">Waypoint rimosso</string>
+
+    <string name="ors">OpenRouteService (ORS)</string>
+    <string name="ors_api_key_title">Chiave API ORS</string>
+    <string name="ors_explanation_html">
+    OpenRouteService è un servizio di routing gratuito e open-source.
+    La registrazione è gratuita su &lt;a href="https://account.heigit.org/manage/key"&gt;account.heigit.org/manage/key&lt;/a&gt;.
+</string>
+    <string name="ors_key_prompt">Imposta la chiave API ORS per abilitare il routing</string>
+    <string name="ors_hint">Incolla qui la chiave API ORS</string>
+    <string name="erase_key">Cancella chiave API</string>
+    <string name="ors_key_prompt_explanation">OpenRouteService è FOSS. La registrazione è gratuita:</string>
+    <string name="ors_key_link">https://account.heigit.org/manage/key</string>
+    <string name="erase_api_key">Cancella chiave API</string>
+    <string name="ors_erase_confirm">Sei sicuro di voler cancellare la chiave API ORS?</string>
+    <string name="key_erased">Chiave cancellata</string>
+    <string name="ors_profile">Profilo di routing</string>
+    <string name="select_ors_profile">Seleziona profilo di routing ORS</string>
+    <string name="profile_set">Profilo impostato: %1$s</string>
+
+    <string name="profile_driving_car">Auto</string>
+    <string name="profile_driving_hgv">Camion</string>
+    <string name="profile_cycling_regular">Bicicletta</string>
+    <string name="profile_cycling_road">Bici da strada</string>
+    <string name="profile_cycling_mountain">Mountain bike</string>
+    <string name="profile_cycling_electric">E-bike</string>
+    <string name="profile_foot_walking">A piedi</string>
+    <string name="profile_foot_hiking">Escursionismo</string>
+    <string name="profile_wheelchair">Sedia a rotelle</string>
+
 </resources>
