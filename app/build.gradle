@@ -14,10 +14,10 @@ android {
     compileSdk 36
     defaultConfig {
         applicationId "org.nitri.opentopo"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 35
-        versionCode 52
-        versionName "1.22.2"
+        versionCode 53
+        versionName "1.23"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -90,6 +90,7 @@ android {
 }
 
 dependencies {
+    implementation project(':ors-client')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
     implementation 'androidx.core:core-ktx:1.16.0'

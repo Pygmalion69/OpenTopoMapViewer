@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import org.nitri.opentopo.overlay.da.MarkerDao
-import org.nitri.opentopo.overlay.model.MarkerModel
+import org.nitri.opentopo.da.MarkerDao
+import org.nitri.opentopo.model.MarkerModel
 
-@Database(entities = [MarkerModel::class], version = 2, exportSchema = false)
+@Database(entities = [MarkerModel::class], version = 3, exportSchema = false)
 abstract class OverlayDatabase : RoomDatabase() {
     abstract fun markerDao(): MarkerDao
 
@@ -22,7 +22,7 @@ abstract class OverlayDatabase : RoomDatabase() {
                     OverlayDatabase::class.java,
                     "overlay_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(false)
                     .build()
                 INSTANCE = instance
                 instance

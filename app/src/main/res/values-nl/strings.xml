@@ -74,4 +74,32 @@
     <string name="screen_header">Scherm</string>
     <string name="cache_header">Cache</string>
 
+    <string name="ors">OpenRouteService (ORS)</string>
+    <string name="ors_api_key_title">ORS API-sleutel</string>
+    <string name="ors_explanation_html">
+    OpenRouteService is een gratis en open-source routeringsdienst.
+    Registratie is gratis via &lt;a href="https://account.heigit.org/manage/key"&gt;account.heigit.org/manage/key&lt;/a&gt;.
+</string>
+    <string name="ors_key_prompt">Stel de ORS API-sleutel in om routering in te schakelen</string>
+    <string name="ors_hint">Plak hier de ORS API-sleutel</string>
+    <string name="erase_key">API-sleutel wissen</string>
+    <string name="ors_key_prompt_explanation">OpenRouteService is FOSS. Registratie is gratis:</string>
+    <string name="ors_key_link">https://account.heigit.org/manage/key</string>
+    <string name="erase_api_key">API-sleutel wissen</string>
+    <string name="ors_erase_confirm">Weet u zeker dat u de ORS API-sleutel wilt wissen?</string>
+    <string name="key_erased">Sleutel gewist</string>
+    <string name="ors_profile">Routeringsprofiel</string>
+    <string name="select_ors_profile">Selecteer ORS-routeringsprofiel</string>
+    <string name="profile_set">Profiel ingesteld: %1$s</string>
+
+    <string name="profile_driving_car">Auto</string>
+    <string name="profile_driving_hgv">Vrachtwagen</string>
+    <string name="profile_cycling_regular">Fiets</string>
+    <string name="profile_cycling_road">Racefiets</string>
+    <string name="profile_cycling_mountain">Mountainbike</string>
+    <string name="profile_cycling_electric">E-bike</string>
+    <string name="profile_foot_walking">Te voet</string>
+    <string name="profile_foot_hiking">Wandelen</string>
+    <string name="profile_wheelchair">Rolstoel</string>
+
 </resources>

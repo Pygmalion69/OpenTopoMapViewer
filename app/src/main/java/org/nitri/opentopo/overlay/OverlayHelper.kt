@@ -8,10 +8,13 @@ import android.view.LayoutInflater
 import android.view.Window
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import com.google.android.material.textfield.TextInputLayout
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.R
-import org.nitri.opentopo.overlay.model.MarkerModel
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
+import org.nitri.opentopo.viewmodel.GpxViewModel
+import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.osmdroid.tileprovider.MapTileProviderBasic
 import org.osmdroid.tileprovider.tilesource.ITileSource
@@ -26,11 +29,12 @@ import org.osmdroid.views.overlay.OverlayItem.HotspotPlace
 import org.osmdroid.views.overlay.TilesOverlay
 
 class OverlayHelper(private val mContext: Context, private val mMapView: MapView?) {
-    private var mWayPointOverlay: ItemizedIconInfoOverlay? = null
-    private var mNearbyItemOverlay: ItemizedIconInfoOverlay? = null
-    private var mOverlay = OVERLAY_NONE
-    private var mOverlayTileProvider: MapTileProviderBasic? = null
-    private var mTilesOverlay: TilesOverlay? = null
+    private var wayPointOverlay: ItemizedIconInfoOverlay? = null
+    private var nearbyItemOverlay: ItemizedIconInfoOverlay? = null
+    private var overlayType = OVERLAY_NONE
+    private var overlayTileProvider: MapTileProviderBasic? = null
+    private var tilesOverlay: TilesOverlay? = null
+    private var gpxViewModel: GpxViewModel? = null
     private val tileOverlayAlphaMatrix = ColorMatrix(
         floatArrayOf(
             1f, 0f, 0f, 0f, 0f,
@@ -40,10 +44,11 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         )
     )
     private val tileOverlayAlphaFilter = ColorMatrixColorFilter(tileOverlayAlphaMatrix)
-    private val mWayPointItemGestureListener: OnItemGestureListener<OverlayItem?> =
+
+    private val wayPointItemGestureListener: OnItemGestureListener<OverlayItem?> =
         object : OnItemGestureListener<OverlayItem?> {
             override fun onItemSingleTapUp(index: Int, item: OverlayItem?): Boolean {
-                mWayPointOverlay?.let { overlay ->
+                wayPointOverlay?.let { overlay ->
                     mMapView?.let { mapView ->
                         item?.let { currentItem ->
                             overlay.showWayPointInfo(mapView, currentItem)
@@ -83,11 +88,16 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
             override fun onMarkerClick(marker: CustomMarker?): Boolean {
                 markerInfoWindow?.takeIf { it.isOpen }?.close()
 
+                val prefs = PreferenceManager.getDefaultSharedPreferences(mContext)
+                val orsEnabled = !prefs.getString(PREF_ORS_API_KEY, null).isNullOrEmpty()
+
                 markerInfoWindow = MarkerInfoWindow(
                     R.layout.custom_bubble,
-                    R.id.bubble_title, R.id.bubble_description, R.id.bubble_subdescription, null, mMapView
+                    R.id.bubble_title, R.id.bubble_description, R.id.bubble_subdescription, null,
+                    mMapView, orsEnabled
                 ).apply {
                     onMarkerInfoEditClickListener = marker?.onMarkerInfoEditClickListener
+                    onMarkerWaypointClickListener = marker?.onMarkerWaypointClickListener
                     marker?.position?.let {
                         val windowLocation =
                             GeoPoint(it.latitude, it.longitude)
@@ -124,6 +134,9 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                     }
                     .setNeutralButton(mContext.getString(R.string.delete)) { _, _ ->
                         showDeleteConfirmationDialog(mContext) {
+                            if (markerModel.routeWaypoint) {
+                                removeWaypoint(markerModel)
+                            }
                             markerInteractionListener.onMarkerDelete(markerModel)
                         }
                     }
@@ -131,6 +144,17 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
                 alertDialog.show()
 
+            }
+        }
+
+    private val onMarkerWaypointClickListener : MarkerInfoWindow.OnMarkerWaypointClickListener =
+        object : MarkerInfoWindow.OnMarkerWaypointClickListener {
+            override fun onMarkerWaypointAddClick(markerModel: MarkerModel) {
+                addWaypoint(markerModel)
+            }
+
+            override fun onMarkerWaypointRemoveClick(markerModel: MarkerModel) {
+                removeWaypoint(markerModel)
             }
         }
 
@@ -147,10 +171,10 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         alertDialog.show()
     }
 
-    private val mNearbyItemGestureListener: OnItemGestureListener<OverlayItem?> =
+    private val nearbyItemGestureListener: OnItemGestureListener<OverlayItem?> =
         object : OnItemGestureListener<OverlayItem?> {
             override fun onItemSingleTapUp(index: Int, item: OverlayItem?): Boolean {
-                mNearbyItemOverlay?.let { overlay ->
+                nearbyItemOverlay?.let { overlay ->
                     mMapView?.let { mapView ->
                         item?.let { currentItem ->
                             overlay.showNearbyItemInfo(mapView, currentItem)
@@ -169,7 +193,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
 
     private var markerInfoWindow: MarkerInfoWindow? = null
 
-    private var mTrackOverlay: TrackOverlay? = null
+    private var trackOverlay: TrackOverlay? = null
     private val mapMarkers = ArrayList<Marker>()
 
     /**
@@ -185,9 +209,9 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         val routes = gpx.routes
 
         if (!tracks.isNullOrEmpty()) {
-            tracks?.forEach { track ->
-                mTrackOverlay = TrackOverlay(mContext, track)
-                mMapView?.overlays?.add(0, mTrackOverlay)
+            tracks.forEach { track ->
+                trackOverlay = TrackOverlay(mContext, track)
+                mMapView?.overlays?.add(0, trackOverlay)
             }
         }
 
@@ -216,13 +240,13 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         }
 
         if (wayPointItems.isNotEmpty()) {
-            mWayPointOverlay = ItemizedIconInfoOverlay(
+            wayPointOverlay = ItemizedIconInfoOverlay(
                 wayPointItems,
                 ContextCompat.getDrawable(mContext, R.drawable.map_marker),
-                mWayPointItemGestureListener,
+                wayPointItemGestureListener,
                 mContext
             )
-            mMapView?.overlays?.add(mWayPointOverlay)
+            mMapView?.overlays?.add(wayPointOverlay)
         }
         mMapView?.invalidate()
     }
@@ -232,13 +256,13 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
      */
     fun clearGpx() {
         mMapView?.let { mapView ->
-            mTrackOverlay?.also {
+            trackOverlay?.also {
                 mapView.overlays.remove(it)
-                mTrackOverlay = null
+                trackOverlay = null
             }
-            mWayPointOverlay?.also {
+            wayPointOverlay?.also {
                 mapView.overlays.remove(it)
-                mWayPointOverlay = null
+                wayPointOverlay = null
             }
         }
     }
@@ -262,6 +286,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 mapMarker.setOnMarkerDragListener(onMarkerDragListener)
                 mapMarker.onCustomMarkerClickListener = onMarkerClickListener
                 mapMarker.onMarkerInfoEditClickListener = onMarkerInfoEditClickListener
+                mapMarker.onMarkerWaypointClickListener = onMarkerWaypointClickListener
                 mapMarkers.add(mapMarker)
                 mMapView.overlays?.add(mapMarker)
             }
@@ -284,13 +309,13 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         clearNearby()
         val geoPoint = GeoPoint(item.lat, item.lon)
         val mapItem = OverlayItem(item.title, item.description, geoPoint)
-        mNearbyItemOverlay = ItemizedIconInfoOverlay(
+        nearbyItemOverlay = ItemizedIconInfoOverlay(
             ArrayList(listOf(mapItem)),
             ContextCompat.getDrawable(mContext, R.drawable.ic_default_marker),
-            mNearbyItemGestureListener,
+            nearbyItemGestureListener,
             mContext
         )
-        mMapView?.overlays?.add(mNearbyItemOverlay)
+        mMapView?.overlays?.add(nearbyItemOverlay)
         mMapView?.invalidate()
     }
 
@@ -298,9 +323,9 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
      * Remove nearby item layer
      */
     fun clearNearby() {
-        if (mMapView != null && mNearbyItemOverlay != null) {
-            mMapView.overlays.remove(mNearbyItemOverlay)
-            mNearbyItemOverlay = null
+        if (mMapView != null && nearbyItemOverlay != null) {
+            mMapView.overlays.remove(nearbyItemOverlay)
+            nearbyItemOverlay = null
         }
     }
 
@@ -310,16 +335,16 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
      * @return GPX layer present
      */
     fun hasGpx(): Boolean {
-        return mTrackOverlay != null || mWayPointOverlay != null
+        return trackOverlay != null || wayPointOverlay != null
     }
 
     fun setTilesOverlay(overlay: Int) {
-        mOverlay = overlay
+        overlayType = overlay
         var overlayTiles: ITileSource? = null
-        mTilesOverlay?.let {
+        tilesOverlay?.let {
             mMapView?.overlays?.remove(it)
         }
-        when (mOverlay) {
+        when (overlayType) {
             OVERLAY_NONE -> {}
             OVERLAY_HIKING -> overlayTiles = XYTileSource(
                 "hiking", 1, 17, 256, ".png", arrayOf(
@@ -340,11 +365,11 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 tileRequestCompleteHandlers.add(mMapView?.tileRequestCompleteHandler)
             }
 
-            mTilesOverlay = TilesOverlay(tileProvider, mContext).apply {
+            tilesOverlay = TilesOverlay(tileProvider, mContext).apply {
                 loadingBackgroundColor = Color.TRANSPARENT
                 setColorFilter(tileOverlayAlphaFilter)
             }
-            mMapView?.overlays?.add(0, mTilesOverlay)
+            mMapView?.overlays?.add(0, tilesOverlay)
         }
         mMapView?.invalidate()
     }
@@ -355,14 +380,26 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
          *
          * @return copyright notice or null
          */
-        get() = if (mOverlayTileProvider != null && mOverlay != OVERLAY_NONE) {
-            mOverlayTileProvider?.tileSource?.copyrightNotice
+        get() = if (overlayTileProvider != null && overlayType != OVERLAY_NONE) {
+            overlayTileProvider?.tileSource?.copyrightNotice
         } else null
 
     fun destroy() {
-        mTilesOverlay = null
-        mOverlayTileProvider = null
-        mWayPointOverlay = null
+        tilesOverlay = null
+        overlayTileProvider = null
+        wayPointOverlay = null
+    }
+
+    private fun addWaypoint(markerModel: MarkerModel) {
+        markerModel.routeWaypoint = true
+        markerInteractionListener.onMarkerUpdate(markerModel)
+        markerInteractionListener.onMarkerWaypointsChanged()
+    }
+
+    private fun removeWaypoint(markerModel: MarkerModel) {
+       markerModel.routeWaypoint = false
+        markerInteractionListener.onMarkerUpdate(markerModel)
+        markerInteractionListener.onMarkerWaypointsChanged()
     }
 
     interface MarkerInteractionListener {
@@ -370,6 +407,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         fun onMarkerClicked(markerModel: MarkerModel)
         fun onMarkerDelete(markerModel: MarkerModel)
         fun onMarkerUpdate(markerModel: MarkerModel)
+        fun onMarkerWaypointsChanged()
     }
     companion object {
 

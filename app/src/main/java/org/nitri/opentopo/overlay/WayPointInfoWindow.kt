@@ -8,7 +8,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
-import org.nitri.opentopo.util.Util.fromHtml
+import org.nitri.opentopo.util.Utils.fromHtml
 import org.osmdroid.api.IMapView
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.OverlayItem

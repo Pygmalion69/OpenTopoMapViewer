@@ -17,10 +17,8 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.MenuItem
 import android.view.MotionEvent
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBar
@@ -39,28 +37,29 @@ import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
 import io.ticofab.androidgpxparser.parser.GPXParser
 import io.ticofab.androidgpxparser.parser.domain.Gpx
-import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_CACHE_SIZE
-import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_EXTERNAL_STORAGE
-import org.nitri.opentopo.CacheSettingsFragment.Companion.PREF_TILE_CACHE
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN_ON_MAP_TAP
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
-import org.nitri.opentopo.model.GpxViewModel
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
+import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
-import org.nitri.opentopo.util.Util
+import org.nitri.opentopo.util.Utils
+import org.nitri.ors.api.OpenRouteServiceApi
+import org.nitri.ors.client.OpenRouteServiceClient
 import org.osmdroid.util.GeoPoint
-import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
+import androidx.core.net.toUri
 
 open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener,
     GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
-    private var mGeoPointFromIntent: GeoPointDto? = null
-    private var mGpxUriString: String? = null
-    private var mGpxUri: Uri? = null
-    private var mZoomToGpx = false
+    private val parser = GPXParser()
+    private var openRouteServiceApi: OpenRouteServiceApi? = null
+    private var geoPointFromIntent: GeoPointDto? = null
+    private var gpxUriString: String? = null
+    private var gpxUri: Uri? = null
+    private var shouldZoomToGpx = false
     override var selectedNearbyPlace: NearbyItem? = null
-    private var mMapFragment: MapFragment? = null
+    private var mapFragment: MapFragment? = null
     private val gpxViewModel: GpxViewModel by viewModels()
     override var isFullscreen = false
 
@@ -71,16 +70,21 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         when (key) {
             PREF_KEEP_SCREEN_ON -> {
-                mMapFragment?.setKeepScreenOn(sharedPreferences.getBoolean(key, false))
+                mapFragment?.setKeepScreenOn(sharedPreferences.getBoolean(key, false))
             }
         }
     }
 
     private val cacheChangedReceiver = object: BroadcastReceiver() {
-        override fun onReceive(p0: Context?, p1: Intent?) {
+        override fun onReceive(p0: Context?, intent: Intent?) {
             restart()
         }
+    }
 
+    private val orsApiKeyChangesReceiver = object: BroadcastReceiver() {
+        override fun onReceive(p0: Context?, intent: Intent?) {
+           createOrsApi()
+        }
     }
 
     override fun isPrivacyOptionsRequired(): Boolean {
@@ -91,7 +95,11 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         // NOP
     }
 
-    private lateinit var mPrefs: SharedPreferences
+    override fun getOpenRouteServiceApi(): OpenRouteServiceApi? {
+        return openRouteServiceApi
+    }
+
+    private lateinit var sharedPreferences: SharedPreferences
     private lateinit var handler: Handler
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,7 +114,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         setSupportActionBar(toolbar)
 
         if (savedInstanceState != null) {
-            mGpxUriString = savedInstanceState.getString(GPX_URI_STATE)
+            gpxUriString = savedInstanceState.getString(GPX_URI_STATE)
         }
 
         mapContainer = findViewById(R.id.map_container)
@@ -122,7 +130,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
 
         handler = Handler(mainLooper)
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val intent = intent
         if (intent != null && intent.data != null) {
             handleIntent(intent)
@@ -144,7 +152,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             addMapFragment()
         }
         if (savedInstanceState != null) {
-            mMapFragment = supportFragmentManager.getFragment(
+            mapFragment = supportFragmentManager.getFragment(
                 savedInstanceState,
                 MAP_FRAGMENT_TAG
             ) as MapFragment?
@@ -156,28 +164,48 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
         actionBar = supportActionBar
 
-        isFullscreen = mPrefs.getBoolean(PREF_FULLSCREEN, false)
+        isFullscreen = sharedPreferences.getBoolean(PREF_FULLSCREEN, false)
         applyFullscreen()
 
-
-        mPrefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+        sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
         LocalBroadcastManager.getInstance(this).registerReceiver(cacheChangedReceiver, IntentFilter(CacheSettingsFragment.ACTION_CACHE_CHANGED))
+        LocalBroadcastManager.getInstance(this).registerReceiver(orsApiKeyChangesReceiver, IntentFilter(SettingsActivity.ACTION_API_KEY_CHANGED))
+
+        // Test ORS
+//        val ors = OpenRouteService(getString(R.string.ors_api_key), this)
+//        lifecycleScope.launch {
+//            val result = ors.routeRepository.getRoute(
+//                start = Pair(8.681495, 49.41461),
+//                end = Pair(8.687872, 49.420318),
+//                profile = "driving-car"
+//            )
+//            Log.d("ORS", "Distance: ${result.routes.firstOrNull()?.summary?.distance} m")
+//        }
+
+        createOrsApi()
     }
 
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        //tapDetector.onTouchEvent(ev);
-        return super.dispatchTouchEvent(ev)
+    private fun createOrsApi() {
+        val apiKey = sharedPreferences.getString(PREF_ORS_API_KEY, "")
+        if (apiKey?.isNotEmpty() == true) {
+            openRouteServiceApi = OpenRouteServiceClient.create(apiKey, this@BaseMainActivity)
+        }
+    }
+
+    override fun dispatchTouchEvent(motionEvent: MotionEvent): Boolean {
+        //tapDetector.onTouchEvent(motionEvent);
+        return super.dispatchTouchEvent(motionEvent)
     }
 
     private fun handleIntent(intent: Intent) {
         intent.data?.let { uri ->
             when (uri.scheme) {
-                "geo" -> mGeoPointFromIntent = getGeoPointDtoFromIntent(intent)
+                "geo" -> geoPointFromIntent = getGeoPointDtoFromIntent(intent)
                 "file", "content" -> {
-                    mGpxUri = uri
-                    mGpxUriString = uri.toString()
-                    Log.i(TAG, "Uri: $mGpxUriString")
-                    mZoomToGpx = true
+                    gpxUri = uri
+                    gpxUriString = uri.toString()
+                    Log.i(TAG, "Uri: $gpxUriString")
+                    shouldZoomToGpx = true
                 }
                 else -> Log.i(TAG, "Unsupported scheme: ${uri.scheme}")
             }
@@ -202,7 +230,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
                 }
             }
 
-            handler.postDelayed({ mMapFragment?.showZoomControls(false) }, 3000)
+            handler.postDelayed({ mapFragment?.showZoomControls(false) }, 3000)
         } else {
             insetsController.show(WindowInsetsCompat.Type.systemBars())
             actionBar?.show()
@@ -219,8 +247,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
                 }
             }
 
-            if (mMapFragment?.isAdded == true) {
-                mMapFragment?.showZoomControls(true)
+            if (mapFragment?.isAdded == true) {
+                mapFragment?.showZoomControls(true)
             }
         }
 
@@ -240,22 +268,22 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         if (mapFragmentAdded()) {
             return
         }
-        if (mGeoPointFromIntent == null) {
-            mMapFragment =
+        if (geoPointFromIntent == null) {
+            mapFragment =
                 supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as MapFragment?
-            if (mMapFragment == null) {
-                mMapFragment = MapFragment.newInstance()
+            if (mapFragment == null) {
+                mapFragment = MapFragment.newInstance()
             }
         } else {
-            mGeoPointFromIntent?.let {
-                mMapFragment = MapFragment.newInstance(
+            geoPointFromIntent?.let {
+                mapFragment = MapFragment.newInstance(
                     it.latitude,
                     it.longitude
                 )
             }
 
         }
-        mMapFragment?.let {
+        mapFragment?.let {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.map_container, it, MAP_FRAGMENT_TAG)
                 .commit()
@@ -311,9 +339,9 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             result.data?.let {data ->
-                mGpxUri = data.data
-                mZoomToGpx = true
-                mGpxUri?.let {
+                gpxUri = data.data
+                shouldZoomToGpx = true
+                gpxUri?.let {
                     Log.i(TAG, "Uri: $it")
                     parseGpx(it)
                 }
@@ -322,8 +350,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun setGpx() {
-        if (!TextUtils.isEmpty(mGpxUriString)) {
-            parseGpx(Uri.parse(mGpxUriString))
+        gpxUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
+            parseGpx(uriString.toUri())
         }
     }
 
@@ -339,10 +367,10 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        if (!TextUtils.isEmpty(mGpxUriString)) {
-            outState.putString(GPX_URI_STATE, mGpxUriString)
+        if (!TextUtils.isEmpty(gpxUriString)) {
+            outState.putString(GPX_URI_STATE, gpxUriString)
         }
-        mMapFragment?.let {
+        mapFragment?.let {
             supportFragmentManager.putFragment(outState, MAP_FRAGMENT_TAG, it)
         }
         super.onSaveInstanceState(outState)
@@ -359,52 +387,60 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     private fun parseGpx(uri: Uri) {
-        val parser = GPXParser()
-        val contentResolver = contentResolver
-        if (contentResolver != null) {
-            try {
-                val inputStream = contentResolver.openInputStream(uri)
-                if (inputStream != null) {
-                    gpxViewModel.gpx = parser.parse(inputStream)
-                    val mapFragment =
-                        supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as MapFragment?
-                    if (mapFragment != null && gpxViewModel.gpx != null) {
-                        mapFragment.setGpx(gpxViewModel.gpx, mZoomToGpx)
-                        mGpxUriString = uri.toString()
-                        mZoomToGpx = false
-                    }
-                }
-            } catch (e: XmlPullParserException) {
-                e.printStackTrace()
-                Toast.makeText(
-                    this, getString(R.string.invalid_gpx) + ": " + e.message,
-                    Toast.LENGTH_LONG
-                ).show()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                Toast.makeText(
-                    this, getString(R.string.invalid_gpx) + ": " + e.message,
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+        try {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                val gpx = parser.parse(inputStream)
+                handleParsedGpx(gpx, MapFragment.GpxDisplayState.LOADED_FROM_FILE, uri.toString())
+            } ?: showGpxError(getString(R.string.invalid_gpx) + ": empty input stream")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
         }
+    }
+
+    override fun parseCalculatedGpx(gpxString: String) {
+        try {
+            val inputStream = gpxString.byteInputStream()
+            val gpx = parser.parse(inputStream)
+            val convertedGpx = Utils.convertRouteToTrack(gpx)
+            handleParsedGpx(convertedGpx, MapFragment.GpxDisplayState.CALCULATED, null)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+        }
+    }
+
+    private fun handleParsedGpx(parsedGpx: Gpx?, displayState: MapFragment.GpxDisplayState, gpxUriString: String?) {
+        parsedGpx?.let { validGpx ->
+            gpxViewModel.gpx = validGpx
+            (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.let { mapFragment ->
+                mapFragment.setGpx(validGpx, displayState, shouldZoomToGpx)
+                gpxUriString?.let { this.gpxUriString = it }
+                shouldZoomToGpx = false
+            }
+        } ?: showGpxError(getString(R.string.invalid_gpx) + ": no GPX data")
+    }
+
+    private fun showGpxError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun getGeoPointDtoFromIntent(intent: Intent?): GeoPointDto? {
         val uri = intent?.data
         val uriAsString = uri?.toString()
-        var pointFromIntent: GeoPointDto? = null
+        var geoPointFromIntent: GeoPointDto? = null
         if (uriAsString != null) {
             val parser = GeoUri(GeoUri.OPT_PARSE_INFER_MISSING)
-            pointFromIntent = parser.fromUri(uriAsString, GeoPointDto())
+            geoPointFromIntent = parser.fromUri(uriAsString, GeoPointDto())
         }
-        return pointFromIntent
+        return geoPointFromIntent
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mPrefs.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
         LocalBroadcastManager.getInstance(this).unregisterReceiver(cacheChangedReceiver)
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(orsApiKeyChangesReceiver)
     }
 
     override fun getGpx(): Gpx? {
@@ -413,7 +449,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun clearGpx() {
         gpxViewModel.gpx = null
-        mGpxUriString = null
+        gpxUriString = null
     }
 
     override fun showNearbyPlace(nearbyItem: NearbyItem?) {
@@ -430,7 +466,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun onMapTap() {
         if (mapFragmentAdded()) {
-            if (mPrefs.getBoolean(PREF_FULLSCREEN_ON_MAP_TAP, false)) {
+            if (sharedPreferences.getBoolean(PREF_FULLSCREEN_ON_MAP_TAP, false)) {
                 toggleFullscreen()
             }
         }

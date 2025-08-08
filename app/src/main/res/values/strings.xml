@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">OpenTopoMap</string>
+    <string name="waypoint_added">Waypoint added</string>
+    <string name="waypoint_removed">Waypoint removed</string>
     <string name="location">Location</string>
     <string name="follow">Follow</string>
     <string name="follow_enabled">Follow enabled</string>
@@ -73,5 +75,33 @@
     <string name="settings">Settings</string>
     <string name="screen_header">Screen</string>
     <string name="cache_header">Cache</string>
+
+    <string name="ors">OpenRouteService (ORS)</string>
+    <string name="ors_api_key_title">ORS API Key</string>
+    <string name="ors_explanation_html">
+    OpenRouteService is a free and open-source routing service.
+    Registration is free at &lt;a href="https://account.heigit.org/manage/key"&gt;account.heigit.org/manage/key&lt;/a&gt;.
+</string>
+    <string name="ors_key_prompt">Set ORS API key to enable routing</string>
+    <string name="ors_hint">Paste ORS API Key here</string>
+    <string name="erase_key">Erase API key</string>
+    <string name="ors_key_prompt_explanation">OpenRouteService is FOSS. Registration is free:</string>
+    <string name="ors_key_link">https://account.heigit.org/manage/key</string>
+    <string name="erase_api_key">Erase API key</string>
+    <string name="ors_erase_confirm">Are you sure you want to erase the ORS API key?</string>
+    <string name="key_erased">Key erased</string>
+    <string name="ors_profile">Routing profile</string>
+    <string name="select_ors_profile">Select ORS Routing Profile</string>
+    <string name="profile_set">Profile set: %1$s</string>
+
+    <string name="profile_driving_car">Car</string>
+    <string name="profile_driving_hgv">Truck</string>
+    <string name="profile_cycling_regular">Bike</string>
+    <string name="profile_cycling_road">Road bike</string>
+    <string name="profile_cycling_mountain">Mountain bike</string>
+    <string name="profile_cycling_electric">E-bike</string>
+    <string name="profile_foot_walking">Walking</string>
+    <string name="profile_foot_hiking">Hiking</string>
+    <string name="profile_wheelchair">Wheelchair</string>
 
 </resources>

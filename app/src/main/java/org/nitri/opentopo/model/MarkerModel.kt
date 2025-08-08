@@ -1,4 +1,4 @@
-package org.nitri.opentopo.overlay.model
+package org.nitri.opentopo.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -11,5 +11,6 @@ data class MarkerModel(
     var longitude: Double,
     var name: String,
     var description: String,
-    var nearbyId: Int = 0
+    var nearbyId: Int = 0,
+    var routeWaypoint: Boolean = false
 )

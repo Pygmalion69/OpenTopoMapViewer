@@ -10,22 +10,24 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
 import org.nitri.opentopo.R
-import org.nitri.opentopo.util.Util.fromHtml
-import org.nitri.opentopo.overlay.model.MarkerModel
+import org.nitri.opentopo.util.Utils.fromHtml
+import org.nitri.opentopo.model.MarkerModel
 import org.osmdroid.api.IMapView
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow
 
 class MarkerInfoWindow(
     layoutResId: Int,
-    private val mTitleId: Int,
-    private val mDescriptionId: Int,
-    private val mSubDescriptionId: Int,
-    private val mSubDescription: String?,
-    mapView: MapView?
+    private val titleResourceId: Int,
+    private val descriptionResourceId: Int,
+    private val subDescriptionResourceId: Int,
+    private val subDescription: String?,
+    mapView: MapView?,
+    private val orsEnabled: Boolean = false
 ) : BasicInfoWindow(layoutResId, mapView) {
 
     var onMarkerInfoEditClickListener: OnMarkerInfoEditClickListener? = null
+    var onMarkerWaypointClickListener: OnMarkerWaypointClickListener? = null
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onOpen(item: Any) {
@@ -36,12 +38,12 @@ class MarkerInfoWindow(
             return
         }
 
-        val tvTitle = mView.findViewById<TextView>(mTitleId)
+        val tvTitle = mView.findViewById<TextView>(titleResourceId)
         if (tvTitle != null) tvTitle.text = title
 
         val snippet = markerModel.description
         val snippetHtml = fromHtml(snippet.replace("href=\"//", "href=\"http://"))
-        val snippetText = mView.findViewById<TextView>(mDescriptionId)
+        val snippetText = mView.findViewById<TextView>(descriptionResourceId)
         snippetText.text = snippetHtml
         snippetText.setOnTouchListener { v, event ->
             var ret = false
@@ -70,9 +72,9 @@ class MarkerInfoWindow(
             }
             ret
         }
-        val subDescText = mView.findViewById<TextView>(mSubDescriptionId)
-        if (mSubDescription != null && "" != mSubDescription) {
-            subDescText.text = fromHtml(mSubDescription)
+        val subDescText = mView.findViewById<TextView>(subDescriptionResourceId)
+        if (subDescription != null && "" != subDescription) {
+            subDescText.text = fromHtml(subDescription)
             subDescText.visibility = View.VISIBLE
             subDescText.movementMethod = LinkMovementMethod.getInstance()
         } else {
@@ -86,9 +88,36 @@ class MarkerInfoWindow(
             )
             close()
         }
+
+        val btnWaypoint : ImageButton = mView.findViewById(R.id.bubble_waypoint)
+
+        if (orsEnabled) {
+            btnWaypoint.visibility = View.VISIBLE
+            // Set the appropriate icon based on whether it's a waypoint or not
+            btnWaypoint.setImageResource(
+                if (markerModel.routeWaypoint) R.drawable.ic_action_remove_waypoint
+                else R.drawable.ic_action_add_waypoint
+            )
+
+            btnWaypoint.setOnClickListener {
+                if (markerModel.routeWaypoint) {
+                    onMarkerWaypointClickListener?.onMarkerWaypointRemoveClick(markerModel)
+                } else {
+                    onMarkerWaypointClickListener?.onMarkerWaypointAddClick(markerModel)
+                }
+                close()
+            }
+        } else {
+            btnWaypoint.visibility = View.GONE
+        }
     }
 
     interface OnMarkerInfoEditClickListener {
         fun onMarkerInfoEditClick(markerModel: MarkerModel)
+    }
+
+    interface OnMarkerWaypointClickListener {
+        fun onMarkerWaypointAddClick(markerModel: MarkerModel)
+        fun onMarkerWaypointRemoveClick(markerModel: MarkerModel)
     }
 }

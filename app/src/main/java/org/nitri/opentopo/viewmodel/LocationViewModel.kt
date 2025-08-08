@@ -1,4 +1,4 @@
-package org.nitri.opentopo.model
+package org.nitri.opentopo.viewmodel
 
 import android.location.Location
 import androidx.lifecycle.MutableLiveData

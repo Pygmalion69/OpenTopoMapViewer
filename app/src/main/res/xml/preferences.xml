@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory app:title="@string/screen_header">
 
@@ -23,6 +24,27 @@
             app:key="cache_settings"
             app:title="@string/cache_settings"/>
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="ors_section"
+        app:title="@string/ors">
+
+        <Preference
+            app:key="ors_set_key"
+            app:title="@string/ors"
+            android:summary="@string/ors_key_prompt" />
+
+        <Preference
+            app:key="ors_erase_key"
+            app:title="@string/erase_key"
+            android:visible="false" />
+
+        <Preference
+            app:key="ors_select_profile"
+            app:title="@string/ors_profile"
+            android:summary="driving-car"
+            android:visible="false" />
     </PreferenceCategory>
 
 

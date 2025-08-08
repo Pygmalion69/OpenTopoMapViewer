@@ -1,4 +1,4 @@
-package org.nitri.opentopo.model
+package org.nitri.opentopo.viewmodel
 
 import androidx.lifecycle.ViewModel
 import io.ticofab.androidgpxparser.parser.domain.Gpx

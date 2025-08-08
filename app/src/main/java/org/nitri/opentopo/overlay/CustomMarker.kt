@@ -7,6 +7,7 @@ import org.osmdroid.views.overlay.Marker
 class CustomMarker(mapView: MapView) : Marker(mapView) {
 
     var onMarkerInfoEditClickListener: MarkerInfoWindow.OnMarkerInfoEditClickListener? = null
+    var onMarkerWaypointClickListener: MarkerInfoWindow.OnMarkerWaypointClickListener? = null
     var onCustomMarkerClickListener: OnCustomMarkerClickListener? = null
 
     override fun onSingleTapConfirmed(event: MotionEvent?, mapView: MapView?): Boolean {

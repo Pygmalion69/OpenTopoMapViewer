@@ -42,7 +42,20 @@
                 android:layout_weight="0"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_action_edit_marker"
-                android:visibility="visible" />
+                android:visibility="visible"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/bubble_waypoint"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="end"
+                android:layout_marginStart="2dp"
+                android:layout_weight="0"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_action_add_waypoint"
+                android:visibility="visible"
+                tools:ignore="ContentDescription" />
         </LinearLayout>
 
         <TextView

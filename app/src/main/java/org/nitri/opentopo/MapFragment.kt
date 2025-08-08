@@ -7,7 +7,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.location.GpsStatus.NmeaListener
+import android.content.res.Resources
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -32,7 +32,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -40,17 +40,20 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
-import org.nitri.opentopo.model.LocationViewModel
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_PROFILE
+import org.nitri.opentopo.viewmodel.LocationViewModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
+import org.nitri.opentopo.ors.Directions
 import org.nitri.opentopo.overlay.ClickableCompassOverlay
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
-import org.nitri.opentopo.overlay.model.MarkerModel
-import org.nitri.opentopo.overlay.viewmodel.MarkerViewModel
+import org.nitri.opentopo.model.MarkerModel
+import org.nitri.opentopo.viewmodel.MarkerViewModel
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
-import org.nitri.opentopo.util.Util
+import org.nitri.opentopo.util.Utils
+import org.nitri.ors.api.OpenRouteServiceApi
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.DelayedMapListener
 import org.osmdroid.events.MapEventsReceiver
@@ -73,37 +76,48 @@ import java.io.File
 
 class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
     GestureCallback, ClickableCompassOverlay.OnCompassClickListener {
+
+    /**
+     * Enum representing the possible states of the map display regarding GPX tracks
+     */
+    enum class GpxDisplayState {
+        IDLE,           // Nothing on display
+        LOADED_FROM_FILE, // GPX loaded from file
+        CALCULATED      // GPX calculated from routing service
+    }
+
+    private var gpxDisplayState: GpxDisplayState = GpxDisplayState.IDLE
     private var orientationSensor: OrientationSensor? = null
     @Volatile
     private var mapRotation: Boolean = false
-    private lateinit var mMapView: MapView
-    private var mLocationOverlay: MyLocationNewOverlay? = null
-    private var mCompassOverlay: CompassOverlay? = null
-    private var mScaleBarOverlay: ScaleBarOverlay? = null
-    private var mRotationGestureOverlay: RotationGestureOverlay? = null
-    private var mLocationManager: LocationManager? = null
-    private var mOverlayHelper: OverlayHelper? = null
-    private lateinit var mMapHandler: Handler
-    private val mCenterRunnable: Runnable = object : Runnable {
+    private lateinit var mapView: MapView
+    private var locationOverlay: MyLocationNewOverlay? = null
+    private var compassOverlay: CompassOverlay? = null
+    private var scaleBarOverlay: ScaleBarOverlay? = null
+    private var rotationGestureOverlay: RotationGestureOverlay? = null
+    private var locationManager: LocationManager? = null
+    private var overlayHelper: OverlayHelper? = null
+    private lateinit var mapHandler: Handler
+    private val centerMapRunnable: Runnable = object : Runnable {
         override fun run() {
-            mLocationViewModel?.currentLocation?.value?.let { location ->
-                mMapView.controller.animateTo(GeoPoint(location))
+            locationViewModel?.currentLocation?.value?.let { location ->
+                mapView.controller.animateTo(GeoPoint(location))
             }
-            mMapHandler.postDelayed(this, 5000)
+            mapHandler.postDelayed(this, 5000)
         }
     }
-    private val mEnableFollowRunnable: Runnable = object : Runnable {
+    private val enableFollowRunnable: Runnable = object : Runnable {
         override fun run() {
-            if (mFollow) {
-                mLocationOverlay?.let {
+            if (followEnabled) {
+                locationOverlay?.let {
                     it.enableFollowLocation()
                     it.enableAutoStop = true
                 }
-                mMapHandler.postDelayed(this, 5000)
+                mapHandler.postDelayed(this, 5000)
             }
         }
     }
-    private val mDragListener: MapListener = object : MapListener {
+    private val dragListener: MapListener = object : MapListener {
         override fun onScroll(event: ScrollEvent): Boolean {
             return false
         }
@@ -116,7 +130,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     fun setKeepScreenOn(value: Boolean) {
         Log.d(TAG, "keepScreenOn: $value")
-        mMapView.keepScreenOn = value
+        mapView.keepScreenOn = value
         if (value) {
             requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
@@ -124,17 +138,17 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
     }
 
-    private var mFollow = false
-    private var mListener: OnFragmentInteractionListener? = null
-    private lateinit var mPrefs: SharedPreferences
-    private var mBaseMap = BASE_MAP_OTM
-    private var mCopyRightView: TextView? = null
-    private var mOverlay = OverlayHelper.OVERLAY_NONE
-    private var mMapCenterState: GeoPoint? = null
-    private var mZoomState = DEFAULT_ZOOM
-    private var mLastNearbyAnimateToId = 0
-    private var mLocationViewModel: LocationViewModel? = null
-    private var mGestureOverlay: GestureOverlay? = null
+    private var followEnabled = false
+    private var listener: OnFragmentInteractionListener? = null
+    private lateinit var sharedPreferences: SharedPreferences
+    private var baseMap = BASE_MAP_OTM
+    private var copyrightView: TextView? = null
+    private var overlay = OverlayHelper.OVERLAY_NONE
+    private var mapCenterState: GeoPoint? = null
+    private var zoomState = DEFAULT_ZOOM
+    private var lastNearbyAnimateToId = 0
+    private var locationViewModel: LocationViewModel? = null
+    private var gestureOverlay: GestureOverlay? = null
 
     private val markerViewModel: MarkerViewModel by viewModels()
 
@@ -144,48 +158,35 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         val context = requireActivity().applicationContext
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val configuration = Configuration.getInstance()
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
-        val basePath = Util.getOsmdroidBasePath(context, mPrefs.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false))
+        val basePath = Utils.getOsmdroidBasePath(context, sharedPreferences.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false))
         configuration.osmdroidBasePath = basePath
         val tileCache = File(configuration.osmdroidBasePath.absolutePath,
-            mPrefs.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
+            sharedPreferences.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
                 ?: CacheSettingsFragment.DEFAULT_TILE_CACHE)
         configuration.osmdroidTileCache = tileCache
-        val maxCacheSize = mPrefs.getInt(CacheSettingsFragment.PREF_CACHE_SIZE, CacheSettingsFragment.DEFAULT_CACHE_SIZE)
+        val maxCacheSize = sharedPreferences.getInt(CacheSettingsFragment.PREF_CACHE_SIZE, CacheSettingsFragment.DEFAULT_CACHE_SIZE)
         configuration.tileFileSystemCacheMaxBytes =
             maxCacheSize.toLong() * 1024 * 1024
-        val edit = mPrefs.edit()
-        edit.putString("osmdroid.basePath", basePath.absolutePath)
-        edit.putString("osmdroid.cachePath", tileCache.absolutePath)
-        edit.commit()
-        configuration.load(context, mPrefs)
-        mBaseMap = mPrefs.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
-        mOverlay = mPrefs.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
-        mapRotation = mPrefs.getBoolean(SettingsActivity.PREF_ROTATE, false)
-        mLocationManager =
+        sharedPreferences.edit(commit = true) {
+            putString("osmdroid.basePath", basePath.absolutePath)
+            putString("osmdroid.cachePath", tileCache.absolutePath)
+        }
+        configuration.load(context, sharedPreferences)
+        baseMap = sharedPreferences.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
+        overlay = sharedPreferences.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
+        mapRotation = sharedPreferences.getBoolean(SettingsActivity.PREF_ROTATE, false)
+        locationManager =
             requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        mLocationViewModel = ViewModelProvider(requireActivity())[LocationViewModel::class.java]
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val nmeaListener = OnNmeaMessageListener { s: String?, _: Long ->
-                mLocationViewModel?.currentNmea?.value = s
+        locationViewModel = ViewModelProvider(requireActivity())[LocationViewModel::class.java]
+        val nmeaListener = OnNmeaMessageListener { s: String?, _: Long ->
+            locationViewModel?.currentNmea?.value = s
 
-            }
-            if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                mLocationManager?.addNmeaListener(nmeaListener)
-            }
-        } else {
-            val nmeaListener = NmeaListener { _: Long, s: String? ->
-                    mLocationViewModel?.currentNmea?.value = s
-            }
-            if (ActivityCompat.checkSelfPermission(
-                    requireActivity(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                mLocationManager?.addNmeaListener(nmeaListener)
-            }
+        }
+        if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager?.addNmeaListener(nmeaListener)
         }
     }
 
@@ -194,18 +195,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_map, container, false)
-        mMapView = view.findViewById(R.id.mapview)
+        mapView = view.findViewById(R.id.mapview)
         val dm = this.resources.displayMetrics
         val activity = activity ?: return null
 
-        mMapView.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
+        mapView.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
-                mListener?.onMapTap()
+                listener?.onMapTap()
                 return true
             }
 
             override fun longPressHelper(p: GeoPoint): Boolean {
-                mListener?.onMapLongPress()
+                listener?.onMapLongPress()
                 val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
                 val seq = highestSeq + 1
                 val marker = MarkerModel(
@@ -219,56 +220,62 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }))
 
-        mCompassOverlay = ClickableCompassOverlay(
+        compassOverlay = ClickableCompassOverlay(
             activity, InternalCompassOrientationProvider(activity),
-            mMapView, this
+            mapView, this
         )
-        mLocationOverlay = MyLocationNewOverlay(
+        locationOverlay = MyLocationNewOverlay(
             GpsMyLocationProvider(activity),
-            mMapView
+            mapView
         )
         val bmMapLocation =
-            Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_position, 204)
-        mLocationOverlay?.setPersonIcon(bmMapLocation)
-        mLocationOverlay?.setPersonHotspot(
+            Utils.getBitmapFromDrawable(requireActivity(), R.drawable.ic_position, 204)
+        locationOverlay?.setPersonIcon(bmMapLocation)
+        locationOverlay?.setPersonHotspot(
             bmMapLocation.width / 2f,
             bmMapLocation.height / 2f
         )
         val bmMapBearing =
-            Util.getBitmapFromDrawable(requireActivity(), R.drawable.ic_direction, 204)
-        mLocationOverlay?.setDirectionArrow(bmMapLocation, bmMapBearing)
-        mScaleBarOverlay = ScaleBarOverlay(mMapView)
-        mScaleBarOverlay?.setCentred(true)
-        mScaleBarOverlay?.setScaleBarOffset(dm.widthPixels / 2, 10)
-        mRotationGestureOverlay = RotationGestureOverlay(mMapView)
-        mRotationGestureOverlay?.isEnabled = true
-        mGestureOverlay = GestureOverlay(this)
-        mMapView.overlays.add(mGestureOverlay)
-        mMapView.maxZoomLevel = 17.0
-        mMapView.isTilesScaledToDpi = true
-        showZoomControls(mListener?.isFullscreen?.not() ?: true)
-        mMapView.setMultiTouchControls(true)
-        mMapView.isFlingEnabled = true
-        mMapView.overlays.add(mLocationOverlay)
-        mMapView.overlays.add(mCompassOverlay)
-        mMapView.overlays.add(mScaleBarOverlay)
-        mMapView.addMapListener(DelayedMapListener(mDragListener))
-        mCopyRightView = view.findViewById(R.id.copyrightView)
+            Utils.getBitmapFromDrawable(requireActivity(), R.drawable.ic_direction, 204)
+        locationOverlay?.setDirectionArrow(bmMapLocation, bmMapBearing)
+        scaleBarOverlay = ScaleBarOverlay(mapView)
+        scaleBarOverlay?.setCentred(true)
+        scaleBarOverlay?.setScaleBarOffset(dm.widthPixels / 2, 10)
+        rotationGestureOverlay = RotationGestureOverlay(mapView)
+        rotationGestureOverlay?.isEnabled = true
+        gestureOverlay = GestureOverlay(this)
+        mapView.overlays.add(gestureOverlay)
+        mapView.maxZoomLevel = 17.0
+        mapView.isTilesScaledToDpi = true
+        showZoomControls(listener?.isFullscreen?.not() ?: true)
+        mapView.setMultiTouchControls(true)
+        mapView.isFlingEnabled = true
+        mapView.overlays.add(locationOverlay)
+        mapView.overlays.add(compassOverlay)
+        mapView.overlays.add(scaleBarOverlay)
+        mapView.addMapListener(DelayedMapListener(dragListener))
+        copyrightView = view.findViewById(R.id.copyrightView)
         setBaseMap()
-        mLocationOverlay?.enableMyLocation()
-        mLocationOverlay?.disableFollowLocation()
-        mLocationOverlay?.isOptionsMenuEnabled = true
-        mCompassOverlay?.enableCompass()
-        mMapView.visibility = View.VISIBLE
-        mOverlayHelper = OverlayHelper(requireContext(), mMapView)
+        locationOverlay?.enableMyLocation()
+        locationOverlay?.disableFollowLocation()
+        locationOverlay?.isOptionsMenuEnabled = true
+        compassOverlay?.enableCompass()
+        mapView.visibility = View.VISIBLE
+        overlayHelper = OverlayHelper(requireContext(), mapView)
         setTilesOverlay()
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mMapHandler = Handler(requireActivity().mainLooper)
-        mListener?.setGpx()
+        mapHandler = Handler(requireActivity().mainLooper)
+        listener?.setGpx()
+
+        // Check if there's already a GPX track loaded and update the state accordingly
+        if (overlayHelper?.hasGpx() == true) {
+            gpxDisplayState = GpxDisplayState.LOADED_FROM_FILE
+        }
+
         val arguments = arguments
         var mapCenterSet = false
         // Move to received geo intent coordinates
@@ -281,23 +288,17 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            ) {
-                mLocationViewModel?.let {
-                    it.currentLocation.value = mLocationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
-                }
-            }
-        } else {
-            mLocationViewModel?.let{
-                it.currentLocation.value = mLocationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+        if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        ) {
+            locationViewModel?.let {
+                it.currentLocation.value = locationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
             }
         }
         savedInstanceState?.let {
             if (it.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(STATE_LONGITUDE)
             ) {
-                mMapCenterState = GeoPoint(
+                mapCenterState = GeoPoint(
                     it.getDouble(STATE_LATITUDE, 0.0),
                     it.getDouble(STATE_LONGITUDE, 0.0)
                 )
@@ -305,46 +306,46 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     TAG,
                     String.format(
                         "Restoring center state: %f, %f",
-                        mMapCenterState?.latitude,
-                        mMapCenterState?.longitude
+                        mapCenterState?.latitude,
+                        mapCenterState?.longitude
                     )
                 )
-                mZoomState = it.getDouble(STATE_ZOOM, DEFAULT_ZOOM)
+                zoomState = it.getDouble(STATE_ZOOM, DEFAULT_ZOOM)
             } else {
                 Log.d(TAG, "No center state delivered")
             }
         }
-        if (mMapCenterState == null) {
+        if (mapCenterState == null) {
             Log.d(TAG, "No saved center state")
-            val prefLat = mPrefs.getFloat(PREF_LATITUDE, 0f)
-            val prefLon = mPrefs.getFloat(PREF_LONGITUDE, 0f)
+            val prefLat = sharedPreferences.getFloat(PREF_LATITUDE, 0f)
+            val prefLon = sharedPreferences.getFloat(PREF_LONGITUDE, 0f)
             if (prefLat > 0 && prefLon > 0) {
-                mMapCenterState = GeoPoint(prefLat.toDouble(), prefLon.toDouble())
+                mapCenterState = GeoPoint(prefLat.toDouble(), prefLon.toDouble())
                 Log.d(
                     TAG,
                     String.format("Restoring center state from prefs: %f, %f", prefLat, prefLon)
                 )
             }
         }
-        mMapCenterState?.let {
-            mMapView.controller.setCenter(it)
+        mapCenterState?.let {
+            mapView.controller.setCenter(it)
             mapCenterSet = true
         } ?: run {
-            mLocationViewModel?.currentLocation?.value?.let { location ->
-                mMapView.controller.setCenter(GeoPoint(location.latitude, location.longitude))
+            locationViewModel?.currentLocation?.value?.let { location ->
+                mapView.controller.setCenter(GeoPoint(location.latitude, location.longitude))
                 mapCenterSet = true
             }
         }
         if (!mapCenterSet) {
             centerOnFirstFix()
         }
-        mMapView.controller.setZoom(mZoomState)
-        if (mPrefs.getBoolean(PREF_FOLLOW, false)) enableFollow()
+        mapView.controller.setZoom(zoomState)
+        if (sharedPreferences.getBoolean(PREF_FOLLOW, false)) enableFollow()
 
-        setKeepScreenOn(mPrefs.getBoolean(PREF_KEEP_SCREEN_ON, false))
+        setKeepScreenOn(sharedPreferences.getBoolean(PREF_KEEP_SCREEN_ON, false))
 
         markerViewModel.markers.observe(viewLifecycleOwner) { markers ->
-            mOverlayHelper?.setMarkers(markers, object : OverlayHelper.MarkerInteractionListener {
+            overlayHelper?.setMarkers(markers, object : OverlayHelper.MarkerInteractionListener {
                 override fun onMarkerMoved(markerModel: MarkerModel) {
                     //NOP
                 }
@@ -361,17 +362,83 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     markerViewModel.updateMarker(markerModel)
                 }
 
+                override fun onMarkerWaypointsChanged() {
+                    calculateRoute()
+                }
             })
+            if (markerViewModel.hasRoutePoints()) {
+                calculateRoute()
+            }
+        }
+    }
+
+    private fun calculateRoute() {
+        val coordinates = mutableListOf<List<Double>>()
+        val currentLocation = locationViewModel?.currentLocation?.value
+        currentLocation?.let {
+            coordinates.add(listOf(it.longitude, it.latitude))
+        }
+        if (coordinates.isEmpty()) {
+            if (gpxDisplayState == GpxDisplayState.CALCULATED) {
+                listener?.clearGpx()
+            }
+            return
+        }
+        markerViewModel.markers.value?.forEach { marker ->
+            if (marker.routeWaypoint) {
+                coordinates.add(listOf(marker.longitude, marker.latitude))
+            }
+        }
+        if (coordinates.size < 2) {
+            // Insufficient coordinates; nothing to do
+            if (gpxDisplayState != GpxDisplayState.LOADED_FROM_FILE) {
+                removeGpx()
+                listener?.clearGpx()
+            }
+            return
+        }
+        val locale =  Resources.getSystem().configuration.locales.get(0)
+        val language = locale.toLanguageTag().lowercase()
+        listener?.getOpenRouteServiceApi()?.let { api ->
+            val profile = sharedPreferences.getString(PREF_ORS_PROFILE, "driving-car")
+            profile?.let {
+                val directions = Directions(api, it)
+                directions.getRouteGpx(coordinates, language, object : Directions.RouteGpResult {
+                    override fun onSuccess(gpx: String) {
+                        Log.d(TAG, "GPX: $gpx")
+                        if (gpxDisplayState == GpxDisplayState.LOADED_FROM_FILE) {
+                            showGpxDialog {
+                                listener?.clearGpx()
+                                listener?.parseCalculatedGpx(gpx)
+                            }
+                        } else {
+                            removeGpx()
+                            listener?.clearGpx()
+                            listener?.parseCalculatedGpx(gpx)
+                        }
+                    }
+
+                    override fun onError(message: String) {
+                        Log.e(TAG, "Error fetching GPX: $message")
+                        Toast.makeText(
+                            requireContext(),
+                            "Error fetching GPX: $message",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+                )
+            }
         }
     }
 
     private fun centerOnFirstFix() {
-        mLocationOverlay?.runOnFirstFix {
-            val location = mLocationOverlay?.myLocation
+        locationOverlay?.runOnFirstFix {
+            val location = locationOverlay?.myLocation
             location?.let {
                 try {
                     requireActivity().runOnUiThread {
-                        mMapView.controller.animateTo(it)
+                        mapView.controller.animateTo(it)
                     }
                 } catch (e: IllegalStateException) {
                     e.printStackTrace()
@@ -381,69 +448,69 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun animateToLatLon(lat: Double, lon: Double) {
-        mMapHandler.postDelayed({
+        mapHandler.postDelayed({
             disableFollow()
-            mMapView.controller.animateTo(GeoPoint(lat, lon))
+            mapView.controller.animateTo(GeoPoint(lat, lon))
         }, 500)
     }
 
     private fun setBaseMap() {
-        when (mBaseMap) {
-            BASE_MAP_OTM -> mMapView.setTileSource(TileSourceFactory.OpenTopo)
-            BASE_MAP_OSM -> mMapView.setTileSource(TileSourceFactory.MAPNIK)
+        when (baseMap) {
+            BASE_MAP_OTM -> mapView.setTileSource(TileSourceFactory.OpenTopo)
+            BASE_MAP_OSM -> mapView.setTileSource(TileSourceFactory.MAPNIK)
         }
-        mMapView.invalidate()
+        mapView.invalidate()
 
         setCopyrightNotice()
     }
 
     private fun setTilesOverlay() {
-        mOverlayHelper?.setTilesOverlay(mOverlay)
+        overlayHelper?.setTilesOverlay(overlay)
         setCopyrightNotice()
     }
 
     private fun setCopyrightNotice() {
         val copyrightStringBuilder = StringBuilder()
-        val mapCopyRightNotice = mMapView.tileProvider.tileSource.copyrightNotice
-        copyrightStringBuilder.append(mapCopyRightNotice)
-        mOverlayHelper?.let {
+        val mapCopyrightNotice = mapView.tileProvider.tileSource.copyrightNotice
+        copyrightStringBuilder.append(mapCopyrightNotice)
+        overlayHelper?.let {
             val overlayCopyRightNotice = it.copyrightNotice
-            if (!TextUtils.isEmpty(mapCopyRightNotice) && !TextUtils.isEmpty(overlayCopyRightNotice)) {
+            if (!TextUtils.isEmpty(mapCopyrightNotice) && !TextUtils.isEmpty(overlayCopyRightNotice)) {
                 copyrightStringBuilder.append(", ")
             }
             copyrightStringBuilder.append(overlayCopyRightNotice)
         }
         val copyRightNotice = copyrightStringBuilder.toString()
         if (!TextUtils.isEmpty(copyRightNotice)) {
-            mCopyRightView?.text = copyRightNotice
-            mCopyRightView?.visibility = View.VISIBLE
+            copyrightView?.text = copyRightNotice
+            copyrightView?.visibility = View.VISIBLE
         } else {
-            mCopyRightView?.visibility = View.GONE
+            copyrightView?.visibility = View.GONE
         }
     }
 
     private fun enableFollow() {
-        mFollow = true
+        followEnabled = true
         activity?.let { (it as AppCompatActivity).supportInvalidateOptionsMenu() }
-        mLocationOverlay?.enableFollowLocation()
-        mLocationOverlay?.enableAutoStop = true
-        mMapHandler.removeCallbacks(mCenterRunnable)
-        mMapHandler.post(mCenterRunnable);
-        mPrefs.edit().putBoolean(PREF_FOLLOW, true).apply()
+        locationOverlay?.enableFollowLocation()
+        locationOverlay?.enableAutoStop = true
+        mapHandler.removeCallbacks(centerMapRunnable)
+        mapHandler.post(centerMapRunnable);
+        sharedPreferences.edit { putBoolean(PREF_FOLLOW, true) }
     }
 
     private fun disableFollow() {
-        mFollow = false
+        followEnabled = false
         activity?.let { (it as AppCompatActivity).supportInvalidateOptionsMenu() }
-        mLocationOverlay?.disableFollowLocation()
-        mMapHandler.removeCallbacksAndMessages(null)
-        mPrefs.edit().putBoolean(PREF_FOLLOW, false).apply()
+        locationOverlay?.disableFollowLocation()
+        mapHandler.removeCallbacksAndMessages(null)
+        sharedPreferences.edit { putBoolean(PREF_FOLLOW, false) }
     }
 
     private fun saveMapCenterPrefs() {
-        mMapCenterState?.let {
-            mPrefs.edit().putFloat(PREF_LATITUDE, it.latitude.toFloat()).apply()
-            mPrefs.edit().putFloat(PREF_LONGITUDE, it.longitude.toFloat()).apply()
+        mapCenterState?.let {
+            sharedPreferences.edit { putFloat(PREF_LATITUDE, it.latitude.toFloat()) }
+            sharedPreferences.edit { putFloat(PREF_LONGITUDE, it.longitude.toFloat()) }
             Log.d(
                 TAG,
                 String.format(
@@ -458,28 +525,28 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     @SuppressLint("MissingPermission")
     override fun onResume() {
         super.onResume()
-        val basePath = Configuration.getInstance().osmdroidBasePath
+        // val basePath = Configuration.getInstance().osmdroidBasePath
         val cache = Configuration.getInstance().osmdroidTileCache
         Log.d(TAG, "Cache: " + cache.absolutePath)
-        if (mFollow) {
-            mLocationOverlay?.enableFollowLocation()
-            mMapHandler.removeCallbacks(mCenterRunnable)
-            mMapHandler.post(mCenterRunnable)
+        if (followEnabled) {
+            locationOverlay?.enableFollowLocation()
+            mapHandler.removeCallbacks(centerMapRunnable)
+            mapHandler.post(centerMapRunnable)
         }
-        mLocationOverlay?.enableMyLocation()
-        mCompassOverlay?.enableCompass()
-        mScaleBarOverlay?.enableScaleBar()
-        mMapView.invalidate()
-        mMapCenterState?.let {
-            mMapView.controller.setCenter(mMapCenterState)
-            mMapCenterState = null // We're done with the old state
+        locationOverlay?.enableMyLocation()
+        compassOverlay?.enableCompass()
+        scaleBarOverlay?.enableScaleBar()
+        mapView.invalidate()
+        mapCenterState?.let {
+            mapView.controller.setCenter(mapCenterState)
+            mapCenterState = null // We're done with the old state
         } ?: run {
-            mLocationViewModel?.currentLocation?.value?.let { location ->
+            locationViewModel?.currentLocation?.value?.let { location ->
                 val geoPoint = GeoPoint(location.latitude, location.longitude)
-                mMapView.controller.setCenter(geoPoint)
+                mapView.controller.setCenter(geoPoint)
             }
         }
-        mLocationManager?.let {
+        locationManager?.let {
             try {
                 it.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER,
@@ -504,24 +571,24 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onPause() {
-        mMapCenterState = mMapView.mapCenter as GeoPoint
+        mapCenterState = mapView.mapCenter as GeoPoint
         try {
-            mLocationManager?.removeUpdates(this)
+            locationManager?.removeUpdates(this)
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
-        mMapHandler.removeCallbacks(mCenterRunnable)
-        mCompassOverlay?.disableCompass()
-        mLocationOverlay?.disableFollowLocation()
-        mLocationOverlay?.disableMyLocation()
-        mScaleBarOverlay?.disableScaleBar()
+        mapHandler.removeCallbacks(centerMapRunnable)
+        compassOverlay?.disableCompass()
+        locationOverlay?.disableFollowLocation()
+        locationOverlay?.disableMyLocation()
+        scaleBarOverlay?.disableScaleBar()
         super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         Log.d(TAG, "onSaveInstanceState()")
-        mMapCenterState = mMapView.mapCenter as GeoPoint
-        mMapCenterState?.let {
+        mapCenterState = mapView.mapCenter as GeoPoint
+        mapCenterState?.let {
             outState.putDouble(STATE_LATITUDE, it.latitude)
             outState.putDouble(STATE_LONGITUDE, it.longitude)
             Log.d(
@@ -533,7 +600,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 )
             )
         }
-        outState.putDouble(STATE_ZOOM, mMapView.zoomLevelDouble)
+        outState.putDouble(STATE_ZOOM, mapView.zoomLevelDouble)
         super.onSaveInstanceState(outState)
     }
 
@@ -542,30 +609,33 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         super.onStop()
     }
 
-    fun setGpx(gpx: Gpx?, zoom: Boolean) {
+    fun setGpx(gpx: Gpx?, displayState: GpxDisplayState, zoom: Boolean) {
         gpx?.let {
-            mOverlayHelper?.setGpx(it)
+            overlayHelper?.setGpx(it)
+            gpxDisplayState = displayState
             if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
             if (zoom) {
                 disableFollow()
-                zoomToBounds(Util.area(it))
+                zoomToBounds(Utils.area(it))
             }
         }
     }
 
-    private fun showGpxDialog() {
+    private fun removeGpx() {
+        overlayHelper?.let {
+            it.clearGpx()
+            gpxDisplayState = GpxDisplayState.IDLE
+            if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
+        }
+    }
+
+    private fun showGpxDialog(onConfirmed: (() -> Unit)? = null) {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity(), R.style.AlertDialogTheme)
         builder.setTitle(getString(R.string.gpx))
             .setMessage(getString(R.string.discard_current_gpx))
             .setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
-                mOverlayHelper?.let {
-                    it.clearGpx()
-                    if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
-                }
-                mListener?.let {
-                    it.clearGpx()
-                    it.selectGpx()
-                }
+                removeGpx()
+                onConfirmed?.invoke()
                 dialog.dismiss()
             }
             .setNegativeButton(
@@ -578,15 +648,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun zoomToBounds(box: BoundingBox) {
-        mMapView.post {
-            if (mMapView.height > 0) {
-                mMapView.zoomToBoundingBox(box, true, 64)
+        mapView.post {
+            if (mapView.height > 0) {
+                mapView.zoomToBoundingBox(box, true, 64)
             } else {
-                mMapView.viewTreeObserver.addOnGlobalLayoutListener(object :
+                mapView.viewTreeObserver.addOnGlobalLayoutListener(object :
                     OnGlobalLayoutListener {
                     override fun onGlobalLayout() {
-                        mMapView.zoomToBoundingBox(box, true, 64)
-                        mMapView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                        mapView.zoomToBoundingBox(box, true, 64)
+                        mapView.viewTreeObserver.removeOnGlobalLayoutListener(this)
                     }
                 })
             }
@@ -594,7 +664,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     fun setNearbyPlace() {
-        val nearbyPlace = mListener?.selectedNearbyPlace
+        val nearbyPlace = listener?.selectedNearbyPlace
         nearbyPlace?.let { showNearbyPlace(it) }
     }
 
@@ -621,32 +691,32 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             markerViewModel.addMarker(marker)
         }
 
-        if (nearbyPlace.id != mLastNearbyAnimateToId) {
+        if (nearbyPlace.id != lastNearbyAnimateToId) {
             disableFollow()
             animateToLatLon(nearbyPlace.lat, nearbyPlace.lon)
-            mLastNearbyAnimateToId = nearbyPlace.id
+            lastNearbyAnimateToId = nearbyPlace.id
         }
     }
 
     fun showZoomControls(show: Boolean) {
-        if (!::mMapView.isInitialized) return
+        if (!::mapView.isInitialized) return
         if (show) {
-            mMapView.zoomController.setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT)
+            mapView.zoomController.setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT)
         } else {
-            mMapView.zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
+            mapView.zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        mListener?.let {
+        listener?.let {
             it.setUpNavigation(false)
             inflater.inflate(R.menu.menu_main, menu)
         }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
-        if (mFollow) {
+        if (followEnabled) {
             menu.findItem(R.id.action_follow).isVisible = false
             menu.findItem(R.id.action_no_follow).isVisible = true
         } else {
@@ -654,15 +724,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             menu.findItem(R.id.action_no_follow).isVisible = false
         }
 
-        if (mOverlayHelper != null && (mOverlayHelper?.hasGpx() == true)) {
-            menu.findItem(R.id.action_gpx_details).isVisible = true
-            menu.findItem(R.id.action_gpx_zoom).isVisible = true
-        } else {
-            menu.findItem(R.id.action_gpx_details).isVisible = false
-            menu.findItem(R.id.action_gpx_zoom).isVisible = false
-        }
+        val gpxVisible = gpxDisplayState != GpxDisplayState.IDLE
+        menu.findItem(R.id.action_gpx_details).isVisible = gpxVisible
+        menu.findItem(R.id.action_gpx_zoom).isVisible = gpxVisible
 
-        mListener?.let {
+        listener?.let {
             menu.findItem(R.id.action_privacy_settings).isVisible = it.isPrivacyOptionsRequired()
         }
     }
@@ -672,14 +738,22 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val itemId = item.itemId
         when (itemId) {
             R.id.action_gpx -> {
-                mOverlayHelper?.takeIf { it.hasGpx() }?.let {
-                    showGpxDialog()
-                } ?: mListener?.selectGpx()
+                if (gpxDisplayState != GpxDisplayState.IDLE) {
+                    showGpxDialog {
+                        markerViewModel.markers.value?.forEach {
+                            it.routeWaypoint = false
+                        }
+                        listener?.clearGpx()
+                        listener?.selectGpx()
+                    }
+                } else {
+                    listener?.selectGpx()
+                }
                 return true
             }
             R.id.action_location -> {
-                mLocationViewModel?.currentLocation?.value?.let { location ->
-                    mMapView.controller.animateTo(GeoPoint(location))
+                locationViewModel?.currentLocation?.value?.let { location ->
+                    mapView.controller.animateTo(GeoPoint(location))
                 }
                 return true
             }
@@ -694,7 +768,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
             R.id.action_gpx_details -> {
-                mListener?.addGpxDetailFragment()
+                listener?.addGpxDetailFragment()
                 return true
             }
             R.id.action_location_details -> {
@@ -704,9 +778,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
             R.id.action_nearby -> {
-                mListener?.let { listener ->
+                listener?.let { listener ->
                     listener.clearSelectedNearbyPlace()
-                    val nearbyCenter = mMapView.mapCenter as GeoPoint
+                    val nearbyCenter = mapView.mapCenter as GeoPoint
                     nearbyCenter.let { center ->
                         listener.addNearbyFragment(center)
                     }
@@ -715,7 +789,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
             R.id.action_gpx_zoom -> {
                 disableFollow()
-                mListener?.let { zoomToBounds(Util.area(it.getGpx())) }
+                listener?.let { zoomToBounds(Utils.area(it.getGpx())) }
                 return true
             }
             R.id.action_layers -> {
@@ -729,11 +803,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     val overlayNoneItem = popup.menu.findItem(R.id.none)
                     val overlayHikingItem = popup.menu.findItem(R.id.lonvia_hiking)
                     val overlayCyclingItem = popup.menu.findItem(R.id.lonvia_cycling)
-                    when (mBaseMap) {
+                    when (baseMap) {
                         BASE_MAP_OTM -> openTopoMapItem.isChecked = true
                         BASE_MAP_OSM -> openStreetMapItem.isChecked = true
                     }
-                    when (mOverlay) {
+                    when (overlay) {
                         OverlayHelper.OVERLAY_NONE -> overlayNoneItem.isChecked = true
                         OverlayHelper.OVERLAY_HIKING -> overlayHikingItem.isChecked = true
                         OverlayHelper.OVERLAY_CYCLING -> overlayCyclingItem.isChecked = true
@@ -745,7 +819,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return false
             }
             R.id.action_settings -> {
-                mMapCenterState = mMapView.mapCenter as GeoPoint
+                mapCenterState = mapView.mapCenter as GeoPoint
                 saveMapCenterPrefs()
                 val settingsIntent = Intent(activity, SettingsActivity::class.java)
                 startActivity(settingsIntent)
@@ -755,7 +829,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
             R.id.action_privacy_settings -> {
-                mListener?.showPrivacyOptionsForm()
+                listener?.showPrivacyOptionsForm()
             }
         }
         return super.onOptionsItemSelected(item)
@@ -766,16 +840,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             val dialogView = layoutInflater.inflate(R.layout.dialog_about, null)
 
             val versionTextView = dialogView.findViewById<TextView>(R.id.appVersion)
-            versionTextView.text = getString(R.string.app_version, Util.getAppVersion(it))
+            versionTextView.text = getString(R.string.app_version, Utils.getAppVersion(it))
 
             val authorTextView = dialogView.findViewById<TextView>(R.id.authorName)
             authorTextView.movementMethod = LinkMovementMethod.getInstance()
-            authorTextView.text = Util.fromHtml(
+            authorTextView.text = Utils.fromHtml(
                 getString(R.string.app_author)
             )
 
             val dialog = AlertDialog.Builder(it)
-                .setTitle(Util.getAppName(it))
+                .setTitle(Utils.getAppName(it))
                 .setView(dialogView)
                 .setPositiveButton(R.string.close) { dialog, _ -> dialog.dismiss() }
                 .create()
@@ -796,23 +870,23 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             val itemId = menuItem.itemId
             when (itemId) {
                 R.id.otm -> {
-                    mBaseMap = BASE_MAP_OTM
+                    baseMap = BASE_MAP_OTM
                 }
                 R.id.osm -> {
-                    mBaseMap = BASE_MAP_OSM
+                    baseMap = BASE_MAP_OSM
                 }
                 R.id.none -> {
-                    mOverlay = OverlayHelper.OVERLAY_NONE
+                    overlay = OverlayHelper.OVERLAY_NONE
                 }
                 R.id.lonvia_hiking -> {
-                    mOverlay = OverlayHelper.OVERLAY_HIKING
+                    overlay = OverlayHelper.OVERLAY_HIKING
                 }
                 R.id.lonvia_cycling -> {
-                    mOverlay = OverlayHelper.OVERLAY_CYCLING
+                    overlay = OverlayHelper.OVERLAY_CYCLING
                 }
             }
-            mPrefs.edit().putInt(PREF_BASE_MAP, mBaseMap).apply()
-            mPrefs.edit().putInt(PREF_OVERLAY, mOverlay).apply()
+            sharedPreferences.edit { putInt(PREF_BASE_MAP, baseMap) }
+            sharedPreferences.edit { putInt(PREF_OVERLAY, overlay) }
             setBaseMap()
             setTilesOverlay()
         }
@@ -825,19 +899,19 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}, mapRotation: $mapRotation")
 
         requireActivity().runOnUiThread {
-            mLocationViewModel?.currentLocation?.postValue(location)
+            locationViewModel?.currentLocation?.postValue(location)
             if (mapRotation) {
                 if (location.hasBearing()) {
                     stopOrientationSensor()
-                    MapOrientation.setTargetMapOrientation(mMapView, location.bearing)
+                    MapOrientation.setTargetMapOrientation(mapView, location.bearing)
                 } else {
                     // Use device orientation
                     orientationSensor =
-                        orientationSensor ?: OrientationSensor(requireContext(), mMapView)
+                        orientationSensor ?: OrientationSensor(requireContext(), mapView)
                 }
             } else {
                 stopOrientationSensor()
-                if (mMapView.mapOrientation != 0f) MapOrientation.reset(mMapView)
+                if (mapView.mapOrientation != 0f) MapOrientation.reset(mapView)
             }
         }
     }
@@ -859,7 +933,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context is OnFragmentInteractionListener) {
-            mListener = context
+            listener = context
         } else {
             throw RuntimeException(
                 (context.toString()
@@ -870,47 +944,48 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     override fun onDetach() {
         super.onDetach()
-        mListener = null
+        listener = null
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mLocationManager = null
-        mLocationOverlay = null
-        mCompassOverlay = null
-        mScaleBarOverlay = null
-        mRotationGestureOverlay = null
-        mGestureOverlay = null
-        mOverlayHelper?.apply { destroy() }
+        gpxDisplayState = GpxDisplayState.IDLE
+        locationManager = null
+        locationOverlay = null
+        compassOverlay = null
+        scaleBarOverlay = null
+        rotationGestureOverlay = null
+        gestureOverlay = null
+        overlayHelper?.apply { destroy() }
     }
 
     override fun onUserMapInteraction() {
-        if (mFollow) {
+        if (followEnabled) {
             // follow disabled by gesture -> re-enable with delay
-            mMapHandler.removeCallbacksAndMessages(null)
-            mMapHandler.postDelayed(mEnableFollowRunnable, 5000)
+            mapHandler.removeCallbacksAndMessages(null)
+            mapHandler.postDelayed(enableFollowRunnable, 5000)
         }
     }
 
     override fun onCompassClicked() {
-        if (!mPrefs.getBoolean(SettingsActivity.PREF_TAP_COMPASS_TO_ROTATE, false)) {
+        if (!sharedPreferences.getBoolean(SettingsActivity.PREF_TAP_COMPASS_TO_ROTATE, false)) {
             return
         }
         mapRotation = !mapRotation
         //Log.d(TAG, "map rotation set to $mapRotation")
-        mPrefs.edit().putBoolean(SettingsActivity.PREF_ROTATE, mapRotation).apply()
+        sharedPreferences.edit { putBoolean(SettingsActivity.PREF_ROTATE, mapRotation) }
         if (mapRotation) {
-            val lastLocation = mLocationViewModel?.currentLocation?.value
+            val lastLocation = locationViewModel?.currentLocation?.value
             if (lastLocation?.hasBearing() == true) {
                 stopOrientationSensor()
-                MapOrientation.setTargetMapOrientation(mMapView, lastLocation.bearing)
+                MapOrientation.setTargetMapOrientation(mapView, lastLocation.bearing)
             } else {
-                orientationSensor = orientationSensor ?: OrientationSensor(requireContext(), mMapView)
+                orientationSensor = orientationSensor ?: OrientationSensor(requireContext(), mapView)
             }
             Toast.makeText(requireContext(), R.string.rotation_on, Toast.LENGTH_SHORT).show()
         } else {
             stopOrientationSensor()
-            MapOrientation.reset(mMapView)
+            MapOrientation.reset(mapView)
             Toast.makeText(requireContext(), R.string.rotation_off, Toast.LENGTH_SHORT).show()
         }
     }
@@ -976,7 +1051,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         var isFullscreen: Boolean
 
         /**
-         * Need to enable privacy stettings or not
+         * Need to enable privacy settings or not
          */
         fun isPrivacyOptionsRequired(): Boolean
 
@@ -985,6 +1060,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
          */
         fun showPrivacyOptionsForm()
 
+        /**
+         * Get the ORS API if available
+         */
+        fun getOpenRouteServiceApi(): OpenRouteServiceApi?
+
+        /**
+         * Parse GPX string
+         */
+        fun parseCalculatedGpx(gpxString: String)
 
     }
 

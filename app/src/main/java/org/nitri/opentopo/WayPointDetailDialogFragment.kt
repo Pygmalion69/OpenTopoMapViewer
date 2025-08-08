@@ -8,7 +8,7 @@ import android.view.Window
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import org.nitri.opentopo.util.Util.fromHtml
+import org.nitri.opentopo.util.Utils.fromHtml
 import org.nitri.opentopo.model.WayPointItem
 
 class WayPointDetailDialogFragment : DialogFragment() {

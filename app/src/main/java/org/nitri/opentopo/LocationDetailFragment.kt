@@ -12,9 +12,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import org.nitri.opentopo.util.Util.elevationFromNmea
-import org.nitri.opentopo.model.LocationViewModel
-import org.nitri.opentopo.util.Util
+import org.nitri.opentopo.util.Utils.elevationFromNmea
+import org.nitri.opentopo.viewmodel.LocationViewModel
+import org.nitri.opentopo.util.Utils
 
 class LocationDetailFragment : DialogFragment() {
     private var view: View? = null
@@ -44,7 +44,7 @@ class LocationDetailFragment : DialogFragment() {
         }
         val nmeaObserver = Observer<String> { nmea: String? ->
             val elevation = nmea?.let { elevationFromNmea(it) }
-            if (elevation != Util.NO_ELEVATION_VALUE.toDouble()) {
+            if (elevation != Utils.NO_ELEVATION_VALUE.toDouble()) {
                 tvElevation.text = String.format("%.1f m", elevation)
             }
         }
