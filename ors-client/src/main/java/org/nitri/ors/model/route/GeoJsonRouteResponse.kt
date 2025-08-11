@@ -1,6 +1,5 @@
 package org.nitri.ors.model.route
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.nitri.ors.model.meta.Metadata
 
@@ -16,7 +15,7 @@ data class GeoJsonRouteResponse(
 data class Feature(
     val type: String,
     val geometry: Geometry,
-    val properties: Map<String, @Contextual Any> = emptyMap() // or a concrete model if needed
+    val properties: Map<String, kotlinx.serialization.json.JsonElement> = emptyMap()
 )
 
 @Serializable
