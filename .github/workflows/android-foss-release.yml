@@ -3,17 +3,16 @@ name: Android FOSS Release
 on:
   push:
     tags:
-      - 'v*'      # e.g., v1.23.1
+      - '*'
   workflow_dispatch:
 
 permissions:
-  contents: write   # needed to create GitHub Releases
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # keep Play off in CI; your Gradle uses these envs for signing
       ENABLE_PLAY_RELEASE: "false"
       STORE_FILE: keystore
       STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
