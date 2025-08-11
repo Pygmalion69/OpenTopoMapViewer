@@ -7,15 +7,17 @@ import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import org.nitri.ors.api.OpenRouteServiceApi
 import org.nitri.ors.model.route.RouteRequest
+import org.nitri.ors.repository.RouteRepository
 import retrofit2.Response
 
 class Directions(val api: OpenRouteServiceApi, private val profile: String) {
 
+    val repository = RouteRepository(api)
+
     fun getRouteGpx(coordinates: List<List<Double>>, language: String, result: RouteGpResult) {
         CoroutineScope(Dispatchers.IO).launch {
-            val request = RouteRequest(coordinates = coordinates, language = language)
             try {
-                val response : Response<ResponseBody> = api.getRouteGpx(profile, request)
+                val response : Response<ResponseBody> = repository.getRouteGpx(coordinates, language, profile)
                 withContext(Dispatchers.Main) {
                     val gpxXml = response.body()?.string() ?: ""
                     if (gpxXml.isNotBlank()) {

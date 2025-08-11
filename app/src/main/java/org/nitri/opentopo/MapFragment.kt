@@ -894,8 +894,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     override fun onLocationChanged(location: Location) {
 
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}, mapRotation: $mapRotation")
+        //if (BuildConfig.DEBUG)
+        //   Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}, mapRotation: $mapRotation")
 
         requireActivity().runOnUiThread {
             locationViewModel?.currentLocation?.postValue(location)
