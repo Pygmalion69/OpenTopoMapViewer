@@ -1,5 +1,6 @@
 package org.nitri.ors.api
 
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import org.nitri.ors.model.route.GeoJsonRouteResponse
 import org.nitri.ors.model.route.GpxResponse
@@ -45,6 +46,25 @@ interface OpenRouteServiceApi {
         @Path("profile") profile: String,
         @Body request: RouteRequest
     ): GeoJsonRouteResponse
+
+    // Export endpoints
+    @POST("v2/export/{profile}")
+    suspend fun export(
+        @Path("profile") profile: String,
+        @Body body: RequestBody
+    ): Response<ResponseBody>
+
+    @POST("v2/export/{profile}/json")
+    suspend fun exportJson(
+        @Path("profile") profile: String,
+        @Body body: RequestBody
+    ): Response<ResponseBody>
+
+    @POST("v2/export/{profile}/topojson")
+    suspend fun exportTopoJson(
+        @Path("profile") profile: String,
+        @Body body: RequestBody
+    ): Response<ResponseBody>
 
     
 }
