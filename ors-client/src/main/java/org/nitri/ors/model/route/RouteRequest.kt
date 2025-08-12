@@ -1,6 +1,5 @@
 package org.nitri.ors.model.route
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
