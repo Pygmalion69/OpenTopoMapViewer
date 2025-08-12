@@ -1,9 +1,5 @@
 package org.nitri.ors.model.export
 
-data class TopoJsonExportResponse {
-}package org.nitri.ors.model.export
-
-import kotlinx.serialization.Serializable
 
 @Serializable
 data class TopoJsonExportResponse(
