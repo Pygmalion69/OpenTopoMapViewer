@@ -1,7 +1,9 @@
-apply plugin: 'com.android.application'
-apply plugin: 'org.jetbrains.kotlin.android'
-apply plugin: 'kotlin-kapt'
-
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+}
 
 def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
 
@@ -98,11 +100,21 @@ android {
     }
 }
 
+// Disable Google Services processing for FOSS variants
+plugins.withId('com.google.gms.google-services') {
+    tasks.configureEach { t ->
+        // Tasks look like: processFossDebugGoogleServices, processPlayReleaseGoogleServices
+        if (t.name.endsWith('GoogleServices') && t.name.toLowerCase().contains('foss')) {
+            t.enabled = false
+        }
+    }
+}
+
 dependencies {
     implementation project(':ors-client')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
-    implementation 'androidx.core:core-ktx:1.16.0'
+    implementation 'androidx.core:core-ktx:1.17.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2"
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
@@ -135,8 +147,10 @@ dependencies {
     }
     playImplementation 'com.google.android.gms:play-services-ads:24.5.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:3.2.0'
+    playImplementation(platform('com.google.firebase:firebase-bom:34.1.0'))
+    playImplementation 'com.google.firebase:firebase-analytics:23.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.7.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 }
 

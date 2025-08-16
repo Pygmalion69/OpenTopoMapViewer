@@ -12,6 +12,17 @@ buildscript {
     }
 }
 
+plugins {
+    id 'com.google.gms.google-services' version '4.4.3' apply false
+}
+
+afterEvaluate {
+    // Run the Google Services processing only for 'play' variants.
+    tasks.matching { it.name.endsWith("GoogleServices") }.configureEach {
+        onlyIf { name.toLowerCase().contains("play") }
+    }
+}
+
 allprojects {
     repositories {
         google()

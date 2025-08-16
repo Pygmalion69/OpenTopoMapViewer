@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "788836179178",
+    "project_id": "opentopomap-viewer",
+    "storage_bucket": "opentopomap-viewer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:788836179178:android:0602609f3fab40ddf34b93",
+        "android_client_info": {
+          "package_name": "org.nitri.opentopo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAx89Hxvhm0uImS6ZyaUuA2GLerZH6QJBM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

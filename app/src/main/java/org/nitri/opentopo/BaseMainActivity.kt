@@ -49,6 +49,7 @@ import org.nitri.ors.api.OpenRouteServiceApi
 import org.nitri.ors.client.OpenRouteServiceClient
 import org.osmdroid.util.GeoPoint
 import androidx.core.net.toUri
+import org.nitri.opentopo.analytics.AnalyticsProvider
 
 open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener,
     GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
@@ -416,6 +417,18 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.let { mapFragment ->
                 mapFragment.setGpx(validGpx, displayState, shouldZoomToGpx)
                 gpxUriString?.let { this.gpxUriString = it }
+
+                // Track GPX loaded event only for files (Play flavor will provide Firebase impl)
+                if (displayState == MapFragment.GpxDisplayState.LOADED_FROM_FILE) {
+                    val fileName = try {
+                        gpxUriString?.toUri()?.lastPathSegment
+                    } catch (e: Exception) { null }
+                    AnalyticsProvider.get(this).trackGpxLoaded(
+                        source = "file",
+                        gpx = validGpx,
+                        fileName = fileName
+                    )
+                }
                 shouldZoomToGpx = false
             }
         } ?: showGpxError(getString(R.string.invalid_gpx) + ": no GPX data")
