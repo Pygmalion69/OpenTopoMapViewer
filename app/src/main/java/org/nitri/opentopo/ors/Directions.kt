@@ -6,7 +6,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import org.nitri.ors.api.OpenRouteServiceApi
-import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.repository.RouteRepository
 import retrofit2.Response
 

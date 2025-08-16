@@ -12,10 +12,16 @@ interface AnalyticsTracker {
         gpx: Gpx,
         fileName: String?
     )
+
+    fun trackRouteCalculated(
+        profile: String?,
+        waypointCount: Int
+    )
 }
 
 /** No-op implementation used by non-Play builds. */
 private object NoOpAnalyticsTracker : AnalyticsTracker {
     override fun trackGpxLoaded(source: String, gpx: Gpx, fileName: String?) { /* no-op */ }
+    override fun trackRouteCalculated(profile: String?, waypointCount: Int) { /* no-op */ }
 }
 

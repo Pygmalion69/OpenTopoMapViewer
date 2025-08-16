@@ -47,6 +47,7 @@ import org.nitri.opentopo.overlay.ClickableCompassOverlay
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
+import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
@@ -405,6 +406,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 directions.getRouteGpx(coordinates, language, object : Directions.RouteGpResult {
                     override fun onSuccess(gpx: String) {
                         Log.d(TAG, "GPX: $gpx")
+                        // Analytics: route calculation succeeded (Play flavor logs to Firebase; FOSS no-ops)
+                        AnalyticsProvider.get(requireContext()).trackRouteCalculated(
+                            profile = it,
+                            waypointCount = coordinates.size
+                        )
                         if (gpxDisplayState == GpxDisplayState.LOADED_FROM_FILE) {
                             showGpxDialog {
                                 listener?.clearGpx()

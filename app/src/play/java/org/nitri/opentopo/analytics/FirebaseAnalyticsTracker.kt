@@ -6,6 +6,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 
 private const val EVENT_GPX_LOADED = "gpx_loaded"
+private const val EVENT_ROUTE_CALCULATED = "route_calculated"
 
 class FirebaseAnalyticsTracker(context: Context) : AnalyticsTracker {
 
@@ -20,5 +21,13 @@ class FirebaseAnalyticsTracker(context: Context) : AnalyticsTracker {
             putInt("waypoint_count", gpx.wayPoints?.size ?: 0)
         }
         firebase.logEvent(EVENT_GPX_LOADED, params)
+    }
+
+    override fun trackRouteCalculated(profile: String?, waypointCount: Int) {
+        val params = Bundle().apply {
+            profile?.let { putString("profile", it) }
+            putInt("waypoint_count", waypointCount)
+        }
+        firebase.logEvent(EVENT_ROUTE_CALCULATED, params)
     }
 }
