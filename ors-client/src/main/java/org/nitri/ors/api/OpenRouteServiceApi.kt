@@ -4,6 +4,8 @@ import okhttp3.ResponseBody
 import org.nitri.ors.model.export.ExportRequest
 import org.nitri.ors.model.export.ExportResponse
 import org.nitri.ors.model.export.TopoJsonExportResponse
+import org.nitri.ors.model.isochrones.IsochronesRequest
+import org.nitri.ors.model.isochrones.IsochronesResponse
 import org.nitri.ors.model.route.GeoJsonRouteResponse
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
@@ -65,6 +67,13 @@ interface OpenRouteServiceApi {
         @Path("profile") profile: String,
         @Body request: ExportRequest
     ): TopoJsonExportResponse
+
+    // Isochrones endpoint
+    @POST("v2/isochrones/{profile}")
+    suspend fun getIsochrones(
+        @Path("profile") profile: String,
+        @Body request: IsochronesRequest
+    ): IsochronesResponse
 
     
 }
