@@ -1,18 +1,15 @@
 package org.nitri.ors.api
 
-import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import org.nitri.ors.model.export.ExportRequest
 import org.nitri.ors.model.export.ExportResponse
 import org.nitri.ors.model.export.TopoJsonExportResponse
 import org.nitri.ors.model.route.GeoJsonRouteResponse
-import org.nitri.ors.model.route.GpxResponse
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query

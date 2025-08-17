@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ExportRequest(
-    val boundingBox: List<Double>, // [minLon, minLat, maxLon, maxLat]
-    val profile: String,
+    val bbox: List<List<Double>>, // [minLon, minLat, maxLon, maxLat]
+    val id: String,
     val geometry: Boolean? = null
 )

@@ -1,29 +1,56 @@
 package org.nitri.ors.model.export
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.doubleOrNull
 
 @Serializable
 data class ExportResponse(
-    val points: List<Point>,
-    val edges: List<Edge>,
-    val weights: List<Weight>
+    val nodes: List<Node> = emptyList(),
+    val edges: List<GraphEdge> = emptyList()
 )
 
 @Serializable
-data class Point(
-    val id: Int,
-    val coordinates: List<Double> // [lon, lat]
+data class Node(
+    @SerialName("nodeId") val nodeId: Long,
+    /** [lon, lat] */
+    val location: List<Double>
 )
 
 @Serializable
-data class Edge(
-    val id: Int,
-    val startPointId: Int,
-    val endPointId: Int
-)
-
-@Serializable
-data class Weight(
-    val edgeId: Int,
+data class GraphEdge(
+    @SerialName("fromId") val fromId: Long,
+    @SerialName("toId")   val toId: Long,
+    @Serializable(with = StringAsDoubleSerializer::class)
     val weight: Double
 )
+
+/**
+ * ORS sometimes returns numeric fields (e.g., "weight") as strings.
+ * This serializer accepts either a JSON number or a string number.
+ */
+object StringAsDoubleSerializer : KSerializer<Double> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("StringAsDouble", PrimitiveKind.DOUBLE)
+
+    override fun deserialize(decoder: Decoder): Double {
+        return if (decoder is JsonDecoder) {
+            val prim = decoder.decodeJsonElement() as JsonPrimitive
+            prim.doubleOrNull ?: prim.content.toDouble()
+        } else {
+            decoder.decodeDouble()
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: Double) {
+        encoder.encodeDouble(value)
+    }
+}

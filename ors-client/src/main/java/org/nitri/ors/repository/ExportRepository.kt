@@ -7,24 +7,30 @@ import org.nitri.ors.model.export.TopoJsonExportResponse
 
 class ExportRepository(private val api: OpenRouteServiceApi) {
 
-    suspend fun export(boundingBox: List<Double>, profile: String, geometry: Boolean? = null): ExportResponse {
+    suspend fun export(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
         val request = ExportRequest(
-            boundingBox = boundingBox,
-            profile = profile,
+            bbox = bbox,
+            id = "export_request",
             geometry = geometry
         )
         return api.export(profile, request)
     }
 
-    suspend fun export(profile: String, request: ExportRequest): ExportResponse {
-        return api.export(profile, request)
-    }
-
-    suspend fun exportJson(profile: String, request: ExportRequest): ExportResponse {
+    suspend fun exportJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
+        val request = ExportRequest(
+            bbox = bbox,
+            id = "export_request_json",
+            geometry = geometry
+        )
         return api.exportJson(profile, request)
     }
 
-    suspend fun exportTopoJson(profile: String, request: ExportRequest): TopoJsonExportResponse {
+    suspend fun exportTopoJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): TopoJsonExportResponse {
+        val request = ExportRequest(
+            bbox = bbox,
+            id = "export_request_topo_json",
+            geometry = geometry
+        )
         return api.exportTopoJson(profile, request)
     }
 }
