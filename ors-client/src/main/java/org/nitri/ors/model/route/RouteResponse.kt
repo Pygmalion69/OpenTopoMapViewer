@@ -1,5 +1,6 @@
 package org.nitri.ors.model.route
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.nitri.ors.model.meta.Metadata
 
@@ -15,7 +16,8 @@ data class Route(
     val summary: RouteSummary,
     val segments: List<Segment>,
     val geometry: String? = null,
-    val way_points: List<Int>? = null
+    @SerialName("way_points")
+    val wayPoints: List<Int>? = null
 )
 
 @Serializable
@@ -33,7 +35,8 @@ data class Segment(
     val steps: List<Step>? = null,
     val ascent: Double? = null,
     val descent: Double? = null,
-    val detourfactor: Double? = null,
+    @SerialName("detour_factor")
+    val detourFactor: Double? = null,
     val percentage: Double? = null
 )
 
@@ -44,7 +47,9 @@ data class Step(
     val instruction: String,
     val name: String,
     val type: Int,
-    val way_points: List<Int>,
-    val exit_number: Int? = null
+    @SerialName("way_points")
+    val wayPoints: List<Int>,
+    @SerialName("exit_number")
+    val exitNumber: Int? = null
 )
 
