@@ -1,11 +1,13 @@
 package org.nitri.ors.api
 
+import org.nitri.ors.model.matrix.MatrixResponse
 import okhttp3.ResponseBody
 import org.nitri.ors.model.export.ExportRequest
 import org.nitri.ors.model.export.ExportResponse
 import org.nitri.ors.model.export.TopoJsonExportResponse
 import org.nitri.ors.model.isochrones.IsochronesRequest
 import org.nitri.ors.model.isochrones.IsochronesResponse
+import org.nitri.ors.model.matrix.MatrixRequest
 import org.nitri.ors.model.route.GeoJsonRouteResponse
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
@@ -74,6 +76,13 @@ interface OpenRouteServiceApi {
         @Path("profile") profile: String,
         @Body request: IsochronesRequest
     ): IsochronesResponse
+
+    // Matrix endpoint
+    @POST("v2/matrix/{profile}")
+    suspend fun getMatrix(
+        @Path("profile") profile: String,
+        @Body request: MatrixRequest
+    ): MatrixResponse
 
     
 }
