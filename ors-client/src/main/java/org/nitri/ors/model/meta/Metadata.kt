@@ -1,5 +1,6 @@
 package org.nitri.ors.model.meta
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
@@ -11,12 +12,15 @@ data class Metadata(
     val timestamp: Long,
     val query: JsonElement, // could be String, Map<String, JsonElement>, or a specific model
     val engine: Engine,
-    val system_message: String? = null
+    @SerialName("system_message")
+    val systemMessage: String? = null
 )
 
 @Serializable
 data class Engine(
     val version: String,
-    val build_date: String,
-    val graph_date: String
+    @SerialName("build_date")
+    val buildDate: String,
+    @SerialName("graph_date")
+    val graphDate: String
 )

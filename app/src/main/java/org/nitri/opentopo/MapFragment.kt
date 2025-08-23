@@ -12,7 +12,6 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.location.OnNmeaMessageListener
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
@@ -41,18 +40,18 @@ import androidx.preference.PreferenceManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_PROFILE
-import org.nitri.opentopo.viewmodel.LocationViewModel
+import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.ors.Directions
 import org.nitri.opentopo.overlay.ClickableCompassOverlay
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
-import org.nitri.opentopo.model.MarkerModel
-import org.nitri.opentopo.viewmodel.MarkerViewModel
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
+import org.nitri.opentopo.viewmodel.LocationViewModel
+import org.nitri.opentopo.viewmodel.MarkerViewModel
 import org.nitri.ors.api.OpenRouteServiceApi
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.DelayedMapListener
@@ -292,7 +291,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
         ) {
             locationViewModel?.let {
-                it.currentLocation.value = locationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+                it.currentLocation.value = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             }
         }
         savedInstanceState?.let {
@@ -895,8 +894,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     override fun onLocationChanged(location: Location) {
 
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}, mapRotation: $mapRotation")
+        //if (BuildConfig.DEBUG)
+        //   Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}, mapRotation: $mapRotation")
 
         requireActivity().runOnUiThread {
             locationViewModel?.currentLocation?.postValue(location)

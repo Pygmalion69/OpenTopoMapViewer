@@ -5,6 +5,8 @@ apply plugin: 'kotlin-kapt'
 
 def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
 
+def isCi = System.getenv("GITHUB_ACTIONS") == "true" || System.getenv("CI") == "true"
+
 def myStoreFile = System.getenv('STORE_FILE')
 def myStorePassword = System.getenv('STORE_PASSWORD')
 def myKeyAlias = System.getenv('KEY_ALIAS')
@@ -16,8 +18,8 @@ android {
         applicationId "org.nitri.opentopo"
         minSdkVersion 24
         targetSdkVersion 35
-        versionCode 53
-        versionName "1.23"
+        versionCode 54
+        versionName "1.23.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -56,13 +58,20 @@ android {
         }
     }
 
-    if (!enablePlayRelease) {
-        variantFilter { variant ->
-            def names = variant.flavors*.name
-            // To check for a certain build type, use variant.buildType.name == "<buildType>"
-            if (names.contains("play") && variant.buildType.name == "release") {
-                // Gradle ignores any variants that satisfy the conditions above.
-                setIgnore(true)
+    // 🔒 Disable unwanted variants with the modern API (AGP 8+)
+    // 1) On CI: disable *all* Play variants (debug+release)
+    // 2) Locally: disable Play *release* unless ENABLE_PLAY_RELEASE=true
+    androidComponents {
+        // CI: kill every "play" variant
+        beforeVariants(selector().withFlavor("distribution", "play")) { v ->
+            if (isCi) {
+                v.enabled = false
+            }
+        }
+        // Local (or non-CI): keep Play debug for testing, but block Play release unless explicitly enabled
+        beforeVariants(selector().withBuildType("release").withFlavor("distribution", "play")) { v ->
+            if (!isCi && !enablePlayRelease) {
+                v.enabled = false
             }
         }
     }
@@ -94,7 +103,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
     implementation 'androidx.core:core-ktx:1.16.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2"
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
@@ -107,7 +116,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.13.1'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.room:room-runtime:2.7.2'
-    implementation 'androidx.test.ext:junit:1.2.1'
+    implementation 'androidx.test.ext:junit:1.3.0'
     annotationProcessor 'androidx.room:room-compiler:2.7.2'
     implementation "androidx.room:room-ktx:2.7.2"
     kapt "androidx.room:room-compiler:2.7.2"
@@ -124,10 +133,10 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-core-utils'
         exclude group: 'com.android.support', module: 'exifinterface'
     }
-    playImplementation 'com.google.android.gms:play-services-ads:24.4.0'
+    playImplementation 'com.google.android.gms:play-services-ads:24.5.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:3.2.0'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }
 

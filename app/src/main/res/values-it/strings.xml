@@ -1,0 +1,108 @@
+<resources>
+    <string name="app_name">OpenTopoMap</string>
+    <string name="location">Posizione</string>
+    <string name="follow">Segui</string>
+    <string name="follow_enabled">Segui abilitato</string>
+    <string name="follow_disabled">Segui disabilitato</string>
+    <string name="rotation_on">Rotazione on</string>
+    <string name="rotation_off">Rotazione off</string>
+    <string name="gpx">GPX</string>
+    <string name="discard_current_gpx">Il GPX caricato verrà sostituito</string>
+    <string name="gpx_details">Dettagli GPX</string>
+    <string name="gpx_zoom">Centra GPX</string>
+
+    <string name="location_details">Dettagli posizione</string>
+    <string name="label_latitude">Latitudine:</string>
+    <string name="label_longitude">Longitudine:</string>
+    <string name="label_elevation">Elevazione:</string>
+    <string name="close">Chiudi</string>
+    <string name="unknown_symbol">-</string>
+
+    <string name="elevation">Elevazione</string>
+    <string name="unit_m">m</string>
+    <string name="unit_km">km</string>
+    <string name="poi">POI</string>
+
+    <string name="layers">Sovrapposizioni</string>
+    <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_street_map">OpenStreetMap</string>
+    <string name="lonvia_hiking">Lonvia Escursionismo</string>
+    <string name="lonvia_cycling">Lonvia Ciclismo</string>
+    <string name="base_map">Mappa base</string>
+    <string name="overlay">Sovrapposizione</string>
+    <string name="none">Nessuno</string>
+    <string name="lonvia_copy">Wanderwege &#169; Lonvia</string>
+
+    <string name="fullscreen_on_map_tap">Schermo intero al tap</string>
+    <string name="keep_screen_on">Mantieni lo schermo acceso</string>
+    <string name="map_rotation">Rotazione mappa</string>
+    <string name="tap_compass_to_rotate">Tap sulla bussola per ruotare la mappa</string>
+
+    <string name="nearby">Nei paraggi</string>
+
+    <string name="cache_settings">Impostazione cache</string>
+    <string name="tile_cache">Cache dei tile</string>
+    <string name="max_cache_size">Dimensione max cache (MB)</string>
+    <string name="reset">Ripristina</string>
+    <string name="storage_root">Root memoria: %1$s</string>
+    <string name="external_storage">Memoria esterna</string>
+    <string name="invalid_cache_size">Immetti dimensione della cache valida</string>
+
+    <string name="privacy_settings">Impostazioni Privacy</string>
+
+    <string name="invalid_gpx">GPX non valido</string>
+    <string name="location_unknown">Posizione sconosciuta</string>
+
+    <string name="wiki_base_url">https://en.wikipedia.org/</string>
+
+    <string name="about">Info</string>
+    <string name="app_version">Versione %1$s</string>
+    <string name="app_author">Di &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+
+    <string name="default_marker_name">Segnaposto %1$d</string>
+    <string name="edit_marker">Modifica Segnaposto</string>
+    <string name="name">Nome</string>
+    <string name="description">Descrizione</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Annulla</string>
+    <string name="delete">Elimina</string>
+    <string name="confirm_delete">Conferma eliminazione</string>
+    <string name="prompt_confirm_delete">Sei sicuro di voler eliminare questo elemento?"</string>
+
+    <string name="settings">Impostazioni</string>
+    <string name="screen_header">Schermo</string>
+    <string name="cache_header">Cache</string>
+
+    <string name="waypoint_added">Waypoint aggiunto</string>
+    <string name="waypoint_removed">Waypoint rimosso</string>
+
+    <string name="ors">OpenRouteService (ORS)</string>
+    <string name="ors_api_key_title">Chiave API ORS</string>
+    <string name="ors_explanation_html">
+    OpenRouteService è un servizio di routing gratuito e open-source.
+    La registrazione è gratuita su &lt;a href="https://account.heigit.org/manage/key"&gt;account.heigit.org/manage/key&lt;/a&gt;.
+</string>
+    <string name="ors_key_prompt">Imposta la chiave API ORS per abilitare il routing</string>
+    <string name="ors_hint">Incolla qui la chiave API ORS</string>
+    <string name="erase_key">Cancella chiave API</string>
+    <string name="ors_key_prompt_explanation">OpenRouteService è FOSS. La registrazione è gratuita:</string>
+    <string name="ors_key_link">https://account.heigit.org/manage/key</string>
+    <string name="erase_api_key">Cancella chiave API</string>
+    <string name="ors_erase_confirm">Sei sicuro di voler cancellare la chiave API ORS?</string>
+    <string name="key_erased">Chiave cancellata</string>
+    <string name="ors_profile">Profilo di routing</string>
+    <string name="select_ors_profile">Seleziona profilo di routing ORS</string>
+    <string name="profile_set">Profilo impostato: %1$s</string>
+
+    <string name="profile_driving_car">Auto</string>
+    <string name="profile_driving_hgv">Camion</string>
+    <string name="profile_cycling_regular">Bicicletta</string>
+    <string name="profile_cycling_road">Bici da strada</string>
+    <string name="profile_cycling_mountain">Mountain bike</string>
+    <string name="profile_cycling_electric">E-bike</string>
+    <string name="profile_foot_walking">A piedi</string>
+    <string name="profile_foot_hiking">Escursionismo</string>
+    <string name="profile_wheelchair">Sedia a rotelle</string>
+
+</resources>

@@ -25,14 +25,9 @@ object OpenRouteServiceClient {
             })
             .addInterceptor { chain ->
                 val original = chain.request()
-                val originalUrl = original.url
-
-                val newUrl = originalUrl.newBuilder()
-                    .addQueryParameter("api_key", apiKey)
-                    .build()
 
                 val newRequest = original.newBuilder()
-                    .url(newUrl)
+                    .addHeader("Authorization", "Bearer $apiKey")
                     .addHeader("User-Agent", userAgent)
                     .build()
 

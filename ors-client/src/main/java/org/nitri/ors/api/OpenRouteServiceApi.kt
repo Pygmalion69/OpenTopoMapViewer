@@ -1,19 +1,29 @@
 package org.nitri.ors.api
 
 import okhttp3.ResponseBody
+import org.nitri.ors.model.export.ExportRequest
+import org.nitri.ors.model.export.ExportResponse
+import org.nitri.ors.model.export.TopoJsonExportResponse
+import org.nitri.ors.model.isochrones.IsochronesRequest
+import org.nitri.ors.model.isochrones.IsochronesResponse
+import org.nitri.ors.model.matrix.MatrixRequest
+import org.nitri.ors.model.matrix.MatrixResponse
 import org.nitri.ors.model.route.GeoJsonRouteResponse
-import org.nitri.ors.model.route.GpxResponse
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
+import org.nitri.ors.model.snap.SnapGeoJsonResponse
+import org.nitri.ors.model.snap.SnapRequest
+import org.nitri.ors.model.snap.SnapResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface OpenRouteServiceApi {
+
+    // Directions
 
     @GET("v2/directions/{profile}")
     suspend fun getRouteSimple(
@@ -35,16 +45,68 @@ interface OpenRouteServiceApi {
     ): RouteResponse
 
     @POST("v2/directions/{profile}/gpx")
-    @Headers("Accept: application/gpx+xml", "Content-Type: application/json")
     suspend fun getRouteGpx(
         @Path("profile") profile: String,
         @Body request: RouteRequest
     ): Response<ResponseBody>
 
     @POST("v2/directions/{profile}/geojson")
-    @Headers("Accept: application/gpx+xml", "Content-Type: application/json")
-    suspend fun getRouteGeoJSON(
+    suspend fun getRouteGeoJson(
         @Path("profile") profile: String,
         @Body request: RouteRequest
     ): GeoJsonRouteResponse
+
+    // Export endpoints
+    @POST("v2/export/{profile}")
+    suspend fun export(
+        @Path("profile") profile: String,
+        @Body request: ExportRequest
+    ): ExportResponse
+
+    @POST("v2/export/{profile}/json")
+    suspend fun exportJson(
+        @Path("profile") profile: String,
+        @Body request: ExportRequest
+    ): ExportResponse
+
+    @POST("v2/export/{profile}/topojson")
+    suspend fun exportTopoJson(
+        @Path("profile") profile: String,
+        @Body request: ExportRequest
+    ): TopoJsonExportResponse
+
+    // Isochrones endpoint
+    @POST("v2/isochrones/{profile}")
+    suspend fun getIsochrones(
+        @Path("profile") profile: String,
+        @Body request: IsochronesRequest
+    ): IsochronesResponse
+
+    // Matrix endpoint
+    @POST("v2/matrix/{profile}")
+    suspend fun getMatrix(
+        @Path("profile") profile: String,
+        @Body request: MatrixRequest
+    ): MatrixResponse
+
+    // Snapping
+
+    @POST("v2/snap/{profile}")
+    suspend fun getSnep(
+        @Path("profile") profile: String,
+        @Body request: SnapRequest
+    ): SnapResponse
+
+    @POST("v2/snap/{profile}/json")
+    suspend fun getSnapJson(
+        @Path("profile") profile: String,
+        @Body request: SnapRequest
+    ): SnapResponse
+
+    @POST("v2/snap/{profile}/geojson")
+    suspend fun getSnapGeoJson(
+        @Path("profile") profile: String,
+        @Body request: SnapRequest
+    ): SnapGeoJsonResponse
+
 }
