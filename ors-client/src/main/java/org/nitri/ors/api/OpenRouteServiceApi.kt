@@ -92,7 +92,7 @@ interface OpenRouteServiceApi {
     // Snapping
 
     @POST("v2/snap/{profile}")
-    suspend fun getSnep(
+    suspend fun getSnap(
         @Path("profile") profile: String,
         @Body request: SnapRequest
     ): SnapResponse
