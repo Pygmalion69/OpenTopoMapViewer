@@ -9,6 +9,7 @@ import retrofit2.Retrofit
 import retrofit2.create
 import org.nitri.ors.api.OpenRouteServiceApi
 import okhttp3.MediaType.Companion.toMediaType
+import java.util.concurrent.TimeUnit
 
 object OpenRouteServiceClient {
     fun create(apiKey: String, context: Context): OpenRouteServiceApi {
@@ -27,17 +28,25 @@ object OpenRouteServiceClient {
                 val original = chain.request()
 
                 val newRequest = original.newBuilder()
-                    .addHeader("Authorization", "Bearer $apiKey")
+                    // ORS expects the API key in the Authorization header (no Bearer prefix)
+                    .addHeader("Authorization", apiKey)
                     .addHeader("User-Agent", userAgent)
+                    .addHeader("Accept", "application/json, application/geo+json, application/xml, text/xml, application/gpx+xml")
                     .build()
 
                 chain.proceed(newRequest)
             }
+            // Increase timeouts to accommodate heavier endpoints like POIs
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
             .build()
 
         val retrofit = Retrofit.Builder()
             .baseUrl("https://api.openrouteservice.org/")
             .client(client)
+            // Support both application/json and application/geo+json content types
+            .addConverterFactory(json.asConverterFactory("application/geo+json".toMediaType()))
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
 

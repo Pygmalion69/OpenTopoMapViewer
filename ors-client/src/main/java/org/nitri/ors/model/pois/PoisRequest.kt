@@ -1,10 +1,11 @@
 package org.nitri.ors.model.pois
 
+import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class PoisRequest(
-    val request: String = "pois",
+    @Required val request: String = "pois",
     val geometry: Geometry,
     val filters: Map<String, String>? = null,
     val limit: Int? = null,

@@ -8,6 +8,8 @@ import org.nitri.ors.model.isochrones.IsochronesRequest
 import org.nitri.ors.model.isochrones.IsochronesResponse
 import org.nitri.ors.model.matrix.MatrixRequest
 import org.nitri.ors.model.matrix.MatrixResponse
+import org.nitri.ors.model.pois.PoisGeoJsonResponse
+import org.nitri.ors.model.pois.PoisRequest
 import org.nitri.ors.model.route.GeoJsonRouteResponse
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
@@ -109,4 +111,10 @@ interface OpenRouteServiceApi {
         @Body request: SnapRequest
     ): SnapGeoJsonResponse
 
+    // POIs
+
+    @POST("pois")
+    suspend fun getPois(
+        @Body request: PoisRequest
+    ): PoisGeoJsonResponse
 }
