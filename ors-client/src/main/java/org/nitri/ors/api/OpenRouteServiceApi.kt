@@ -1,6 +1,7 @@
 package org.nitri.ors.api
 
 import okhttp3.ResponseBody
+import org.nitri.ors.model.route.GeoJsonRouteResponse
 import org.nitri.ors.model.route.GpxResponse
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
@@ -39,4 +40,11 @@ interface OpenRouteServiceApi {
         @Path("profile") profile: String,
         @Body request: RouteRequest
     ): Response<ResponseBody>
+
+    @POST("v2/directions/{profile}/geojson")
+    @Headers("Accept: application/gpx+xml", "Content-Type: application/json")
+    suspend fun getRouteGeoJSON(
+        @Path("profile") profile: String,
+        @Body request: RouteRequest
+    ): GeoJsonRouteResponse
 }
