@@ -45,9 +45,9 @@ object OpenRouteServiceClient {
         val retrofit = Retrofit.Builder()
             .baseUrl("https://api.openrouteservice.org/")
             .client(client)
-            // Support both application/json and application/geo+json content types
-            .addConverterFactory(json.asConverterFactory("application/geo+json".toMediaType()))
+            // Prefer application/json for requests; also support application/geo+json responses
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(json.asConverterFactory("application/geo+json".toMediaType()))
             .build()
 
         return retrofit.create()
