@@ -44,12 +44,10 @@ class RouteRepositoryInstrumentedTest {
         val start = Pair(8.681495, 49.41461)
         val end = Pair(8.687872, 49.420318)
 
-        val response: Response<ResponseBody> = repository.getRouteGpx(start, end,"driving-car")
-
-        val gpxXml = response.body()?.string()
+        val gpxXml = repository.getRouteGpx(start, end,"driving-car")
 
         assertNotNull("GPX response body should not be null", gpxXml)
-        assert(gpxXml!!.contains("<gpx")) { "Response does not appear to be valid GPX" }
+        assert(gpxXml.contains("<gpx")) { "Response does not appear to be valid GPX" }
     }
 
     @Test
