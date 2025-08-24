@@ -1,6 +1,5 @@
 package org.nitri.ors.api
 
-import org.nitri.ors.model.matrix.MatrixResponse
 import okhttp3.ResponseBody
 import org.nitri.ors.model.export.ExportRequest
 import org.nitri.ors.model.export.ExportResponse
@@ -8,9 +7,17 @@ import org.nitri.ors.model.export.TopoJsonExportResponse
 import org.nitri.ors.model.isochrones.IsochronesRequest
 import org.nitri.ors.model.isochrones.IsochronesResponse
 import org.nitri.ors.model.matrix.MatrixRequest
+import org.nitri.ors.model.matrix.MatrixResponse
+import org.nitri.ors.model.optimization.OptimizationRequest
+import org.nitri.ors.model.optimization.OptimizationResponse
+import org.nitri.ors.model.pois.PoisGeoJsonResponse
+import org.nitri.ors.model.pois.PoisRequest
 import org.nitri.ors.model.route.GeoJsonRouteResponse
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
+import org.nitri.ors.model.snap.SnapGeoJsonResponse
+import org.nitri.ors.model.snap.SnapRequest
+import org.nitri.ors.model.snap.SnapResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -19,6 +26,8 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface OpenRouteServiceApi {
+
+    // Directions
 
     @GET("v2/directions/{profile}")
     suspend fun getRouteSimple(
@@ -84,5 +93,38 @@ interface OpenRouteServiceApi {
         @Body request: MatrixRequest
     ): MatrixResponse
 
-    
+    // Snapping
+
+    @POST("v2/snap/{profile}")
+    suspend fun getSnap(
+        @Path("profile") profile: String,
+        @Body request: SnapRequest
+    ): SnapResponse
+
+    @POST("v2/snap/{profile}/json")
+    suspend fun getSnapJson(
+        @Path("profile") profile: String,
+        @Body request: SnapRequest
+    ): SnapResponse
+
+    @POST("v2/snap/{profile}/geojson")
+    suspend fun getSnapGeoJson(
+        @Path("profile") profile: String,
+        @Body request: SnapRequest
+    ): SnapGeoJsonResponse
+
+    // POIs
+
+    @POST("pois")
+    suspend fun getPois(
+        @Body request: PoisRequest
+    ): PoisGeoJsonResponse
+
+    // Optimization
+
+    @POST("optimization")
+    suspend fun getOptimization(
+        @Body request: OptimizationRequest
+    ): OptimizationResponse
+
 }
