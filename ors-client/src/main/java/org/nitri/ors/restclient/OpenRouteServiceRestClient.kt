@@ -36,6 +36,32 @@ object OpenRouteServiceRestClient {
 
                 chain.proceed(newRequest)
             }
+            // Retry on 429 Too Many Requests with simple backoff honoring Retry-After when present
+            .addInterceptor { chain ->
+                val maxAttempts = 3
+                var waitMs = 500L
+                var req = chain.request()
+
+                repeat(maxAttempts) { attempt ->
+                    val response = chain.proceed(req)
+                    if (response.code != 429 || attempt == maxAttempts - 1) {
+                        return@addInterceptor response
+                    }
+
+                    val retryAfter = response.header("Retry-After")
+                    response.close()
+                    val delayMs = retryAfter?.toLongOrNull()?.times(1000) ?: waitMs
+                    try {
+                        Thread.sleep(delayMs)
+                    } catch (_: InterruptedException) {
+                        return@addInterceptor chain.proceed(req)
+                    }
+                    waitMs *= 2
+                }
+
+                // compiler sees this as unreachable
+                error("Unexpected state: retry loop exited without returning")
+            }
             // Increase timeouts to accommodate heavier endpoints like POIs
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
