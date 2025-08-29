@@ -33,7 +33,6 @@ import retrofit2.http.Query
 interface OpenRouteServiceApi {
 
     // Directions
-
     @GET("v2/directions/{profile}")
     suspend fun getRouteSimple(
         @Path("profile") profile: String,

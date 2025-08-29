@@ -8,29 +8,31 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.client.OpenRouteServiceClient
-import org.nitri.ors.repository.GeocodeRepository
+import org.nitri.ors.helper.GeocodeHelper
 
 @RunWith(AndroidJUnit4::class)
 class GeocodeInstrumentedTest {
 
-    private fun createRepository(context: Context): GeocodeRepository {
+    private fun create(context: Context): Pair<DefaultOrsClient, GeocodeHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
-        val api = OpenRouteServiceClient.create(apiKey, context)
-        return GeocodeRepository(api)
+        val client = DefaultOrsClient(apiKey, context)
+        val helper = GeocodeHelper(client)
+        return client to helper
     }
 
     @Test
     fun testGeocode_search_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repo = createRepository(context)
+        val (client, helper) = create(context)
         val apiKey = context.getString(R.string.ors_api_key)
 
-        val response = repo.search(
-            text = "Heidelberg",
-            apiKey = apiKey,
-            size = 5
-        )
+        val response = with(helper) {
+            client.search(
+                text = "Heidelberg",
+                apiKey = apiKey,
+                size = 5
+            )
+        }
 
         assertNotNull("Search response should not be null", response)
         assertTrue("Features should not be empty for Heidelberg search", response.features.isNotEmpty())
@@ -49,19 +51,21 @@ class GeocodeInstrumentedTest {
     @Test
     fun testGeocode_reverse_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repo = createRepository(context)
+        val (client, helper) = create(context)
         val apiKey = context.getString(R.string.ors_api_key)
 
         // Point near Heidelberg, Germany
         val lon = 8.681495
         val lat = 49.41461
 
-        val response = repo.reverse(
-            apiKey = apiKey,
-            lon = lon,
-            lat = lat,
-            size = 5
-        )
+        val response = with(helper) {
+            client.reverse(
+                apiKey = apiKey,
+                lon = lon,
+                lat = lat,
+                size = 5
+            )
+        }
 
         assertNotNull("Reverse response should not be null", response)
         assertTrue("Reverse should return at least one feature", response.features.isNotEmpty())
@@ -74,14 +78,16 @@ class GeocodeInstrumentedTest {
     @Test
     fun testGeocode_autocomplete_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repo = createRepository(context)
+        val (client, helper) = create(context)
         val apiKey = context.getString(R.string.ors_api_key)
 
-        val response = repo.autocomplete(
-            apiKey = apiKey,
-            text = "Heidelb",
-            size = 5
-        )
+        val response = with(helper) {
+            client.autocomplete(
+                apiKey = apiKey,
+                text = "Heidelb",
+                size = 5
+            )
+        }
 
         assertNotNull("Autocomplete response should not be null", response)
         assertTrue("Autocomplete should return suggestions", response.features.isNotEmpty())

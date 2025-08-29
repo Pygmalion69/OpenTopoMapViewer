@@ -1,11 +1,11 @@
-package org.nitri.ors.repository
+package org.nitri.ors.helper
 
 import org.nitri.ors.api.OpenRouteServiceApi
 import org.nitri.ors.model.export.ExportRequest
 import org.nitri.ors.model.export.ExportResponse
 import org.nitri.ors.model.export.TopoJsonExportResponse
 
-class ExportRepository(private val api: OpenRouteServiceApi) {
+class ExportHelper(private val api: OpenRouteServiceApi) {
 
     suspend fun export(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
         val request = ExportRequest(

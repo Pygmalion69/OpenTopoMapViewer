@@ -8,22 +8,22 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.client.OpenRouteServiceClient
-import org.nitri.ors.repository.IsochronesRepository
+import org.nitri.ors.helper.IsochronesHelper
 
 @RunWith(AndroidJUnit4::class)
 class IsochronesInstrumentedTest {
 
-    private fun createRepository(context: Context): IsochronesRepository {
+    private fun create(context: Context): Pair<DefaultOrsClient, IsochronesHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
-        val api = OpenRouteServiceClient.create(apiKey, context)
-        return IsochronesRepository(api)
+        val client = DefaultOrsClient(apiKey, context)
+        val helper = IsochronesHelper(client)
+        return client to helper
     }
 
     @Test
     fun testIsochrones_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, helper) = create(context)
 
         // Heidelberg, Germany [lon, lat]
         val locations = listOf(
@@ -33,13 +33,15 @@ class IsochronesInstrumentedTest {
         val range = listOf(300)
         val profile = "driving-car"
 
-        val response = repository.getIsochrones(
-            locations = locations,
-            range = range,
-            profile = profile,
-            attributes = null,
-            rangeType = "time"
-        )
+        val response = with(helper) {
+            client.getIsochrones(
+                locations = locations,
+                range = range,
+                profile = profile,
+                attributes = null,
+                rangeType = "time"
+            )
+        }
 
         assertNotNull("Isochrones response should not be null", response)
         assertTrue("Features should not be empty", response.features.isNotEmpty())

@@ -1,29 +1,22 @@
-package org.nitri.ors.repository
+package org.nitri.ors.helper
 
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import org.nitri.ors.api.OpenRouteServiceApi
+import org.nitri.ors.OrsClient
 import org.nitri.ors.model.elevation.ElevationLineRequest
 import org.nitri.ors.model.elevation.ElevationLineResponse
 import org.nitri.ors.model.elevation.ElevationPointRequest
 import org.nitri.ors.model.elevation.ElevationPointResponse
 
-class ElevationRepository(private val api: OpenRouteServiceApi) {
-
-    /**
-     * Calls the ORS elevation/line POST endpoint with a prepared request.
-     */
-    suspend fun getElevationLine(request: ElevationLineRequest): ElevationLineResponse =
-        api.getElevationLine(request)
+class ElevationHelper(private val orsClient: OrsClient) {
 
     /**
      * Convenience helper to request elevation for a LineString provided as list of [lon, lat] pairs.
      * Builds a GeoJSON LineString payload and requests GeoJSON output.
      */
-    suspend fun getElevationLine(
+    suspend fun OrsClient.getElevationLine(
         coordinates: List<List<Double>>, // [[lon,lat], [lon,lat], ...]
         dataset: String? = null,
         formatOut: String = "geojson",
@@ -44,7 +37,7 @@ class ElevationRepository(private val api: OpenRouteServiceApi) {
             geometry = geometry,
             dataset = dataset
         )
-        return api.getElevationLine(request)
+        return getElevationLine(request)
     }
 
     /**
@@ -55,7 +48,7 @@ class ElevationRepository(private val api: OpenRouteServiceApi) {
      * @param formatOut either "geojson" or "point"
      * @param dataset optional dataset (e.g., "srtm")
      */
-    suspend fun getElevationPoint(
+    suspend fun OrsClient.getElevationPoint(
         lon: Double,
         lat: Double,
         formatOut: String = "geojson",
@@ -67,6 +60,6 @@ class ElevationRepository(private val api: OpenRouteServiceApi) {
             dataset = dataset,
             geometry = listOf(lon, lat)
         )
-        return api.getElevationPoint(request)
+        return getElevationPoint(request)
     }
 }

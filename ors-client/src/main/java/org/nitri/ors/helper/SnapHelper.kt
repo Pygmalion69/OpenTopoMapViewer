@@ -1,21 +1,16 @@
-package org.nitri.ors.repository
+package org.nitri.ors.helper
 
-import org.nitri.ors.api.OpenRouteServiceApi
+import org.nitri.ors.OrsClient
 import org.nitri.ors.model.snap.SnapGeoJsonResponse
 import org.nitri.ors.model.snap.SnapRequest
 import org.nitri.ors.model.snap.SnapResponse
 
-class SnapRepository(private val api: OpenRouteServiceApi) {
+class SnapHelper(private val orsClient: OrsClient) {
 
     /**
      * Calls the ORS Snap endpoint for the given profile.
-     *
-     * @param locations List of [lon, lat] coordinates to snap.
-     * @param radius Maximum radius (meters) around given coordinates to search for graph edges.
-     * @param profile ORS profile, e.g. "driving-car", "foot-hiking", etc.
-     * @param id Optional arbitrary request id echoed back by the service.
      */
-    suspend fun getSnap(
+    suspend fun OrsClient.getSnap(
         locations: List<List<Double>>,
         radius: Int,
         profile: String,
@@ -26,13 +21,13 @@ class SnapRepository(private val api: OpenRouteServiceApi) {
             radius = radius,
             id = id
         )
-        return api.getSnap(profile, request)
+        return getSnap(profile, request)
     }
 
     /**
      * Calls the ORS Snap JSON endpoint.
      */
-    suspend fun getSnapJson(
+    suspend fun OrsClient.getSnapJson(
         locations: List<List<Double>>,
         radius: Int,
         profile: String,
@@ -43,13 +38,13 @@ class SnapRepository(private val api: OpenRouteServiceApi) {
             radius = radius,
             id = id
         )
-        return api.getSnapJson(profile, request)
+        return getSnapJson(profile, request)
     }
 
     /**
      * Calls the ORS Snap GeoJSON endpoint.
      */
-    suspend fun getSnapGeoJson(
+    suspend fun OrsClient.getSnapGeoJson(
         locations: List<List<Double>>,
         radius: Int,
         profile: String,
@@ -60,6 +55,6 @@ class SnapRepository(private val api: OpenRouteServiceApi) {
             radius = radius,
             id = id
         )
-        return api.getSnapGeoJson(profile, request)
+        return getSnapGeoJson(profile, request)
     }
 }

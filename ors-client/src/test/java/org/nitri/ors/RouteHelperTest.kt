@@ -1,28 +1,26 @@
 package org.nitri.ors
 
-
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.nitri.ors.api.OpenRouteServiceApi
 import org.nitri.ors.model.route.Route
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
 import org.nitri.ors.model.route.RouteSummary
-import org.nitri.ors.repository.RouteRepository
+import org.nitri.ors.helper.RouteHelper
 
-class RouteRepositoryTest {
+class RouteHelperTest {
 
-    private lateinit var api: OpenRouteServiceApi
-    private lateinit var repository: RouteRepository
+    private lateinit var client: OrsClient
+    private lateinit var routeHelper: RouteHelper
 
     @Before
     fun setUp() {
-        api = mock(OpenRouteServiceApi::class.java)
-        repository = RouteRepository(api)
+        client = mock(OrsClient::class.java)
+        routeHelper = RouteHelper(client)
     }
 
     @Test
@@ -49,11 +47,11 @@ class RouteRepositoryTest {
             )
         )
 
-        `when`(api.getRoute(profile, expectedRequest)).thenReturn(expectedResponse)
+        `when`(client.getRoute(Profile.DRIVING_CAR, expectedRequest)).thenReturn(expectedResponse)
 
-        val result = repository.getRoute(start, end, profile)
+        val result = with(routeHelper) { client.getRoute(start, end, profile) }
 
         assert(result == expectedResponse)
-        verify(api).getRoute(profile, expectedRequest)
+        verify(client).getRoute(Profile.DRIVING_CAR, expectedRequest)
     }
 }

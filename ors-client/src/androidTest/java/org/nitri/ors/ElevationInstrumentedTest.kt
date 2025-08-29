@@ -9,28 +9,28 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.client.OpenRouteServiceClient
-import org.nitri.ors.repository.ElevationRepository
+import org.nitri.ors.helper.ElevationHelper
 
 @RunWith(AndroidJUnit4::class)
 class ElevationInstrumentedTest {
 
-    private fun createRepository(context: Context): ElevationRepository {
+    private fun create(context: Context): Pair<DefaultOrsClient, ElevationHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
-        val api = OpenRouteServiceClient.create(apiKey, context)
-        return ElevationRepository(api)
+        val client = DefaultOrsClient(apiKey, context)
+        val helper = ElevationHelper(client)
+        return client to helper
     }
 
     @Test
     fun testElevation_point_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, helper) = create(context)
 
         // A point near Heidelberg, Germany
         val lon = 8.681495
         val lat = 49.41461
 
-        val response = repository.getElevationPoint(lon = lon, lat = lat)
+        val response = with(helper) { client.getElevationPoint(lon = lon, lat = lat) }
 
         assertNotNull("Elevation point response should not be null", response)
         assertNotNull("Geometry should not be null", response.geometry)
@@ -49,7 +49,7 @@ class ElevationInstrumentedTest {
     @Test
     fun testElevation_line_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, helper) = create(context)
 
         // A short line segment around Heidelberg
         val coordinates = listOf(
@@ -57,7 +57,7 @@ class ElevationInstrumentedTest {
             listOf(8.687872, 49.420318)
         )
 
-        val response = repository.getElevationLine(coordinates = coordinates)
+        val response = with(helper) { client.getElevationLine(coordinates = coordinates) }
 
         assertNotNull("Elevation line response should not be null", response)
         assertEquals("Geometry type should be LineString", "LineString", response.geometry.type)

@@ -1,4 +1,4 @@
-package org.nitri.ors.client
+package org.nitri.ors.restclient
 
 import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -11,7 +11,7 @@ import org.nitri.ors.api.OpenRouteServiceApi
 import okhttp3.MediaType.Companion.toMediaType
 import java.util.concurrent.TimeUnit
 
-object OpenRouteServiceClient {
+object OpenRouteServiceRestClient {
     fun create(apiKey: String, context: Context): OpenRouteServiceApi {
 
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)

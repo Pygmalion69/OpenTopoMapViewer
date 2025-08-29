@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "org.nitri.ors"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -42,6 +42,8 @@ android {
     lint {
         targetSdk = 35
     }
+
+    publishing { singleVariant("release") { withSourcesJar() } }
 }
 
 dependencies {

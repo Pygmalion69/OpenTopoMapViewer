@@ -1,12 +1,12 @@
-package org.nitri.ors.repository
+package org.nitri.ors.helper
 
-import org.nitri.ors.api.OpenRouteServiceApi
+import org.nitri.ors.OrsClient
 import org.nitri.ors.model.pois.GeoJsonGeometry
 import org.nitri.ors.model.pois.Geometry
 import org.nitri.ors.model.pois.PoisGeoJsonResponse
 import org.nitri.ors.model.pois.PoisRequest
 
-class PoisRepository(private val api: OpenRouteServiceApi) {
+class PoisHelper(private val orsClient: OrsClient) {
 
     /**
     * Query POIs within a bounding box.
@@ -17,7 +17,7 @@ class PoisRepository(private val api: OpenRouteServiceApi) {
     * @param sortby Optional sort field
     * @param buffer Optional buffer in meters applied to the geometry
     */
-    suspend fun getPoisByBbox(
+    suspend fun OrsClient.getPoisByBbox(
         bbox: List<List<Double>>,
         filters: Map<String, String>? = null,
         limit: Int? = null,
@@ -30,7 +30,7 @@ class PoisRepository(private val api: OpenRouteServiceApi) {
             limit = limit,
             sortby = sortby
         )
-        return api.getPois(request)
+        return getPois(request)
     }
 
     /**
@@ -39,7 +39,7 @@ class PoisRepository(private val api: OpenRouteServiceApi) {
     * @param point [lon, lat]
     * @param buffer Buffer radius in meters
     */
-    suspend fun getPoisByPoint(
+    suspend fun OrsClient.getPoisByPoint(
         point: List<Double>,
         buffer: Int,
         filters: Map<String, String>? = null,
@@ -55,6 +55,6 @@ class PoisRepository(private val api: OpenRouteServiceApi) {
             limit = limit,
             sortby = sortby
         )
-        return api.getPois(request)
+        return getPois(request)
     }
 }

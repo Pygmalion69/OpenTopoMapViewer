@@ -1,14 +1,12 @@
-package org.nitri.ors.repository
+package org.nitri.ors.helper
 
-import org.nitri.ors.api.OpenRouteServiceApi
-import org.nitri.ors.model.export.ExportRequest
-import org.nitri.ors.model.export.ExportResponse
-import org.nitri.ors.model.export.TopoJsonExportResponse
+import org.nitri.ors.OrsClient
 import org.nitri.ors.model.isochrones.IsochronesRequest
 import org.nitri.ors.model.isochrones.IsochronesResponse
-class IsochronesRepository(private val api: OpenRouteServiceApi) {
 
-    suspend fun getIsochrones(
+class IsochronesHelper(private val orsClient: OrsClient) {
+
+    suspend fun OrsClient.getIsochrones(
         locations: List<List<Double>>,
         range: List<Int>,
         profile: String,
@@ -18,7 +16,6 @@ class IsochronesRepository(private val api: OpenRouteServiceApi) {
         val request = IsochronesRequest(
             locations, range, rangeType, attributes
         )
-        return api.getIsochrones(profile, request)
+        return getIsochrones(profile, request)
     }
-
 }

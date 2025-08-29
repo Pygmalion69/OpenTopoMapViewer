@@ -8,24 +8,24 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.client.OpenRouteServiceClient
 import org.nitri.ors.model.optimization.Job
 import org.nitri.ors.model.optimization.Vehicle
-import org.nitri.ors.repository.OptimizationRepository
+import org.nitri.ors.helper.OptimizationHelper
 
 @RunWith(AndroidJUnit4::class)
 class OptimizationInstrumentedTest {
 
-    private fun createRepository(context: Context): OptimizationRepository {
+    private fun create(context: Context): Pair<DefaultOrsClient, OptimizationHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
-        val api = OpenRouteServiceClient.create(apiKey, context)
-        return OptimizationRepository(api)
+        val client = DefaultOrsClient(apiKey, context)
+        val helper = OptimizationHelper(client)
+        return client to helper
     }
 
     @Test
     fun testOptimization_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, helper) = create(context)
 
         // Simple scenario in/near Heidelberg, Germany
         val vehicle = Vehicle(
@@ -47,10 +47,12 @@ class OptimizationInstrumentedTest {
             )
         )
 
-        val response = repository.getOptimization(
-            vehicles = listOf(vehicle),
-            jobs = jobs
-        )
+        val response = with(helper) {
+            client.getOptimization(
+                vehicles = listOf(vehicle),
+                jobs = jobs
+            )
+        }
 
         // Basic assertions
         assertNotNull("Optimization response should not be null", response)

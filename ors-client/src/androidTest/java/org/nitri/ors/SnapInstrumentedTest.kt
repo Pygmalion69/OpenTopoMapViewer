@@ -9,22 +9,22 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.client.OpenRouteServiceClient
-import org.nitri.ors.repository.SnapRepository
+import org.nitri.ors.helper.SnapHelper
 
 @RunWith(AndroidJUnit4::class)
 class SnapInstrumentedTest {
 
-    private fun createRepository(context: Context): SnapRepository {
+    private fun create(context: Context): Pair<DefaultOrsClient, SnapHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
-        val api = OpenRouteServiceClient.create(apiKey, context)
-        return SnapRepository(api)
+        val client = DefaultOrsClient(apiKey, context)
+        val helper = SnapHelper(client)
+        return client to helper
     }
 
     @Test
     fun testSnap_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, helper) = create(context)
 
         // Two locations in/near Heidelberg, Germany [lon, lat]
         val locations = listOf(
@@ -34,12 +34,14 @@ class SnapInstrumentedTest {
         val profile = "driving-car"
         val radius = 50 // meters
 
-        val response = repository.getSnap(
-            locations = locations,
-            radius = radius,
-            profile = profile,
-            id = "snap_test"
-        )
+        val response = with(helper) {
+            client.getSnap(
+                locations = locations,
+                radius = radius,
+                profile = profile,
+                id = "snap_test"
+            )
+        }
 
         assertNotNull("Snap response should not be null", response)
         assertNotNull("Metadata should be present", response.metadata)
@@ -55,7 +57,7 @@ class SnapInstrumentedTest {
     @Test
     fun testSnapJson_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, helper) = create(context)
 
         val locations = listOf(
             listOf(8.681495, 49.41461),
@@ -64,12 +66,14 @@ class SnapInstrumentedTest {
         val profile = "driving-car"
         val radius = 50
 
-        val response = repository.getSnapJson(
-            locations = locations,
-            radius = radius,
-            profile = profile,
-            id = "snap_json_test"
-        )
+        val response = with(repository) {
+            client.getSnapJson(
+                locations = locations,
+                radius = radius,
+                profile = profile,
+                id = "snap_json_test"
+            )
+        }
 
         assertNotNull("Snap JSON response should not be null", response)
         assertNotNull("Metadata should be present", response.metadata)
@@ -83,7 +87,7 @@ class SnapInstrumentedTest {
     @Test
     fun testSnapGeoJson_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, repository) = create(context)
 
         val locations = listOf(
             listOf(8.681495, 49.41461),
@@ -92,12 +96,14 @@ class SnapInstrumentedTest {
         val profile = "driving-car"
         val radius = 50
 
-        val response = repository.getSnapGeoJson(
-            locations = locations,
-            radius = radius,
-            profile = profile,
-            id = "snap_geojson_test"
-        )
+        val response = with(repository) {
+            client.getSnapGeoJson(
+                locations = locations,
+                radius = radius,
+                profile = profile,
+                id = "snap_geojson_test"
+            )
+        }
 
         assertNotNull("Snap GeoJSON response should not be null", response)
         assertEquals("GeoJSON type should be FeatureCollection", "FeatureCollection", response.type)

@@ -1,21 +1,19 @@
-package org.nitri.ors.repository
+package org.nitri.ors.helper
 
-import org.nitri.ors.api.OpenRouteServiceApi
+import org.nitri.ors.OrsClient
 import org.nitri.ors.model.geocode.GeocodeSearchResponse
 
 /**
  * Repository for ORS Geocoding endpoints using GET requests only.
  *
- * Note: ORS Pelias geocoding requires an api_key query parameter even though
- * the client also sends an Authorization header. Therefore, methods here accept
- * apiKey explicitly and pass it through to the API interface.
+ * Methods are member extensions on OrsClient and delegate to OrsClient.
  */
-class GeocodeRepository(private val api: OpenRouteServiceApi) {
+class GeocodeHelper(private val orsClient: OrsClient) {
 
     /**
      * Forward geocoding search.
      */
-    suspend fun search(
+    suspend fun OrsClient.search(
         text: String,
         apiKey: String,
         focusLon: Double? = null,
@@ -33,8 +31,9 @@ class GeocodeRepository(private val api: OpenRouteServiceApi) {
         layersCsv: String? = null,
         size: Int? = 10,
     ): GeocodeSearchResponse {
-        return api.geocodeSearch(
+        return geocodeSearch(
             text = text,
+            apiKey = apiKey,
             focusLon = focusLon,
             focusLat = focusLat,
             rectMinLon = rectMinLon,
@@ -48,15 +47,14 @@ class GeocodeRepository(private val api: OpenRouteServiceApi) {
             boundaryCountry = boundaryCountry,
             sourcesCsv = sourcesCsv,
             layersCsv = layersCsv,
-            size = size,
-            apiKey = apiKey
+            size = size
         )
     }
 
     /**
      * Autocomplete search; returns suggestions for a partial query.
      */
-    suspend fun autocomplete(
+    suspend fun OrsClient.autocomplete(
         apiKey: String,
         text: String,
         focusLon: Double? = null,
@@ -73,7 +71,7 @@ class GeocodeRepository(private val api: OpenRouteServiceApi) {
         layers: List<String>? = null,
         size: Int? = null,
     ): GeocodeSearchResponse {
-        return api.autocomplete(
+        return geocodeAutocomplete(
             apiKey = apiKey,
             text = text,
             focusLon = focusLon,
@@ -95,7 +93,7 @@ class GeocodeRepository(private val api: OpenRouteServiceApi) {
     /**
      * Structured forward geocoding using address fields.
      */
-    suspend fun structured(
+    suspend fun OrsClient.structured(
         apiKey: String,
         address: String? = null,
         neighbourhood: String? = null,
@@ -119,7 +117,7 @@ class GeocodeRepository(private val api: OpenRouteServiceApi) {
         sources: List<String>? = null,
         size: Int? = null,
     ): GeocodeSearchResponse {
-        return api.geocodeStructured(
+        return geocodeStructured(
             apiKey = apiKey,
             address = address,
             neighbourhood = neighbourhood,
@@ -148,7 +146,7 @@ class GeocodeRepository(private val api: OpenRouteServiceApi) {
     /**
      * Reverse geocoding for a point.
      */
-    suspend fun reverse(
+    suspend fun OrsClient.reverse(
         apiKey: String,
         lon: Double,
         lat: Double,
@@ -158,7 +156,7 @@ class GeocodeRepository(private val api: OpenRouteServiceApi) {
         sources: List<String>? = null,
         boundaryCountry: String? = null,
     ): GeocodeSearchResponse {
-        return api.geocodeReverse(
+        return geocodeReverse(
             apiKey = apiKey,
             lon = lon,
             lat = lat,

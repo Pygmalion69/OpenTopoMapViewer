@@ -4,17 +4,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.nitri.ors.api.OpenRouteServiceApi
-import org.nitri.ors.repository.RouteRepository
+import org.nitri.ors.OrsClient
+import org.nitri.ors.helper.RouteHelper
 
-class Directions(val api: OpenRouteServiceApi, private val profile: String) {
+class Directions(val client: OrsClient, private val profile: String) {
 
-    val repository = RouteRepository(api)
+    val routeHelper = RouteHelper(client)
 
     fun getRouteGpx(coordinates: List<List<Double>>, language: String, result: RouteGpResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val gpxXml = repository.getRouteGpx(coordinates, language, profile)
+                val gpxXml = with(routeHelper) { client.getRouteGpx(coordinates, language, profile) }
                 withContext(Dispatchers.Main) {
                     if (gpxXml.isNotBlank()) {
                         result.onSuccess(gpxXml)

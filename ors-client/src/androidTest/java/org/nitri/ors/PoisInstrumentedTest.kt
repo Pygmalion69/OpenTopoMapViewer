@@ -9,22 +9,22 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.client.OpenRouteServiceClient
-import org.nitri.ors.repository.PoisRepository
+import org.nitri.ors.helper.PoisHelper
 
 @RunWith(AndroidJUnit4::class)
 class PoisInstrumentedTest {
 
-    private fun createRepository(context: Context): PoisRepository {
+    private fun create(context: Context): Pair<DefaultOrsClient, PoisHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
-        val api = OpenRouteServiceClient.create(apiKey, context)
-        return PoisRepository(api)
+        val client = DefaultOrsClient(apiKey, context)
+        val helper = PoisHelper(client)
+        return client to helper
     }
 
     @Test
     fun testPois_byBbox_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, helper) = create(context)
 
         // Bounding box around Heidelberg, Germany
         val bbox = listOf(
@@ -32,10 +32,12 @@ class PoisInstrumentedTest {
             listOf(8.70, 49.43)  // maxLon, maxLat
         )
 
-        val response = repository.getPoisByBbox(
-            bbox = bbox,
-            limit = 10
-        )
+        val response = with(helper) {
+            client.getPoisByBbox(
+                bbox = bbox,
+                limit = 10
+            )
+        }
 
         assertNotNull("POIs response should not be null", response)
         assertEquals("GeoJSON type should be FeatureCollection", "FeatureCollection", response.type)

@@ -9,22 +9,22 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.client.OpenRouteServiceClient
-import org.nitri.ors.repository.MatrixRepository
+import org.nitri.ors.helper.MatrixHelper
 
 @RunWith(AndroidJUnit4::class)
 class MatrixInstrumentedTest {
 
-    private fun createRepository(context: Context): MatrixRepository {
+    private fun create(context: Context): Pair<DefaultOrsClient, MatrixHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
-        val api = OpenRouteServiceClient.create(apiKey, context)
-        return MatrixRepository(api)
+        val client = DefaultOrsClient(apiKey, context)
+        val helper = MatrixHelper(client)
+        return client to helper
     }
 
     @Test
     fun testMatrix_successful() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val repository = createRepository(context)
+        val (client, helper) = create(context)
 
         // Two locations in/near Heidelberg, Germany [lon, lat]
         val locations = listOf(
@@ -34,12 +34,14 @@ class MatrixInstrumentedTest {
         val profile = "driving-car"
         val metrics = listOf("duration", "distance")
 
-        val response = repository.getMatrix(
-            locations = locations,
-            profile = profile,
-            metrics = metrics,
-            resolveLocations = false
-        )
+        val response = with(helper) {
+            client.getMatrix(
+                locations = locations,
+                profile = profile,
+                metrics = metrics,
+                resolveLocations = false
+            )
+        }
 
         assertNotNull("Matrix response should not be null", response)
 
