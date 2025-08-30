@@ -45,15 +45,16 @@ import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.util.Utils
-import org.nitri.ors.api.OpenRouteServiceApi
-import org.nitri.ors.client.OpenRouteServiceClient
 import org.osmdroid.util.GeoPoint
 import androidx.core.net.toUri
+import org.nitri.ors.DefaultOrsClient
+import org.nitri.ors.Ors
+import org.nitri.ors.OrsClient
 
 open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener,
     GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
     private val parser = GPXParser()
-    private var openRouteServiceApi: OpenRouteServiceApi? = null
+    private var orsClient: OrsClient? = null
     private var geoPointFromIntent: GeoPointDto? = null
     private var gpxUriString: String? = null
     private var gpxUri: Uri? = null
@@ -83,7 +84,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     private val orsApiKeyChangesReceiver = object: BroadcastReceiver() {
         override fun onReceive(p0: Context?, intent: Intent?) {
-           createOrsApi()
+           createOrsClient()
         }
     }
 
@@ -95,8 +96,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         // NOP
     }
 
-    override fun getOpenRouteServiceApi(): OpenRouteServiceApi? {
-        return openRouteServiceApi
+    override fun getOpenRouteServiceClient(): OrsClient? {
+        return orsClient
     }
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -182,13 +183,13 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 //            Log.d("ORS", "Distance: ${result.routes.firstOrNull()?.summary?.distance} m")
 //        }
 
-        createOrsApi()
+        createOrsClient()
     }
 
-    private fun createOrsApi() {
+    private fun createOrsClient() {
         val apiKey = sharedPreferences.getString(PREF_ORS_API_KEY, "")
         if (apiKey?.isNotEmpty() == true) {
-            openRouteServiceApi = OpenRouteServiceClient.create(apiKey, this@BaseMainActivity)
+            orsClient = Ors.create(apiKey, applicationContext)
         }
     }
 

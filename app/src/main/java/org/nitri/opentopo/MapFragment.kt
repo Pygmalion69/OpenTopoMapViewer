@@ -52,7 +52,7 @@ import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.viewmodel.LocationViewModel
 import org.nitri.opentopo.viewmodel.MarkerViewModel
-import org.nitri.ors.api.OpenRouteServiceApi
+import org.nitri.ors.OrsClient
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.DelayedMapListener
 import org.osmdroid.events.MapEventsReceiver
@@ -398,10 +398,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         val locale =  Resources.getSystem().configuration.locales.get(0)
         val language = locale.toLanguageTag().lowercase()
-        listener?.getOpenRouteServiceApi()?.let { api ->
+        listener?.getOpenRouteServiceClient()?.let { client ->
             val profile = sharedPreferences.getString(PREF_ORS_PROFILE, "driving-car")
             profile?.let {
-                val directions = Directions(api, it)
+                val directions = Directions(client, it)
                 directions.getRouteGpx(coordinates, language, object : Directions.RouteGpResult {
                     override fun onSuccess(gpx: String) {
                         Log.d(TAG, "GPX: $gpx")
@@ -1060,9 +1060,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         fun showPrivacyOptionsForm()
 
         /**
-         * Get the ORS API if available
+         * Get the ORS client if available
          */
-        fun getOpenRouteServiceApi(): OpenRouteServiceApi?
+        fun getOpenRouteServiceClient(): OrsClient?
 
         /**
          * Parse GPX string

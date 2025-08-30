@@ -1,28 +1,28 @@
 package org.nitri.ors.api
 
 import okhttp3.ResponseBody
-import org.nitri.ors.model.elevation.ElevationLineRequest
-import org.nitri.ors.model.elevation.ElevationLineResponse
-import org.nitri.ors.model.elevation.ElevationPointRequest
-import org.nitri.ors.model.elevation.ElevationPointResponse
-import org.nitri.ors.model.export.ExportRequest
-import org.nitri.ors.model.export.ExportResponse
-import org.nitri.ors.model.export.TopoJsonExportResponse
-import org.nitri.ors.model.geocode.GeocodeSearchResponse
-import org.nitri.ors.model.isochrones.IsochronesRequest
-import org.nitri.ors.model.isochrones.IsochronesResponse
-import org.nitri.ors.model.matrix.MatrixRequest
-import org.nitri.ors.model.matrix.MatrixResponse
-import org.nitri.ors.model.optimization.OptimizationRequest
-import org.nitri.ors.model.optimization.OptimizationResponse
-import org.nitri.ors.model.pois.PoisGeoJsonResponse
-import org.nitri.ors.model.pois.PoisRequest
-import org.nitri.ors.model.route.GeoJsonRouteResponse
-import org.nitri.ors.model.route.RouteRequest
-import org.nitri.ors.model.route.RouteResponse
-import org.nitri.ors.model.snap.SnapGeoJsonResponse
-import org.nitri.ors.model.snap.SnapRequest
-import org.nitri.ors.model.snap.SnapResponse
+import org.nitri.ors.domain.elevation.ElevationLineRequest
+import org.nitri.ors.domain.elevation.ElevationLineResponse
+import org.nitri.ors.domain.elevation.ElevationPointRequest
+import org.nitri.ors.domain.elevation.ElevationPointResponse
+import org.nitri.ors.domain.export.ExportRequest
+import org.nitri.ors.domain.export.ExportResponse
+import org.nitri.ors.domain.export.TopoJsonExportResponse
+import org.nitri.ors.domain.geocode.GeocodeSearchResponse
+import org.nitri.ors.domain.isochrones.IsochronesRequest
+import org.nitri.ors.domain.isochrones.IsochronesResponse
+import org.nitri.ors.domain.matrix.MatrixRequest
+import org.nitri.ors.domain.matrix.MatrixResponse
+import org.nitri.ors.domain.optimization.OptimizationRequest
+import org.nitri.ors.domain.optimization.OptimizationResponse
+import org.nitri.ors.domain.pois.PoisGeoJsonResponse
+import org.nitri.ors.domain.pois.PoisRequest
+import org.nitri.ors.domain.route.GeoJsonRouteResponse
+import org.nitri.ors.domain.route.RouteRequest
+import org.nitri.ors.domain.route.RouteResponse
+import org.nitri.ors.domain.snap.SnapGeoJsonResponse
+import org.nitri.ors.domain.snap.SnapRequest
+import org.nitri.ors.domain.snap.SnapResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -33,7 +33,6 @@ import retrofit2.http.Query
 interface OpenRouteServiceApi {
 
     // Directions
-
     @GET("v2/directions/{profile}")
     suspend fun getRouteSimple(
         @Path("profile") profile: String,
