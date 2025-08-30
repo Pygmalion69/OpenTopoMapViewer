@@ -5,11 +5,10 @@ import org.nitri.ors.Profile
 import org.nitri.ors.domain.matrix.MatrixRequest
 import org.nitri.ors.domain.matrix.MatrixResponse
 
-class MatrixHelper() {
+/** Helpers for the matrix endpoint. */
+class MatrixHelper {
 
-    /**
-     * Calls the ORS Matrix endpoint for the given profile.
-     */
+    /** Calls the ORS Matrix endpoint for the given [profile]. */
     suspend fun OrsClient.getMatrix(
         locations: List<List<Double>>,
         profile: Profile,

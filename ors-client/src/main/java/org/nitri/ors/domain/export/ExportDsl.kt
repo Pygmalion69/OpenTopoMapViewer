@@ -1,9 +1,10 @@
 package org.nitri.ors.domain.export
 
-// Kotlin DSL for ExportRequest
+/** DSL for creating [ExportRequest] objects. */
 inline fun exportRequest(build: ExportRequestBuilder.() -> Unit): ExportRequest =
     ExportRequestBuilder().apply(build).build()
 
+/** Builder used by [exportRequest]. */
 class ExportRequestBuilder {
     private var bbox: List<List<Double>>? = null
     private var id: String? = null
@@ -23,7 +24,7 @@ class ExportRequestBuilder {
     }
 }
 
-// Java-friendly builder
+/** Java-friendly builder counterpart. */
 class ExportRequestBuilderJ {
     private var bbox: List<List<Double>>? = null
     private var id: String? = null

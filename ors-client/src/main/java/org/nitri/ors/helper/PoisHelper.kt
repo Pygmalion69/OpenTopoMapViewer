@@ -6,7 +6,8 @@ import org.nitri.ors.domain.pois.Geometry
 import org.nitri.ors.domain.pois.PoisGeoJsonResponse
 import org.nitri.ors.domain.pois.PoisRequest
 
-class PoisHelper() {
+/** Convenience extensions for the POIs endpoints. */
+class PoisHelper {
 
     /**
     * Query POIs within a bounding box.

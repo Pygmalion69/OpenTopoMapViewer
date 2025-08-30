@@ -3,6 +3,7 @@ package org.nitri.ors.domain.isochrones
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/** GeoJSON response returned by the isochrones endpoint. */
 @Serializable
 data class IsochronesResponse(
     val type: String,
@@ -11,6 +12,7 @@ data class IsochronesResponse(
     val metadata: IsochronesMetadata
 )
 
+/** Individual isochrone feature. */
 @Serializable
 data class IsochroneFeature(
     val type: String,
@@ -25,12 +27,11 @@ data class IsochroneProperties(
     val center: List<Double>
 )
 
+/** Geometry of an isochrone feature. */
 @Serializable
 data class IsochroneGeometry(
-    val type: String,                    // "Polygon" (sometimes "MultiPolygon")
-    // ORS is returning Polygon for your case:
+    val type: String,
     val coordinates: List<List<List<Double>>>
-    // If you later see MultiPolygon, change to List<List<List<List<Double>>>> or make it polymorphic.
 )
 
 @Serializable

@@ -1,9 +1,10 @@
 package org.nitri.ors.domain.pois
 
-// Kotlin DSL for PoisRequest
+/** DSL for constructing [PoisRequest] objects. */
 inline fun poisRequest(build: PoisRequestBuilder.() -> Unit): PoisRequest =
     PoisRequestBuilder().apply(build).build()
 
+/** Builder used by [poisRequest]. */
 class PoisRequestBuilder {
     private var bbox: List<List<Double>>? = null
     private var geojson: GeoJsonGeometry? = null
@@ -38,7 +39,7 @@ class PoisRequestBuilder {
     }
 }
 
-// Java-friendly builder
+/** Java-friendly builder counterpart. */
 class PoisRequestBuilderJ {
     private var bbox: List<List<Double>>? = null
     private var geojson: GeoJsonGeometry? = null

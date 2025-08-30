@@ -6,12 +6,19 @@ import org.nitri.ors.domain.route.GeoJsonRouteResponse
 import org.nitri.ors.domain.route.RouteRequest
 import org.nitri.ors.domain.route.RouteResponse
 
-class RouteHelper() {
+/**
+ * Convenience extensions for invoking the directions endpoints.
+ */
+class RouteHelper {
 
+    /** Converts a profile key string to the corresponding [Profile] enum. */
     private fun profileFromKey(key: String): Profile =
         Profile.entries.firstOrNull { it.key == key }
             ?: throw IllegalArgumentException("Unknown profile key: $key")
 
+    /**
+     * Retrieves a route between two coordinates.
+     */
     suspend fun OrsClient.getRoute(
         start: Pair<Double, Double>,
         end: Pair<Double, Double>,
@@ -26,6 +33,9 @@ class RouteHelper() {
         return getRoute(profileFromKey(profile), request)
     }
 
+    /**
+     * Retrieves a route as GPX between two coordinates.
+     */
     suspend fun OrsClient.getRouteGpx(
         start: Pair<Double, Double>,
         end: Pair<Double, Double>,
@@ -40,6 +50,9 @@ class RouteHelper() {
         return getRouteGpx(profileFromKey(profile), request)
     }
 
+    /**
+     * Retrieves a route as GPX for an arbitrary coordinate list.
+     */
     suspend fun OrsClient.getRouteGpx(
         coordinates: List<List<Double>>,
         language: String,
@@ -49,6 +62,9 @@ class RouteHelper() {
         return getRouteGpx(profileFromKey(profile), request)
     }
 
+    /**
+     * Retrieves a route as GeoJSON feature collection.
+     */
     suspend fun OrsClient.getRouteGeoJson(
         start: Pair<Double, Double>,
         end: Pair<Double, Double>,

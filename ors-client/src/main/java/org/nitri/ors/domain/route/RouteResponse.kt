@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.nitri.ors.domain.meta.Metadata
 
+/** Response from the directions endpoint. */
 @Serializable
 data class RouteResponse(
     val routes: List<Route>,
@@ -11,6 +12,7 @@ data class RouteResponse(
     val metadata: Metadata? = null
 )
 
+/** Single route variant returned by the API. */
 @Serializable
 data class Route(
     val summary: RouteSummary,
@@ -20,6 +22,7 @@ data class Route(
     val wayPoints: List<Int>? = null
 )
 
+/** Aggregated summary of a route. */
 @Serializable
 data class RouteSummary(
     val distance: Double,
@@ -28,6 +31,7 @@ data class RouteSummary(
     val descent: Double? = null
 )
 
+/** One segment between intermediate waypoints. */
 @Serializable
 data class Segment(
     val distance: Double,
@@ -40,6 +44,7 @@ data class Segment(
     val percentage: Double? = null
 )
 
+/** Turn instruction within a segment. */
 @Serializable
 data class Step(
     val distance: Double,

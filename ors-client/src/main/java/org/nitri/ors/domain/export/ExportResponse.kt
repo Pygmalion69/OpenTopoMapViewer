@@ -12,23 +12,26 @@ import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.doubleOrNull
 
+/** Graph export response containing nodes and edges. */
 @Serializable
 data class ExportResponse(
     val nodes: List<Node> = emptyList(),
     val edges: List<GraphEdge> = emptyList()
 )
 
+/** Node entry in an [ExportResponse]. */
 @Serializable
 data class Node(
     @SerialName("nodeId") val nodeId: Long,
-    /** [lon, lat] */
+    /** `[lon, lat]` coordinate. */
     val location: List<Double>
 )
 
+/** Graph edge entry in an [ExportResponse]. */
 @Serializable
 data class GraphEdge(
     @SerialName("fromId") val fromId: Long,
-    @SerialName("toId")   val toId: Long,
+    @SerialName("toId") val toId: Long,
     @Serializable(with = StringAsDoubleSerializer::class)
     val weight: Double
 )

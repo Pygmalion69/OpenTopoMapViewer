@@ -3,6 +3,7 @@ package org.nitri.ors.domain.pois
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable
 
+/** Request for the POIs endpoint. */
 @Serializable
 data class PoisRequest(
     @Required val request: String = "pois",
@@ -14,13 +15,17 @@ data class PoisRequest(
 
 @Serializable
 data class Geometry(
-    val bbox: List<List<Double>>? = null,        // [[minLon,minLat],[maxLon,maxLat]]
-    val geojson: GeoJsonGeometry? = null,        // optional: GeoJSON geometry
-    val buffer: Int? = null                      // optional: buffer in meters
+    /** Bounding box `[[minLon,minLat],[maxLon,maxLat]]` if set. */
+    val bbox: List<List<Double>>? = null,
+    /** Optional GeoJSON geometry. */
+    val geojson: GeoJsonGeometry? = null,
+    /** Optional buffer in meters applied to the geometry. */
+    val buffer: Int? = null
 )
 
 @Serializable
 data class GeoJsonGeometry(
-    val type: String,                            // e.g., "Point"
-    val coordinates: List<Double>                // [lon, lat]
+    val type: String,
+    /** `[lon, lat]` pair defining the point location. */
+    val coordinates: List<Double>
 )

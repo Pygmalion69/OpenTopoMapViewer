@@ -5,10 +5,11 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 
-// Kotlin DSL for ElevationLineRequest
+/** DSL for building [ElevationLineRequest] instances. */
 inline fun elevationLineRequest(build: ElevationLineRequestBuilder.() -> Unit): ElevationLineRequest =
     ElevationLineRequestBuilder().apply(build).build()
 
+/** Builder used by [elevationLineRequest]. */
 class ElevationLineRequestBuilder {
     var formatIn: String = ElevationFormats.POLYLINE
     var formatOut: String = ElevationFormats.GEOJSON
@@ -40,10 +41,11 @@ class ElevationLineRequestBuilder {
     }
 }
 
-// Kotlin DSL for ElevationPointRequest
+/** DSL for constructing [ElevationPointRequest] objects. */
 inline fun elevationPointRequest(build: ElevationPointRequestBuilder.() -> Unit): ElevationPointRequest =
     ElevationPointRequestBuilder().apply(build).build()
 
+/** Builder used by [elevationPointRequest]. */
 class ElevationPointRequestBuilder {
     var formatIn: String = "point"
     var formatOut: String = "geojson"

@@ -23,6 +23,11 @@ import org.nitri.ors.domain.snap.SnapGeoJsonResponse
 import org.nitri.ors.domain.snap.SnapRequest
 import org.nitri.ors.domain.snap.SnapResponse
 
+/**
+ * Supported routing profiles used across the OpenRouteService endpoints.
+ *
+ * The [key] corresponds to the profile identifier expected by the HTTP API.
+ */
 enum class Profile(val key: String) {
     DRIVING_CAR("driving-car"),
     DRIVING_HGV("driving-hgv"),
@@ -35,44 +40,84 @@ enum class Profile(val key: String) {
     WHEELCHAIR("wheelchair")
 }
 
-@JvmInline value class Lon(val v: Double)
-@JvmInline value class Lat(val v: Double)
+/** Longitude value wrapper used by the DSL builders. */
+@JvmInline
+value class Lon(val v: Double)
+
+/** Latitude value wrapper used by the DSL builders. */
+@JvmInline
+value class Lat(val v: Double)
+
+/** Convenience pair for longitude/latitude coordinates. */
 data class LonLat(val lon: Double, val lat: Double)
 
+/**
+ * Abstraction over the OpenRouteService HTTP API.
+ *
+ * Implementations map these suspending functions to the respective REST
+ * endpoints as documented in the
+ * [OpenRouteService API reference](https://openrouteservice.org/dev/#/api-docs).
+ */
 interface OrsClient {
 
     // Directions
+    /**
+     * Requests a route using the Directions endpoint.
+     * `GET /v2/directions/{profile}`
+     */
     suspend fun getRoute(profile: Profile, routeRequest: RouteRequest): RouteResponse
+
+    /** Retrieves the route as GPX. */
     suspend fun getRouteGpx(profile: Profile, routeRequest: RouteRequest): String
+
+    /** Retrieves the route as GeoJSON feature collection. */
     suspend fun getRouteGeoJson(profile: Profile, routeRequest: RouteRequest): GeoJsonRouteResponse
 
     // Export
+    /** Calls the export endpoint returning plain JSON. */
     suspend fun export(profile: Profile, exportRequest: ExportRequest): ExportResponse
+
+    /** Same as [export] but explicitly requesting JSON output. */
     suspend fun exportJson(profile: Profile, exportRequest: ExportRequest): ExportResponse
+
+    /** Requests TopoJSON output from the export endpoint. */
     suspend fun exportTopoJson(profile: Profile, exportRequest: ExportRequest): TopoJsonExportResponse
 
     // Isochrones
+    /** Accesses the isochrones endpoint. */
     suspend fun getIsochrones(profile: Profile, isochronesRequest: IsochronesRequest): IsochronesResponse
 
     // Matrix
+    /** Calls the matrix endpoint and returns distance/duration matrices. */
     suspend fun getMatrix(profile: Profile, matrixRequest: MatrixRequest): MatrixResponse
 
     // Snapping
+    /** Snaps coordinates to the road network. */
     suspend fun getSnap(profile: Profile, snapRequest: SnapRequest): SnapResponse
+
+    /** Snaps coordinates and returns the JSON variant of the response. */
     suspend fun getSnapJson(profile: Profile, snapRequest: SnapRequest): SnapResponse
+
+    /** Snaps coordinates and returns a GeoJSON response. */
     suspend fun getSnapGeoJson(profile: Profile, snapRequest: SnapRequest): SnapGeoJsonResponse
 
     // POIs
+    /** Queries points of interest and returns a GeoJSON feature collection. */
     suspend fun getPois(poisRequest: PoisRequest): PoisGeoJsonResponse
 
     // Optimization
+    /** Delegates to the VROOM based optimization service. */
     suspend fun getOptimization(optimizationRequest: OptimizationRequest): OptimizationResponse
 
     // Elevation
+    /** Calls the elevation/line endpoint. */
     suspend fun getElevationLine(elevationLineRequest: ElevationLineRequest): ElevationLineResponse
+
+    /** Calls the elevation/point endpoint. */
     suspend fun getElevationPoint(elevationPointRequest: ElevationPointRequest): ElevationPointResponse
 
     // Geocode
+    /** Forward geocoding search endpoint. */
     suspend fun geocodeSearch(
         text: String,
         apiKey: String,
@@ -92,6 +137,7 @@ interface OrsClient {
         size: Int? = 10,
     ): GeocodeSearchResponse
 
+    /** Autocomplete endpoint returning suggestions for a partial query. */
     suspend fun geocodeAutocomplete(
         apiKey: String,
         text: String,
@@ -110,6 +156,7 @@ interface OrsClient {
         size: Int? = null,
     ): GeocodeSearchResponse
 
+    /** Structured forward geocoding using discrete address fields. */
     suspend fun geocodeStructured(
         apiKey: String,
         address: String? = null,
@@ -135,6 +182,7 @@ interface OrsClient {
         size: Int? = null,
     ): GeocodeSearchResponse
 
+    /** Reverse geocoding for a single coordinate. */
     suspend fun geocodeReverse(
         apiKey: String,
         lon: Double,

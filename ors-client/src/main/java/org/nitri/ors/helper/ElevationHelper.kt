@@ -10,7 +10,8 @@ import org.nitri.ors.domain.elevation.ElevationLineResponse
 import org.nitri.ors.domain.elevation.ElevationPointRequest
 import org.nitri.ors.domain.elevation.ElevationPointResponse
 
-class ElevationHelper() {
+/** Helper functions for the ORS elevation endpoints. */
+class ElevationHelper {
 
     /**
      * Convenience helper to request elevation for a LineString provided as list of [lon, lat] pairs.
