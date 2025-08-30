@@ -31,7 +31,7 @@ class ExportInstrumentedTest {
             listOf(8.686507, 49.41943)    // maxLon, maxLat
         )
 
-        val response = with(helper) { client.export(bbox = bbox, profile ="driving-car") }
+        val response = with(helper) { client.export(bbox = bbox, profile = Profile.DRIVING_CAR) }
 
         assertNotNull("Export response should not be null", response)
         // Basic sanity checks on structure

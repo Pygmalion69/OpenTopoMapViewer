@@ -1,4 +1,4 @@
-package org.nitri.ors.model.geocode
+package org.nitri.ors.domain.geocode
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

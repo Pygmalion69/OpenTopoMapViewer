@@ -7,11 +7,11 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.model.route.GeoJsonRouteResponse
+import org.nitri.ors.domain.route.GeoJsonRouteResponse
 import org.nitri.ors.helper.RouteHelper
 
 @RunWith(AndroidJUnit4::class)
-class RouteRepositoryInstrumentedTest {
+class RouteInstrumentedTest {
 
     private fun create(context: Context): Pair<DefaultOrsClient, RouteHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
@@ -55,7 +55,8 @@ class RouteRepositoryInstrumentedTest {
         val start = Pair(8.681495, 49.41461)
         val end = Pair(8.687872, 49.420318)
 
-        val route: GeoJsonRouteResponse = with(repository) { client.getRouteGeoJson(start, end, "driving-car") }
+        val route: GeoJsonRouteResponse = with(repository) { client.getRouteGeoJson(start, end,
+            Profile.DRIVING_CAR) }
 
         assertNotNull("Route should not be null", route)
     }

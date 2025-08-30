@@ -5,10 +5,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import org.nitri.ors.OrsClient
-import org.nitri.ors.model.elevation.ElevationLineRequest
-import org.nitri.ors.model.elevation.ElevationLineResponse
-import org.nitri.ors.model.elevation.ElevationPointRequest
-import org.nitri.ors.model.elevation.ElevationPointResponse
+import org.nitri.ors.domain.elevation.ElevationLineRequest
+import org.nitri.ors.domain.elevation.ElevationLineResponse
+import org.nitri.ors.domain.elevation.ElevationPointRequest
+import org.nitri.ors.domain.elevation.ElevationPointResponse
 
 class ElevationHelper() {
 

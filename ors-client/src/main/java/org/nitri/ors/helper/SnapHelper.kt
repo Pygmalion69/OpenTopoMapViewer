@@ -1,9 +1,10 @@
 package org.nitri.ors.helper
 
 import org.nitri.ors.OrsClient
-import org.nitri.ors.model.snap.SnapGeoJsonResponse
-import org.nitri.ors.model.snap.SnapRequest
-import org.nitri.ors.model.snap.SnapResponse
+import org.nitri.ors.Profile
+import org.nitri.ors.domain.snap.SnapGeoJsonResponse
+import org.nitri.ors.domain.snap.SnapRequest
+import org.nitri.ors.domain.snap.SnapResponse
 
 class SnapHelper() {
 
@@ -13,7 +14,7 @@ class SnapHelper() {
     suspend fun OrsClient.getSnap(
         locations: List<List<Double>>,
         radius: Int,
-        profile: String,
+        profile: Profile,
         id: String? = null,
     ): SnapResponse {
         val request = SnapRequest(
@@ -30,7 +31,7 @@ class SnapHelper() {
     suspend fun OrsClient.getSnapJson(
         locations: List<List<Double>>,
         radius: Int,
-        profile: String,
+        profile: Profile,
         id: String? = null,
     ): SnapResponse {
         val request = SnapRequest(
@@ -47,7 +48,7 @@ class SnapHelper() {
     suspend fun OrsClient.getSnapGeoJson(
         locations: List<List<Double>>,
         radius: Int,
-        profile: String,
+        profile: Profile,
         id: String? = null,
     ): SnapGeoJsonResponse {
         val request = SnapRequest(

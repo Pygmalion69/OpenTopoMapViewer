@@ -1,4 +1,4 @@
-package org.nitri.ors.model.isochrones
+package org.nitri.ors.domain.isochrones
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

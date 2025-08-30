@@ -1,14 +1,14 @@
 package org.nitri.ors.helper
 
 import org.nitri.ors.OrsClient
-import org.nitri.ors.api.OpenRouteServiceApi
-import org.nitri.ors.model.export.ExportRequest
-import org.nitri.ors.model.export.ExportResponse
-import org.nitri.ors.model.export.TopoJsonExportResponse
+import org.nitri.ors.Profile
+import org.nitri.ors.domain.export.ExportRequest
+import org.nitri.ors.domain.export.ExportResponse
+import org.nitri.ors.domain.export.TopoJsonExportResponse
 
 class ExportHelper() {
 
-    suspend fun OrsClient.export(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
+    suspend fun OrsClient.export(bbox: List<List<Double>>, geometry: Boolean? = null, profile: Profile): ExportResponse {
         val request = ExportRequest(
             bbox = bbox,
             id = "export_request",
@@ -17,7 +17,7 @@ class ExportHelper() {
         return export(profile, request)
     }
 
-    suspend fun OrsClient.exportJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
+    suspend fun OrsClient.exportJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: Profile): ExportResponse {
         val request = ExportRequest(
             bbox = bbox,
             id = "export_request_json",
@@ -26,7 +26,7 @@ class ExportHelper() {
         return exportJson(profile, request)
     }
 
-    suspend fun OrsClient.exportTopoJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): TopoJsonExportResponse {
+    suspend fun OrsClient.exportTopoJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: Profile): TopoJsonExportResponse {
         val request = ExportRequest(
             bbox = bbox,
             id = "export_request_topo_json",

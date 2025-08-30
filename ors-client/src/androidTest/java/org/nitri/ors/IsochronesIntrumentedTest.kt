@@ -31,7 +31,7 @@ class IsochronesInstrumentedTest {
         )
         // 5 minutes (300 seconds)
         val range = listOf(300)
-        val profile = "driving-car"
+        val profile = Profile.DRIVING_CAR
 
         val response = with(helper) {
             client.getIsochrones(

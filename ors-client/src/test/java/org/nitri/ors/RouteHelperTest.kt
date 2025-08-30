@@ -6,10 +6,10 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.nitri.ors.model.route.Route
-import org.nitri.ors.model.route.RouteRequest
-import org.nitri.ors.model.route.RouteResponse
-import org.nitri.ors.model.route.RouteSummary
+import org.nitri.ors.domain.route.Route
+import org.nitri.ors.domain.route.RouteRequest
+import org.nitri.ors.domain.route.RouteResponse
+import org.nitri.ors.domain.route.RouteSummary
 import org.nitri.ors.helper.RouteHelper
 
 class RouteHelperTest {

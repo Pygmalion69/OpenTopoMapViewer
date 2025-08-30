@@ -1,7 +1,7 @@
-package org.nitri.ors.model.route
+package org.nitri.ors.domain.route
 
 import kotlinx.serialization.Serializable
-import org.nitri.ors.model.meta.Metadata
+import org.nitri.ors.domain.meta.Metadata
 
 @Serializable
 data class GeoJsonRouteResponse(

@@ -8,8 +8,8 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.nitri.ors.model.optimization.Job
-import org.nitri.ors.model.optimization.Vehicle
+import org.nitri.ors.domain.optimization.Job
+import org.nitri.ors.domain.optimization.Vehicle
 import org.nitri.ors.helper.OptimizationHelper
 
 @RunWith(AndroidJUnit4::class)

@@ -1,7 +1,7 @@
 package org.nitri.ors.helper
 
 import org.nitri.ors.OrsClient
-import org.nitri.ors.model.geocode.GeocodeSearchResponse
+import org.nitri.ors.domain.geocode.GeocodeSearchResponse
 
 /**
  * Repository for ORS Geocoding endpoints using GET requests only.

@@ -1,10 +1,10 @@
 package org.nitri.ors.helper
 
 import org.nitri.ors.OrsClient
-import org.nitri.ors.model.pois.GeoJsonGeometry
-import org.nitri.ors.model.pois.Geometry
-import org.nitri.ors.model.pois.PoisGeoJsonResponse
-import org.nitri.ors.model.pois.PoisRequest
+import org.nitri.ors.domain.pois.GeoJsonGeometry
+import org.nitri.ors.domain.pois.Geometry
+import org.nitri.ors.domain.pois.PoisGeoJsonResponse
+import org.nitri.ors.domain.pois.PoisRequest
 
 class PoisHelper() {
 

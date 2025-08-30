@@ -2,12 +2,12 @@ package org.nitri.ors.helper
 
 import kotlinx.serialization.json.JsonElement
 import org.nitri.ors.OrsClient
-import org.nitri.ors.model.optimization.CustomMatrix
-import org.nitri.ors.model.optimization.Job
-import org.nitri.ors.model.optimization.OptimizationRequest
-import org.nitri.ors.model.optimization.OptimizationResponse
-import org.nitri.ors.model.optimization.Shipment
-import org.nitri.ors.model.optimization.Vehicle
+import org.nitri.ors.domain.optimization.CustomMatrix
+import org.nitri.ors.domain.optimization.Job
+import org.nitri.ors.domain.optimization.OptimizationRequest
+import org.nitri.ors.domain.optimization.OptimizationResponse
+import org.nitri.ors.domain.optimization.Shipment
+import org.nitri.ors.domain.optimization.Vehicle
 
 /**
  * Repository for the OpenRouteService Optimization endpoint using OrsClient.

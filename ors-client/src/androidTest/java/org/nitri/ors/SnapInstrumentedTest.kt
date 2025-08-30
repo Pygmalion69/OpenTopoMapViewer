@@ -31,7 +31,7 @@ class SnapInstrumentedTest {
             listOf(8.681495, 49.41461),   // Heidelberg center
             listOf(8.687872, 49.420318)   // Nearby point
         )
-        val profile = "driving-car"
+        val profile = Profile.DRIVING_CAR
         val radius = 50 // meters
 
         val response = with(helper) {
@@ -63,7 +63,7 @@ class SnapInstrumentedTest {
             listOf(8.681495, 49.41461),
             listOf(8.687872, 49.420318)
         )
-        val profile = "driving-car"
+        val profile = Profile.DRIVING_CAR
         val radius = 50
 
         val response = with(helper) {
@@ -93,7 +93,7 @@ class SnapInstrumentedTest {
             listOf(8.681495, 49.41461),
             listOf(8.687872, 49.420318)
         )
-        val profile = "driving-car"
+        val profile = Profile.DRIVING_CAR
         val radius = 50
 
         val response = with(repository) {

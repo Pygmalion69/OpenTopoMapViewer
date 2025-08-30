@@ -1,27 +1,27 @@
 package org.nitri.ors
 
-import org.nitri.ors.model.elevation.ElevationLineRequest
-import org.nitri.ors.model.elevation.ElevationLineResponse
-import org.nitri.ors.model.elevation.ElevationPointRequest
-import org.nitri.ors.model.elevation.ElevationPointResponse
-import org.nitri.ors.model.export.ExportRequest
-import org.nitri.ors.model.export.ExportResponse
-import org.nitri.ors.model.export.TopoJsonExportResponse
-import org.nitri.ors.model.geocode.GeocodeSearchResponse
-import org.nitri.ors.model.isochrones.IsochronesRequest
-import org.nitri.ors.model.isochrones.IsochronesResponse
-import org.nitri.ors.model.matrix.MatrixRequest
-import org.nitri.ors.model.matrix.MatrixResponse
-import org.nitri.ors.model.optimization.OptimizationRequest
-import org.nitri.ors.model.optimization.OptimizationResponse
-import org.nitri.ors.model.pois.PoisGeoJsonResponse
-import org.nitri.ors.model.pois.PoisRequest
-import org.nitri.ors.model.route.GeoJsonRouteResponse
-import org.nitri.ors.model.route.RouteRequest
-import org.nitri.ors.model.route.RouteResponse
-import org.nitri.ors.model.snap.SnapGeoJsonResponse
-import org.nitri.ors.model.snap.SnapRequest
-import org.nitri.ors.model.snap.SnapResponse
+import org.nitri.ors.domain.elevation.ElevationLineRequest
+import org.nitri.ors.domain.elevation.ElevationLineResponse
+import org.nitri.ors.domain.elevation.ElevationPointRequest
+import org.nitri.ors.domain.elevation.ElevationPointResponse
+import org.nitri.ors.domain.export.ExportRequest
+import org.nitri.ors.domain.export.ExportResponse
+import org.nitri.ors.domain.export.TopoJsonExportResponse
+import org.nitri.ors.domain.geocode.GeocodeSearchResponse
+import org.nitri.ors.domain.isochrones.IsochronesRequest
+import org.nitri.ors.domain.isochrones.IsochronesResponse
+import org.nitri.ors.domain.matrix.MatrixRequest
+import org.nitri.ors.domain.matrix.MatrixResponse
+import org.nitri.ors.domain.optimization.OptimizationRequest
+import org.nitri.ors.domain.optimization.OptimizationResponse
+import org.nitri.ors.domain.pois.PoisGeoJsonResponse
+import org.nitri.ors.domain.pois.PoisRequest
+import org.nitri.ors.domain.route.GeoJsonRouteResponse
+import org.nitri.ors.domain.route.RouteRequest
+import org.nitri.ors.domain.route.RouteResponse
+import org.nitri.ors.domain.snap.SnapGeoJsonResponse
+import org.nitri.ors.domain.snap.SnapRequest
+import org.nitri.ors.domain.snap.SnapResponse
 
 enum class Profile(val key: String) {
     DRIVING_CAR("driving-car"),
@@ -35,29 +35,32 @@ enum class Profile(val key: String) {
     WHEELCHAIR("wheelchair")
 }
 
+@JvmInline value class Lon(val v: Double)
+@JvmInline value class Lat(val v: Double)
+data class LonLat(val lon: Double, val lat: Double)
 
 interface OrsClient {
 
     // Directions
     suspend fun getRoute(profile: Profile, routeRequest: RouteRequest): RouteResponse
     suspend fun getRouteGpx(profile: Profile, routeRequest: RouteRequest): String
-    suspend fun getRouteGeoJson(profile: String, routeRequest: RouteRequest): GeoJsonRouteResponse
+    suspend fun getRouteGeoJson(profile: Profile, routeRequest: RouteRequest): GeoJsonRouteResponse
 
     // Export
-    suspend fun export(profile: String, exportRequest: ExportRequest): ExportResponse
-    suspend fun exportJson(profile: String, exportRequest: ExportRequest): ExportResponse
-    suspend fun exportTopoJson(profile: String, exportRequest: ExportRequest): TopoJsonExportResponse
+    suspend fun export(profile: Profile, exportRequest: ExportRequest): ExportResponse
+    suspend fun exportJson(profile: Profile, exportRequest: ExportRequest): ExportResponse
+    suspend fun exportTopoJson(profile: Profile, exportRequest: ExportRequest): TopoJsonExportResponse
 
     // Isochrones
-    suspend fun getIsochrones(profile: String, isochronesRequest: IsochronesRequest): IsochronesResponse
+    suspend fun getIsochrones(profile: Profile, isochronesRequest: IsochronesRequest): IsochronesResponse
 
     // Matrix
-    suspend fun getMatrix(profile: String, matrixRequest: MatrixRequest): MatrixResponse
+    suspend fun getMatrix(profile: Profile, matrixRequest: MatrixRequest): MatrixResponse
 
     // Snapping
-    suspend fun getSnap(profile: String, snapRequest: SnapRequest): SnapResponse
-    suspend fun getSnapJson(profile: String, snapRequest: SnapRequest): SnapResponse
-    suspend fun getSnapGeoJson(profile: String, snapRequest: SnapRequest): SnapGeoJsonResponse
+    suspend fun getSnap(profile: Profile, snapRequest: SnapRequest): SnapResponse
+    suspend fun getSnapJson(profile: Profile, snapRequest: SnapRequest): SnapResponse
+    suspend fun getSnapGeoJson(profile: Profile, snapRequest: SnapRequest): SnapGeoJsonResponse
 
     // POIs
     suspend fun getPois(poisRequest: PoisRequest): PoisGeoJsonResponse

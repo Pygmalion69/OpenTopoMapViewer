@@ -1,4 +1,4 @@
-package org.nitri.ors.model.meta
+package org.nitri.ors.domain.meta
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

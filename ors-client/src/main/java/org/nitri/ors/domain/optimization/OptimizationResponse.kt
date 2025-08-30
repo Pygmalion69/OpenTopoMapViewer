@@ -1,4 +1,4 @@
-package org.nitri.ors.model.optimization
+package org.nitri.ors.domain.optimization
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

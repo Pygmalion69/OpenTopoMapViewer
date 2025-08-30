@@ -1,4 +1,4 @@
-package org.nitri.ors.model.matrix
+package org.nitri.ors.domain.matrix
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

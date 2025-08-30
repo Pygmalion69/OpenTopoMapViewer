@@ -1,4 +1,4 @@
-package org.nitri.ors.model.pois
+package org.nitri.ors.domain.pois
 
 import kotlinx.serialization.Required
 import kotlinx.serialization.Serializable

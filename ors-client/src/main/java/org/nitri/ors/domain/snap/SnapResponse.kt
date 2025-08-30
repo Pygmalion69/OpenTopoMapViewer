@@ -1,8 +1,8 @@
-package org.nitri.ors.model.snap
+package org.nitri.ors.domain.snap
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.nitri.ors.model.meta.Metadata
+import org.nitri.ors.domain.meta.Metadata
 
 /**
  * Response for ORS /v2/snap/{profile}[/json]

@@ -1,8 +1,9 @@
 package org.nitri.ors.helper
 
 import org.nitri.ors.OrsClient
-import org.nitri.ors.model.matrix.MatrixRequest
-import org.nitri.ors.model.matrix.MatrixResponse
+import org.nitri.ors.Profile
+import org.nitri.ors.domain.matrix.MatrixRequest
+import org.nitri.ors.domain.matrix.MatrixResponse
 
 class MatrixHelper() {
 
@@ -11,7 +12,7 @@ class MatrixHelper() {
      */
     suspend fun OrsClient.getMatrix(
         locations: List<List<Double>>,
-        profile: String,
+        profile: Profile,
         metrics: List<String>? = null,
         sources: List<Int>? = null,
         destinations: List<Int>? = null,

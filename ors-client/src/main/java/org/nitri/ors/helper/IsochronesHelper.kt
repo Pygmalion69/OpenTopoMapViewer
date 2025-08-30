@@ -1,15 +1,16 @@
 package org.nitri.ors.helper
 
 import org.nitri.ors.OrsClient
-import org.nitri.ors.model.isochrones.IsochronesRequest
-import org.nitri.ors.model.isochrones.IsochronesResponse
+import org.nitri.ors.Profile
+import org.nitri.ors.domain.isochrones.IsochronesRequest
+import org.nitri.ors.domain.isochrones.IsochronesResponse
 
 class IsochronesHelper() {
 
     suspend fun OrsClient.getIsochrones(
         locations: List<List<Double>>,
         range: List<Int>,
-        profile: String,
+        profile: Profile,
         attributes: List<String>? = null,
         rangeType: String? = null,
     ): IsochronesResponse {

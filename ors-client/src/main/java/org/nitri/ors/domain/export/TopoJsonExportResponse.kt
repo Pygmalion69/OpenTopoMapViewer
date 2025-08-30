@@ -1,4 +1,4 @@
-package org.nitri.ors.model.export
+package org.nitri.ors.domain.export
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

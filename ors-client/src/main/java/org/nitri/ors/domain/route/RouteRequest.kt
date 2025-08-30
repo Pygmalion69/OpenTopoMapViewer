@@ -1,4 +1,4 @@
-package org.nitri.ors.model.route
+package org.nitri.ors.domain.route
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

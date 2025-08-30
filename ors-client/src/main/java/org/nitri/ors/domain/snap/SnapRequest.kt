@@ -1,4 +1,4 @@
-package org.nitri.ors.model.snap
+package org.nitri.ors.domain.snap
 
 import kotlinx.serialization.Serializable
 

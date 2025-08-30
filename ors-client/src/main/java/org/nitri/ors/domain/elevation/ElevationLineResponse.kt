@@ -1,4 +1,4 @@
-package org.nitri.ors.model.elevation
+package org.nitri.ors.domain.elevation
 
 import kotlinx.serialization.Serializable
 

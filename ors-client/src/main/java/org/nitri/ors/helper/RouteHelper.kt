@@ -2,14 +2,14 @@ package org.nitri.ors.helper
 
 import org.nitri.ors.OrsClient
 import org.nitri.ors.Profile
-import org.nitri.ors.model.route.GeoJsonRouteResponse
-import org.nitri.ors.model.route.RouteRequest
-import org.nitri.ors.model.route.RouteResponse
+import org.nitri.ors.domain.route.GeoJsonRouteResponse
+import org.nitri.ors.domain.route.RouteRequest
+import org.nitri.ors.domain.route.RouteResponse
 
 class RouteHelper() {
 
     private fun profileFromKey(key: String): Profile =
-        Profile.values().firstOrNull { it.key == key }
+        Profile.entries.firstOrNull { it.key == key }
             ?: throw IllegalArgumentException("Unknown profile key: $key")
 
     suspend fun OrsClient.getRoute(
@@ -52,7 +52,7 @@ class RouteHelper() {
     suspend fun OrsClient.getRouteGeoJson(
         start: Pair<Double, Double>,
         end: Pair<Double, Double>,
-        profile: String
+        profile: Profile
     ): GeoJsonRouteResponse {
         val request = RouteRequest(
             coordinates = listOf(
