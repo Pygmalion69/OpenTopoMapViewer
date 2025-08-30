@@ -10,9 +10,9 @@ import org.nitri.ors.domain.optimization.Shipment
 import org.nitri.ors.domain.optimization.Vehicle
 
 /**
- * Repository for the OpenRouteService Optimization endpoint using OrsClient.
+ * Repository for the OpenRouteService Optimization endpoint using [OrsClient].
  */
-class OptimizationHelper() {
+class OptimizationHelper {
 
     /**
      * Calls the ORS Optimization endpoint with provided arguments and builds the request.

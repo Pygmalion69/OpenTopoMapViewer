@@ -1,9 +1,10 @@
 package org.nitri.ors.domain.snap
 
-// Kotlin DSL for SnapRequest
+/** DSL for constructing [SnapRequest] objects. */
 inline fun snapRequest(build: SnapRequestBuilder.() -> Unit): SnapRequest =
     SnapRequestBuilder().apply(build).build()
 
+/** Builder used by [snapRequest]. */
 class SnapRequestBuilder {
     private val locations = mutableListOf<List<Double>>()
     private var radius: Int? = null
@@ -19,7 +20,7 @@ class SnapRequestBuilder {
     }
 }
 
-// Java-friendly builder
+/** Java-friendly builder counterpart. */
 class SnapRequestBuilderJ {
     private val locations = mutableListOf<List<Double>>()
     private var radius: Int? = null

@@ -1,9 +1,10 @@
 package org.nitri.ors.domain.optimization
 
-// Kotlin DSL for OptimizationRequest (minimal and pragmatic)
+/** DSL for building [OptimizationRequest] payloads. */
 inline fun optimizationRequest(build: OptimizationRequestBuilder.() -> Unit): OptimizationRequest =
     OptimizationRequestBuilder().apply(build).build()
 
+/** Builder used by [optimizationRequest]. */
 class OptimizationRequestBuilder {
     private val jobs = mutableListOf<Job>()
     private val shipments = mutableListOf<Shipment>()
@@ -62,7 +63,7 @@ class OptimizationRequestBuilder {
     }
 }
 
-// Java-friendly builder
+/** Java-friendly builder counterpart. */
 class OptimizationRequestBuilderJ {
     private val dsl = OptimizationRequestBuilder()
 

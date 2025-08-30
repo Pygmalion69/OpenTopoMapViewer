@@ -1,9 +1,10 @@
 package org.nitri.ors.domain.matrix
 
-// Kotlin DSL for MatrixRequest
+/** DSL for building [MatrixRequest] instances. */
 inline fun matrixRequest(build: MatrixRequestBuilder.() -> Unit): MatrixRequest =
     MatrixRequestBuilder().apply(build).build()
 
+/** Builder used by [matrixRequest]. */
 class MatrixRequestBuilder {
     private val locations = mutableListOf<List<Double>>()
     var destinations: List<Int>? = null
@@ -27,7 +28,7 @@ class MatrixRequestBuilder {
     }
 }
 
-// Java-friendly builder
+/** Java-friendly builder counterpart. */
 class MatrixRequestBuilderJ {
     private val locations = mutableListOf<List<Double>>()
     private var destinations: List<Int>? = null

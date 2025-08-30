@@ -6,9 +6,9 @@ import org.nitri.ors.domain.geocode.GeocodeSearchResponse
 /**
  * Repository for ORS Geocoding endpoints using GET requests only.
  *
- * Methods are member extensions on OrsClient and delegate to OrsClient.
+ * Methods are member extensions on [OrsClient] and delegate to it.
  */
-class GeocodeHelper() {
+class GeocodeHelper {
 
     /**
      * Forward geocoding search.
