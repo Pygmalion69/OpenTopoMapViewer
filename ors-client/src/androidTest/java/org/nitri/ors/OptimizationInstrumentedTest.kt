@@ -18,7 +18,7 @@ class OptimizationInstrumentedTest {
     private fun create(context: Context): Pair<DefaultOrsClient, OptimizationHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
         val client = DefaultOrsClient(apiKey, context)
-        val helper = OptimizationHelper(client)
+        val helper = OptimizationHelper()
         return client to helper
     }
 

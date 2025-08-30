@@ -16,7 +16,7 @@ class IsochronesInstrumentedTest {
     private fun create(context: Context): Pair<DefaultOrsClient, IsochronesHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
         val client = DefaultOrsClient(apiKey, context)
-        val helper = IsochronesHelper(client)
+        val helper = IsochronesHelper()
         return client to helper
     }
 

@@ -6,7 +6,7 @@ import org.nitri.ors.model.route.GeoJsonRouteResponse
 import org.nitri.ors.model.route.RouteRequest
 import org.nitri.ors.model.route.RouteResponse
 
-class RouteHelper(private val orsClient: OrsClient) {
+class RouteHelper() {
 
     private fun profileFromKey(key: String): Profile =
         Profile.values().firstOrNull { it.key == key }

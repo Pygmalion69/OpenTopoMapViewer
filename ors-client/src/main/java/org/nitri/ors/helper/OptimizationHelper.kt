@@ -12,7 +12,7 @@ import org.nitri.ors.model.optimization.Vehicle
 /**
  * Repository for the OpenRouteService Optimization endpoint using OrsClient.
  */
-class OptimizationHelper(private val orsClient: OrsClient) {
+class OptimizationHelper() {
 
     /**
      * Calls the ORS Optimization endpoint with provided arguments and builds the request.

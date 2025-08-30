@@ -9,7 +9,7 @@ import org.nitri.ors.helper.RouteHelper
 
 class Directions(val client: OrsClient, private val profile: String) {
 
-    val routeHelper = RouteHelper(client)
+    val routeHelper = RouteHelper()
 
     fun getRouteGpx(coordinates: List<List<Double>>, language: String, result: RouteGpResult) {
         CoroutineScope(Dispatchers.IO).launch {

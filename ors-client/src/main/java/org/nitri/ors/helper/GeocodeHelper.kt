@@ -8,7 +8,7 @@ import org.nitri.ors.model.geocode.GeocodeSearchResponse
  *
  * Methods are member extensions on OrsClient and delegate to OrsClient.
  */
-class GeocodeHelper(private val orsClient: OrsClient) {
+class GeocodeHelper() {
 
     /**
      * Forward geocoding search.

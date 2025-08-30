@@ -20,7 +20,7 @@ class RouteHelperTest {
     @Before
     fun setUp() {
         client = mock(OrsClient::class.java)
-        routeHelper = RouteHelper(client)
+        routeHelper = RouteHelper()
     }
 
     @Test

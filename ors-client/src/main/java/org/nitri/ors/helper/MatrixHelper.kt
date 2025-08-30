@@ -4,7 +4,7 @@ import org.nitri.ors.OrsClient
 import org.nitri.ors.model.matrix.MatrixRequest
 import org.nitri.ors.model.matrix.MatrixResponse
 
-class MatrixHelper(private val orsClient: OrsClient) {
+class MatrixHelper() {
 
     /**
      * Calls the ORS Matrix endpoint for the given profile.

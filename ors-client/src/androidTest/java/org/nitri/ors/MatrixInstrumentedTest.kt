@@ -17,7 +17,7 @@ class MatrixInstrumentedTest {
     private fun create(context: Context): Pair<DefaultOrsClient, MatrixHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
         val client = DefaultOrsClient(apiKey, context)
-        val helper = MatrixHelper(client)
+        val helper = MatrixHelper()
         return client to helper
     }
 

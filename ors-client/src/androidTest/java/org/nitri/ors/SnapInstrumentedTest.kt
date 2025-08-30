@@ -17,7 +17,7 @@ class SnapInstrumentedTest {
     private fun create(context: Context): Pair<DefaultOrsClient, SnapHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
         val client = DefaultOrsClient(apiKey, context)
-        val helper = SnapHelper(client)
+        val helper = SnapHelper()
         return client to helper
     }
 
@@ -66,7 +66,7 @@ class SnapInstrumentedTest {
         val profile = "driving-car"
         val radius = 50
 
-        val response = with(repository) {
+        val response = with(helper) {
             client.getSnapJson(
                 locations = locations,
                 radius = radius,

@@ -16,7 +16,7 @@ class RouteRepositoryInstrumentedTest {
     private fun create(context: Context): Pair<DefaultOrsClient, RouteHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
         val client = DefaultOrsClient(apiKey, context)
-        val repo = RouteHelper(client)
+        val repo = RouteHelper()
         return client to repo
     }
 

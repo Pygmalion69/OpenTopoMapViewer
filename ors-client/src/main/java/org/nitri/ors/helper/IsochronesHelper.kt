@@ -4,7 +4,7 @@ import org.nitri.ors.OrsClient
 import org.nitri.ors.model.isochrones.IsochronesRequest
 import org.nitri.ors.model.isochrones.IsochronesResponse
 
-class IsochronesHelper(private val orsClient: OrsClient) {
+class IsochronesHelper() {
 
     suspend fun OrsClient.getIsochrones(
         locations: List<List<Double>>,

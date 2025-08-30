@@ -18,7 +18,11 @@ object OpenRouteServiceRestClient {
         val appVersion = packageInfo.versionName ?: "unknown"
         val userAgent = "${packageInfo.packageName}/$appVersion (ORS-Android-Client)"
 
-        val json = Json { ignoreUnknownKeys = true }
+        val json = Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+            allowSpecialFloatingPointValues = true
+        }
 
         val client = OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().apply {

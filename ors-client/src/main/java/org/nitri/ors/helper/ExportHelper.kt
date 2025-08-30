@@ -1,36 +1,37 @@
 package org.nitri.ors.helper
 
+import org.nitri.ors.OrsClient
 import org.nitri.ors.api.OpenRouteServiceApi
 import org.nitri.ors.model.export.ExportRequest
 import org.nitri.ors.model.export.ExportResponse
 import org.nitri.ors.model.export.TopoJsonExportResponse
 
-class ExportHelper(private val api: OpenRouteServiceApi) {
+class ExportHelper() {
 
-    suspend fun export(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
+    suspend fun OrsClient.export(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
         val request = ExportRequest(
             bbox = bbox,
             id = "export_request",
             geometry = geometry
         )
-        return api.export(profile, request)
+        return export(profile, request)
     }
 
-    suspend fun exportJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
+    suspend fun OrsClient.exportJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): ExportResponse {
         val request = ExportRequest(
             bbox = bbox,
             id = "export_request_json",
             geometry = geometry
         )
-        return api.exportJson(profile, request)
+        return exportJson(profile, request)
     }
 
-    suspend fun exportTopoJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): TopoJsonExportResponse {
+    suspend fun OrsClient.exportTopoJson(bbox: List<List<Double>>, geometry: Boolean? = null, profile: String): TopoJsonExportResponse {
         val request = ExportRequest(
             bbox = bbox,
             id = "export_request_topo_json",
             geometry = geometry
         )
-        return api.exportTopoJson(profile, request)
+        return exportTopoJson(profile, request)
     }
 }

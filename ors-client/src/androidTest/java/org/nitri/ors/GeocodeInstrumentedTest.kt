@@ -16,7 +16,7 @@ class GeocodeInstrumentedTest {
     private fun create(context: Context): Pair<DefaultOrsClient, GeocodeHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
         val client = DefaultOrsClient(apiKey, context)
-        val helper = GeocodeHelper(client)
+        val helper = GeocodeHelper()
         return client to helper
     }
 

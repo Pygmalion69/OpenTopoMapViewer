@@ -17,7 +17,7 @@ class ElevationInstrumentedTest {
     private fun create(context: Context): Pair<DefaultOrsClient, ElevationHelper> {
         val apiKey = context.getString(R.string.ors_api_key)
         val client = DefaultOrsClient(apiKey, context)
-        val helper = ElevationHelper(client)
+        val helper = ElevationHelper()
         return client to helper
     }
 

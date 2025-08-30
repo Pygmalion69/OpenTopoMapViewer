@@ -10,7 +10,7 @@ import org.nitri.ors.model.elevation.ElevationLineResponse
 import org.nitri.ors.model.elevation.ElevationPointRequest
 import org.nitri.ors.model.elevation.ElevationPointResponse
 
-class ElevationHelper(private val orsClient: OrsClient) {
+class ElevationHelper() {
 
     /**
      * Convenience helper to request elevation for a LineString provided as list of [lon, lat] pairs.

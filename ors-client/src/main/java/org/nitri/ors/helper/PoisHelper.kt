@@ -6,7 +6,7 @@ import org.nitri.ors.model.pois.Geometry
 import org.nitri.ors.model.pois.PoisGeoJsonResponse
 import org.nitri.ors.model.pois.PoisRequest
 
-class PoisHelper(private val orsClient: OrsClient) {
+class PoisHelper() {
 
     /**
     * Query POIs within a bounding box.

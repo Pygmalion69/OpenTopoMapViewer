@@ -106,7 +106,10 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
     }
 
     override suspend fun getPois(poisRequest: PoisRequest): PoisGeoJsonResponse {
-        return api.getPois(poisRequest)
+        val raw = api.getPois(poisRequest)
+        fun PoisGeoJsonResponse.sanitized(): PoisGeoJsonResponse =
+            copy(bbox = bbox?.takeIf { it.size == 4 && it.all(Double::isFinite) })
+        return raw.sanitized()
     }
 
     override suspend fun getOptimization(optimizationRequest: OptimizationRequest): OptimizationResponse {
