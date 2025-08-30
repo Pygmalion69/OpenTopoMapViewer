@@ -1,9 +1,10 @@
 package org.nitri.ors.domain.isochrones
 
-// Kotlin DSL for IsochronesRequest
+/** DSL for constructing [IsochronesRequest] objects. */
 inline fun isochronesRequest(build: IsochronesRequestBuilder.() -> Unit): IsochronesRequest =
     IsochronesRequestBuilder().apply(build).build()
 
+/** Builder used by [isochronesRequest]. */
 class IsochronesRequestBuilder {
     private val locations = mutableListOf<List<Double>>()
     private var range: MutableList<Int> = mutableListOf()
@@ -38,7 +39,7 @@ class IsochronesRequestBuilder {
     }
 }
 
-// Java-friendly builder
+/** Java-friendly builder counterpart. */
 class IsochronesRequestBuilderJ {
     private val locations = mutableListOf<List<Double>>()
     private val range: MutableList<Int> = mutableListOf()

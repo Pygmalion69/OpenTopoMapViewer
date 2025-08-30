@@ -25,9 +25,14 @@ import org.nitri.ors.domain.snap.SnapRequest
 import org.nitri.ors.domain.snap.SnapResponse
 import org.nitri.ors.restclient.OpenRouteServiceRestClient
 
+/**
+ * Default implementation of [OrsClient] using the Retrofit based
+ * [OpenRouteServiceRestClient].
+ */
 class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
     private val api = OpenRouteServiceRestClient.create(apiKey, context)
 
+    /** @inheritDoc */
     override suspend fun getRoute(
         profile: Profile,
         routeRequest: RouteRequest
@@ -35,6 +40,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.getRoute(profile.key, routeRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getRouteGpx(
         profile: Profile,
         routeRequest: RouteRequest
@@ -42,6 +48,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.getRouteGpx(profile.key, routeRequest).body()?.string() ?: ""
     }
 
+    /** @inheritDoc */
     override suspend fun getRouteGeoJson(
         profile: Profile,
         routeRequest: RouteRequest
@@ -49,6 +56,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.getRouteGeoJson(profile.key, routeRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun export(
         profile: Profile,
         exportRequest: ExportRequest
@@ -56,6 +64,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.export(profile.key, exportRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun exportJson(
         profile: Profile,
         exportRequest: ExportRequest
@@ -63,6 +72,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.exportJson(profile.key, exportRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun exportTopoJson(
         profile: Profile,
         exportRequest: ExportRequest
@@ -70,6 +80,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.exportTopoJson(profile.key, exportRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getIsochrones(
         profile: Profile,
         isochronesRequest: IsochronesRequest
@@ -77,6 +88,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.getIsochrones(profile.key, isochronesRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getMatrix(
         profile: Profile,
         matrixRequest: MatrixRequest
@@ -84,6 +96,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.getMatrix(profile.key, matrixRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getSnap(
         profile: Profile,
         snapRequest: SnapRequest
@@ -91,6 +104,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.getSnap(profile.key, snapRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getSnapJson(
         profile: Profile,
         snapRequest: SnapRequest
@@ -98,6 +112,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.getSnapJson(profile.key, snapRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getSnapGeoJson(
         profile: Profile,
         snapRequest: SnapRequest
@@ -105,6 +120,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return api.getSnapGeoJson(profile.key, snapRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getPois(poisRequest: PoisRequest): PoisGeoJsonResponse {
         val raw = api.getPois(poisRequest)
         fun PoisGeoJsonResponse.sanitized(): PoisGeoJsonResponse =
@@ -112,22 +128,26 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         return raw.sanitized()
     }
 
+    /** @inheritDoc */
     override suspend fun getOptimization(optimizationRequest: OptimizationRequest): OptimizationResponse {
         return api.getOptimization(optimizationRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getElevationLine(
         elevationLineRequest: ElevationLineRequest
     ): ElevationLineResponse {
         return api.getElevationLine(elevationLineRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun getElevationPoint(
         elevationPointRequest: ElevationPointRequest
     ): ElevationPointResponse {
         return api.getElevationPoint(elevationPointRequest)
     }
 
+    /** @inheritDoc */
     override suspend fun geocodeSearch(
         text: String,
         apiKey: String,
@@ -166,6 +186,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         )
     }
 
+    /** @inheritDoc */
     override suspend fun geocodeAutocomplete(
         apiKey: String,
         text: String,
@@ -202,6 +223,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         )
     }
 
+    /** @inheritDoc */
     override suspend fun geocodeStructured(
         apiKey: String,
         address: String?,
@@ -252,6 +274,7 @@ class DefaultOrsClient(apiKey: String, context: Context) : OrsClient {
         )
     }
 
+    /** @inheritDoc */
     override suspend fun geocodeReverse(
         apiKey: String,
         lon: Double,

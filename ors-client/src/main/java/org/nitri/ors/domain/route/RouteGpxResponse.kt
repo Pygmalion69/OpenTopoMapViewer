@@ -3,6 +3,7 @@ package org.nitri.ors.domain.route
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
+/** GPX response returned by the directions endpoint when requesting GPX. */
 @Serializable
 data class GpxResponse(
     val metadata: GpxMetadata,

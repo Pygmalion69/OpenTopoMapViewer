@@ -3,15 +3,20 @@ package org.nitri.ors.domain.elevation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/** Request for the `elevation/point` endpoint. */
 @Serializable
 data class ElevationPointRequest(
     @SerialName("format_in")
-    val formatIn: String,                    // Input format, must be provided (e.g., "point")
+    /** Input format, e.g. `point`. */
+    val formatIn: String,
 
     @SerialName("format_out")
-    val formatOut: String = "geojson",       // "geojson" or "point"
+    /** Output format: `geojson` or `point`. */
+    val formatOut: String = "geojson",
 
-    val dataset: String? = null,             // Optional dataset, e.g. "srtm"
+    /** Optional elevation dataset name, e.g. `srtm`. */
+    val dataset: String? = null,
 
-    val geometry: List<Double>               // [lon, lat]
+    /** Coordinate as `[lon, lat]`. */
+    val geometry: List<Double>
 )

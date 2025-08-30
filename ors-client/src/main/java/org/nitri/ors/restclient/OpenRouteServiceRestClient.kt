@@ -11,7 +11,17 @@ import org.nitri.ors.api.OpenRouteServiceApi
 import okhttp3.MediaType.Companion.toMediaType
 import java.util.concurrent.TimeUnit
 
+/**
+ * Builds a Retrofit HTTP client configured for the public
+ * [OpenRouteService](https://openrouteservice.org/) API.
+ */
 object OpenRouteServiceRestClient {
+    /**
+     * Creates an [OpenRouteServiceApi] with authorization and sensible defaults.
+     *
+     * @param apiKey ORS API key used in the Authorization header
+     * @param context Android context used for user-agent construction
+     */
     fun create(apiKey: String, context: Context): OpenRouteServiceApi {
 
         val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)

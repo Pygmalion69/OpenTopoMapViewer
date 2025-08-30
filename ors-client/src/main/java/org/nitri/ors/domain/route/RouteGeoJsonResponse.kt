@@ -3,6 +3,7 @@ package org.nitri.ors.domain.route
 import kotlinx.serialization.Serializable
 import org.nitri.ors.domain.meta.Metadata
 
+/** GeoJSON response for the directions endpoint. */
 @Serializable
 data class GeoJsonRouteResponse(
     val type: String,
@@ -11,6 +12,7 @@ data class GeoJsonRouteResponse(
     val metadata: Metadata
 )
 
+/** A single GeoJSON feature within the route response. */
 @Serializable
 data class Feature(
     val type: String,
@@ -18,6 +20,7 @@ data class Feature(
     val properties: Map<String, kotlinx.serialization.json.JsonElement> = emptyMap()
 )
 
+/** Geometry of a route feature. */
 @Serializable
 data class Geometry(
     val type: String,
