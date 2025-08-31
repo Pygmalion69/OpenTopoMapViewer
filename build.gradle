@@ -19,6 +19,13 @@ allprojects {
         maven {
             url 'https://www.jitpack.io'
         }
+        maven {
+            url = uri("https://maven.pkg.github.com/Pygmalion69/ors-android-client")
+            credentials {
+                username = System.getenv("GPR_USER") ?: findProperty("gpr.user")
+                password = System.getenv("GPR_TOKEN") ?: findProperty("gpr.token")
+            }
+        }
     }
     tasks.withType(JavaCompile).tap {
         configureEach {

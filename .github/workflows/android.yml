@@ -1,5 +1,9 @@
 name: Android CI
 
+env:
+  GPR_USER: ${{ github.actor }}
+  GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 on:
   push:
     branches: [ "master" ]
@@ -27,4 +31,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle (show deprecations)
+        env:
+          GPR_USER: ${{ github.actor }}
+          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew build --warning-mode all

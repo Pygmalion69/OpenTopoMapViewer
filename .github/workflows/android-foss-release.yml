@@ -37,6 +37,9 @@ jobs:
 
       # Build signed release (your build.gradle wires signing from env vars)
       - name: Build FOSS release (APK + AAB)
+        env:
+          GPR_USER: ${{ github.actor }}
+          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew clean \
             :app:assembleFossRelease \
