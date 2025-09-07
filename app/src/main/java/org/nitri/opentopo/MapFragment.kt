@@ -396,8 +396,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
             return
         }
-        val locale =  Resources.getSystem().configuration.locales.get(0)
-        val language = locale.toLanguageTag().lowercase()
+        val locale = Resources.getSystem().configuration.locales.get(0)
+        val language = locale.language.lowercase()
         listener?.getOpenRouteServiceClient()?.let { client ->
             val profile = sharedPreferences.getString(PREF_ORS_PROFILE, "driving-car")
             profile?.let {
