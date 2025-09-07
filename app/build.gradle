@@ -123,6 +123,7 @@ dependencies {
     implementation 'net.danlew:android.joda:2.13.1'
     implementation 'com.github.k3b:k3b-geoHelper:1.1.5'
     implementation 'com.github.ticofab:android-gpx-parser:2.3.1'
+    implementation 'com.github.Pygmalion69:ors-android-client:0.1.2'
     implementation('com.squareup.picasso:picasso:2.71828') {
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
@@ -134,7 +135,6 @@ dependencies {
     }
     playImplementation 'com.google.android.gms:play-services-ads:24.5.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:3.2.0'
-    implementation 'com.github.Pygmalion69:ors-android-client:0.1.2'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
