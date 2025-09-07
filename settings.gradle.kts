@@ -6,4 +6,4 @@ pluginManagement {
     }
 }
 
-include(":app", ":ors-client")
+include(":app")

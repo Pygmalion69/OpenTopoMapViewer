@@ -26,6 +26,7 @@ allprojects {
                 password = System.getenv("GPR_TOKEN") ?: findProperty("gpr.token")
             }
         }
+        maven { url = uri("https://jitpack.io") }
     }
     tasks.withType(JavaCompile).tap {
         configureEach {

@@ -47,7 +47,6 @@ import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.util.Utils
 import org.osmdroid.util.GeoPoint
 import androidx.core.net.toUri
-import org.nitri.ors.DefaultOrsClient
 import org.nitri.ors.Ors
 import org.nitri.ors.OrsClient
 

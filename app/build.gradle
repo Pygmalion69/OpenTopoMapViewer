@@ -99,15 +99,14 @@ android {
 }
 
 dependencies {
-    implementation project(':ors-client')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
-    implementation 'androidx.core:core-ktx:1.16.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2"
+    implementation 'androidx.core:core-ktx:1.17.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.3"
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.13.0'
     implementation 'org.osmdroid:osmdroid-android:6.1.20'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
@@ -135,8 +134,9 @@ dependencies {
     }
     playImplementation 'com.google.android.gms:play-services-ads:24.5.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:3.2.0'
+    implementation 'com.github.Pygmalion69:ors-android-client:0.1.2'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.7.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 }
 
