@@ -16,8 +16,10 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.DialogFragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
+import android.content.SharedPreferences
 import org.osmdroid.config.Configuration
 import java.io.File
+import androidx.core.content.edit
 
 
 class CacheSettingsFragment : DialogFragment() {
@@ -30,7 +32,8 @@ class CacheSettingsFragment : DialogFragment() {
         val inflater = requireActivity().layoutInflater
         @SuppressLint("InflateParams") val view =
             inflater.inflate(R.layout.fragment_cache_settings, null)
-        val prefs = PreferenceManager.getDefaultSharedPreferences(requireActivity().applicationContext)
+        val defaultPrefs = PreferenceManager.getDefaultSharedPreferences(requireActivity().applicationContext)
+        val cachePrefs: SharedPreferences = requireActivity().getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
         val tvExternalStorageRoot = view.findViewById<TextView>(R.id.tvExternalStorageRoot)
         val swExternalStorage = view.findViewById<SwitchCompat>(R.id.swExternalStorage)
         etTileCache = view.findViewById(R.id.etTileCache)
@@ -38,10 +41,12 @@ class CacheSettingsFragment : DialogFragment() {
         val basePath = Configuration.getInstance().osmdroidBasePath
         val storageRoot = basePath?.absolutePath ?: getString(R.string.unknown_symbol)
         tvExternalStorageRoot.text = getString(R.string.storage_root, storageRoot)
-        val currentExternalStorage = prefs.getBoolean(PREF_EXTERNAL_STORAGE, false)
+        val currentExternalStorage = cachePrefs.getBoolean(PREF_EXTERNAL_STORAGE,
+            defaultPrefs.getBoolean(PREF_EXTERNAL_STORAGE, false)
+        )
         swExternalStorage.isChecked = currentExternalStorage
-        val currentTileCache = prefs.getString(PREF_TILE_CACHE, DEFAULT_TILE_CACHE)
-        val currentCacheSize = prefs.getInt(PREF_CACHE_SIZE, DEFAULT_CACHE_SIZE)
+        val currentTileCache = defaultPrefs.getString(PREF_TILE_CACHE, DEFAULT_TILE_CACHE)
+        val currentCacheSize = defaultPrefs.getInt(PREF_CACHE_SIZE, DEFAULT_CACHE_SIZE)
         etTileCache.setText(currentTileCache)
         etCacheSize.setText(currentCacheSize.toString())
         builder.setView(view)
@@ -56,13 +61,12 @@ class CacheSettingsFragment : DialogFragment() {
                 }
 
                 if (newCacheSize > 0) {
-                    val editor = prefs.edit()
-                    editor.apply {
-                        putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage)
+                    defaultPrefs.edit().apply {
                         putString(PREF_TILE_CACHE, newTileCache)
                         putInt(PREF_CACHE_SIZE, newCacheSize)
                         apply()
                     }
+                    cachePrefs.edit { putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage) }
                     val cacheDir = File("$storageRoot/$newTileCache")
                     if (cacheDir.mkdirs()) {
                         Log.i(TAG, "Tile cache created: $newTileCache")
@@ -71,7 +75,7 @@ class CacheSettingsFragment : DialogFragment() {
                     configuration.osmdroidTileCache = cacheDir
                     configuration.tileFileSystemCacheMaxBytes =
                         newCacheSize.toLong() * 1024 * 1024
-                    configuration.save(requireActivity().applicationContext, prefs)
+                    configuration.save(requireActivity().applicationContext, defaultPrefs)
                     val intent = Intent(ACTION_CACHE_CHANGED);
                     val localBroadcastManager = LocalBroadcastManager.getInstance(
                         requireActivity()
@@ -93,7 +97,6 @@ class CacheSettingsFragment : DialogFragment() {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         return dialog
     }
-
 
     override fun onResume() {
         super.onResume()

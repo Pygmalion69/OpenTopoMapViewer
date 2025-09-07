@@ -160,7 +160,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val configuration = Configuration.getInstance()
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
-        val basePath = Utils.getOsmdroidBasePath(context, sharedPreferences.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false))
+        val externalPrefs = requireActivity().getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
+                val externalStorage = if (externalPrefs.contains(CacheSettingsFragment.PREF_EXTERNAL_STORAGE)) {
+                    externalPrefs.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false)
+                } else {
+                    sharedPreferences.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false)
+                }
+                val basePath = Utils.getOsmdroidBasePath(context, externalStorage)
         configuration.osmdroidBasePath = basePath
         val tileCache = File(configuration.osmdroidBasePath.absolutePath,
             sharedPreferences.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
