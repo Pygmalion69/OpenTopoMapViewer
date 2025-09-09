@@ -408,7 +408,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             val profile = sharedPreferences.getString(PREF_ORS_PROFILE, "driving-car")
             profile?.let {
                 val directions = Directions(client, it)
-                directions.getRouteGpx(coordinates, language, object : Directions.RouteGpResult {
+                directions.getRouteGpx(coordinates, language, object : Directions.RouteGpxResult {
                     override fun onSuccess(gpx: String) {
                         Log.d(TAG, "GPX: $gpx")
                         if (gpxDisplayState == GpxDisplayState.LOADED_FROM_FILE) {
