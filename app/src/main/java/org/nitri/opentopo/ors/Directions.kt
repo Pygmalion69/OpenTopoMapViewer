@@ -11,7 +11,7 @@ class Directions(val client: OrsClient, private val profile: String) {
 
     val routeHelper = RouteHelper()
 
-    fun getRouteGpx(coordinates: List<List<Double>>, language: String, result: RouteGpResult) {
+    fun getRouteGpx(coordinates: List<List<Double>>, language: String, result: RouteGpxResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val gpxXml = with(routeHelper) { client.getRouteGpx(coordinates, language, profile) }
@@ -30,7 +30,7 @@ class Directions(val client: OrsClient, private val profile: String) {
         }
     }
 
-    interface RouteGpResult {
+    interface RouteGpxResult {
         fun onSuccess(gpx: String)
         fun onError(message: String)
     }
