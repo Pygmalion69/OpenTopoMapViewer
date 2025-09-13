@@ -152,29 +152,37 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         totalDistance = 0.0
         hasElevationData = false
         var prevTrackPoint: TrackPoint? = null
+
+        minElevation = Double.MAX_VALUE
+        maxElevation = Double.MIN_VALUE
+
         track.trackSegments?.forEach { segment ->
-            segment.trackPoints?.let { points ->
-                maxElevation = points.first().elevation ?: 0.0
-                minElevation = maxElevation
-                points.forEach { trackPoint ->
-                    prevTrackPoint?.let { prevPoint ->
-                        totalDistance += DistanceCalculator.distance(prevPoint, trackPoint)
-                    }
-                    val builder = DistancePoint.Builder()
-                    builder.setDistance(totalDistance)
-                    trackPoint.elevation?.also { elevation ->
-                        if (elevation < minElevation) minElevation = elevation
-                        if (elevation > maxElevation) maxElevation = elevation
-                        builder.setElevation(elevation)
-                        hasElevationData = true
-                        trackDistancePoints.add(builder.build())
-                    }
-                    prevTrackPoint = trackPoint
+            segment.trackPoints?.forEach { trackPoint ->
+                prevTrackPoint?.let { prevPoint ->
+                    totalDistance += DistanceCalculator.distance(prevPoint, trackPoint)
                 }
+
+                val builder = DistancePoint.Builder()
+                    .setDistance(totalDistance)
+
+                trackPoint.elevation?.also { elevation ->
+                    if (elevation < minElevation) minElevation = elevation
+                    if (elevation > maxElevation) maxElevation = elevation
+                    builder.setElevation(elevation)
+                    hasElevationData = true
+                }
+
+                trackDistancePoints.add(builder.build())
+                prevTrackPoint = trackPoint
             }
         }
 
+        if (!hasElevationData) {
+            minElevation = 0.0
+            maxElevation = 0.0
+        }
     }
+
 
     private fun buildWayPointList() {
         val defaultType = getString(R.string.poi)
