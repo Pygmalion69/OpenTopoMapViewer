@@ -28,6 +28,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IAxisValueFormatter
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import io.ticofab.androidgpxparser.parser.domain.Track
 import io.ticofab.androidgpxparser.parser.domain.TrackPoint
@@ -157,6 +158,10 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         maxElevation = Double.MIN_VALUE
 
         track.trackSegments?.forEach { segment ->
+            if (trackDistancePoints.isNotEmpty()) {
+                trackDistancePoints.add(DistancePoint.Builder().build())
+            }
+            prevTrackPoint = null
             segment.trackPoints?.forEach { trackPoint ->
                 prevTrackPoint?.let { prevPoint ->
                     totalDistance += DistanceCalculator.distance(prevPoint, trackPoint)
@@ -256,25 +261,35 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     }
 
     private fun setChartData() {
-        val elevationValues = ArrayList<Entry>()
+        val elevationDataSets = ArrayList<ILineDataSet>()
+        var elevationValues = ArrayList<Entry>()
         for (point in trackDistancePoints) {
-            if (point.distance != null && point.elevation != null) elevationValues.add(
-                Entry(
-                    point.distance.toFloat(),
-                    point.elevation.toFloat()
-                )
-            )
+            val distance = point.distance
+            val elevation = point.elevation
+            if (distance != null && elevation != null) {
+                elevationValues.add(Entry(distance.toFloat(), elevation.toFloat()))
+            } else if (elevationValues.isNotEmpty()) {
+                elevationDataSets.add(createElevationDataSet(elevationValues))
+                elevationValues = ArrayList()
+            }
         }
-        val elevationDataSet = LineDataSet(elevationValues, getString(R.string.elevation))
+        if (elevationValues.isNotEmpty()) {
+            elevationDataSets.add(createElevationDataSet(elevationValues))
+        }
+        val elevationData = LineData(elevationDataSets)
+        elevationChart.data = elevationData
+        elevationChart.invalidate()
+    }
+
+    private fun createElevationDataSet(entries: List<Entry>): LineDataSet {
+        val elevationDataSet = LineDataSet(entries, getString(R.string.elevation))
         elevationDataSet.setDrawValues(false)
         elevationDataSet.lineWidth = 2f
         elevationDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
         elevationDataSet.color = ResourcesCompat.getColor(resources, R.color.colorPrimary, null)
         elevationDataSet.setDrawCircles(false)
         elevationDataSet.axisDependency = YAxis.AxisDependency.LEFT
-        val elevationData = LineData(elevationDataSet)
-        elevationChart.data = elevationData
-        elevationChart.invalidate()
+        return elevationDataSet
     }
 
     override fun onItemClick(index: Int) {
