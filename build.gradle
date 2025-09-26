@@ -16,9 +16,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven {
-            url 'https://www.jitpack.io'
-        }
+        maven { url = uri("https://jitpack.io") }
         maven {
             url = uri("https://maven.pkg.github.com/Pygmalion69/ors-android-client")
             credentials {
