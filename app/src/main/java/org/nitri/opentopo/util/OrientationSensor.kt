@@ -11,7 +11,7 @@ import org.osmdroid.views.MapView
 import kotlin.math.abs
 
 
-class OrientationSensor(private val context: Context, private val mapView: MapView) : SensorEventListener {
+class OrientationSensor(context: Context, private val mapView: MapView) : SensorEventListener {
 
     private var sensorManager: SensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
     private var gravity: FloatArray? = null
