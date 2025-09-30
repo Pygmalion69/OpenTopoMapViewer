@@ -14,6 +14,7 @@ import android.location.LocationManager
 import android.location.OnNmeaMessageListener
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.util.Log
@@ -130,10 +131,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     fun setKeepScreenOn(value: Boolean) {
         Log.d(TAG, "keepScreenOn: $value")
         mapView.keepScreenOn = value
-        if (value) {
-            requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        } else {
-            requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        activity?.window?.let { window ->
+            if (value) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
         }
     }
 
@@ -156,17 +159,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        val context = requireActivity().applicationContext
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val hostActivity = activity ?: return
+        val appContext = hostActivity.applicationContext
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext)
         val configuration = Configuration.getInstance()
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
-        val externalPrefs = requireActivity().getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
-                val externalStorage = if (externalPrefs.contains(CacheSettingsFragment.PREF_EXTERNAL_STORAGE)) {
-                    externalPrefs.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false)
-                } else {
-                    sharedPreferences.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false)
-                }
-                val basePath = Utils.getOsmdroidBasePath(context, externalStorage)
+        val externalPrefs = hostActivity.getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
+        val externalStorage = if (externalPrefs.contains(CacheSettingsFragment.PREF_EXTERNAL_STORAGE)) {
+            externalPrefs.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false)
+        } else {
+            sharedPreferences.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false)
+        }
+        val basePath = Utils.getOsmdroidBasePath(appContext, externalStorage)
         configuration.osmdroidBasePath = basePath
         val tileCache = File(configuration.osmdroidBasePath.absolutePath,
             sharedPreferences.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
@@ -179,18 +183,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             putString("osmdroid.basePath", basePath.absolutePath)
             putString("osmdroid.cachePath", tileCache.absolutePath)
         }
-        configuration.load(context, sharedPreferences)
+        configuration.load(appContext, sharedPreferences)
         baseMap = sharedPreferences.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
         overlay = sharedPreferences.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
         mapRotation = sharedPreferences.getBoolean(SettingsActivity.PREF_ROTATE, false)
         locationManager =
-            requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        locationViewModel = ViewModelProvider(requireActivity())[LocationViewModel::class.java]
+            hostActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationViewModel = ViewModelProvider(hostActivity)[LocationViewModel::class.java]
         val nmeaListener = OnNmeaMessageListener { s: String?, _: Long ->
             locationViewModel?.currentNmea?.value = s
 
         }
-        if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (hostActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager?.addNmeaListener(nmeaListener)
         }
     }
@@ -202,7 +206,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val view = inflater.inflate(R.layout.fragment_map, container, false)
         mapView = view.findViewById(R.id.mapview)
         val dm = this.resources.displayMetrics
-        val activity = activity ?: return null
+        val hostActivity = activity ?: return null
 
         mapView.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
@@ -226,22 +230,22 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }))
 
         compassOverlay = ClickableCompassOverlay(
-            activity, InternalCompassOrientationProvider(activity),
+            hostActivity, InternalCompassOrientationProvider(hostActivity),
             mapView, this
         )
         locationOverlay = MyLocationNewOverlay(
-            GpsMyLocationProvider(activity),
+            GpsMyLocationProvider(hostActivity),
             mapView
         )
         val bmMapLocation =
-            Utils.getBitmapFromDrawable(requireActivity(), R.drawable.ic_position, 204)
+            Utils.getBitmapFromDrawable(hostActivity, R.drawable.ic_position, 204)
         locationOverlay?.setPersonIcon(bmMapLocation)
         locationOverlay?.setPersonHotspot(
             bmMapLocation.width / 2f,
             bmMapLocation.height / 2f
         )
         val bmMapBearing =
-            Utils.getBitmapFromDrawable(requireActivity(), R.drawable.ic_direction, 204)
+            Utils.getBitmapFromDrawable(hostActivity, R.drawable.ic_direction, 204)
         locationOverlay?.setDirectionArrow(bmMapLocation, bmMapBearing)
         scaleBarOverlay = ScaleBarOverlay(mapView)
         scaleBarOverlay?.setCentred(true)
@@ -266,14 +270,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         locationOverlay?.isOptionsMenuEnabled = true
         compassOverlay?.enableCompass()
         mapView.visibility = View.VISIBLE
-        overlayHelper = OverlayHelper(requireContext(), mapView)
+        overlayHelper = OverlayHelper(hostActivity, mapView)
         setTilesOverlay()
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mapHandler = Handler(requireActivity().mainLooper)
+        val looper = activity?.mainLooper ?: Looper.getMainLooper()
+        mapHandler = Handler(looper)
         listener?.setGpx()
 
         // Check if there's already a GPX track loaded and update the state accordingly
@@ -293,9 +298,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         }
 
-        if (requireActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-            requireActivity().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        ) {
+        val hostActivity = activity
+        val hasFineLocationPermission =
+            hostActivity?.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarseLocationPermission =
+            hostActivity?.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (hasFineLocationPermission || hasCoarseLocationPermission) {
             locationViewModel?.let {
                 it.currentLocation.value = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
             }
@@ -425,11 +433,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
                     override fun onError(message: String) {
                         Log.e(TAG, "Error fetching GPX: $message")
-                        Toast.makeText(
-                            requireContext(),
-                            "Error fetching GPX: $message",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        context?.let { ctx ->
+                            Toast.makeText(
+                                ctx,
+                                "Error fetching GPX: $message",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
                 )
@@ -442,7 +452,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             val location = locationOverlay?.myLocation
             location?.let {
                 try {
-                    requireActivity().runOnUiThread {
+                    activity?.runOnUiThread {
                         mapView.controller.animateTo(it)
                     }
                 } catch (e: IllegalStateException) {
@@ -635,7 +645,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun showGpxDialog(onConfirmed: (() -> Unit)? = null) {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(requireActivity(), R.style.AlertDialogTheme)
+        val hostActivity = activity ?: return
+        val builder: AlertDialog.Builder = AlertDialog.Builder(hostActivity, R.style.AlertDialogTheme)
         builder.setTitle(getString(R.string.gpx))
             .setMessage(getString(R.string.discard_current_gpx))
             .setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
@@ -777,9 +788,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
             R.id.action_location_details -> {
-                fm = requireActivity().supportFragmentManager
-                val locationDetailFragment = LocationDetailFragment()
-                locationDetailFragment.show(fm, "location_detail")
+                activity?.supportFragmentManager?.let { fragmentManager ->
+                    val locationDetailFragment = LocationDetailFragment()
+                    locationDetailFragment.show(fragmentManager, "location_detail")
+                }
                 return true
             }
             R.id.action_nearby -> {
@@ -903,7 +915,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         //if (BuildConfig.DEBUG)
         //   Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}, mapRotation: $mapRotation")
 
-        requireActivity().runOnUiThread {
+        activity?.runOnUiThread {
             locationViewModel?.currentLocation?.postValue(location)
             if (mapRotation) {
                 if (location.hasBearing()) {
@@ -911,8 +923,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     MapOrientation.setTargetMapOrientation(mapView, location.bearing)
                 } else {
                     // Use device orientation
-                    orientationSensor =
-                        orientationSensor ?: OrientationSensor(requireContext(), mapView)
+                    context?.let { ctx ->
+                        orientationSensor =
+                            orientationSensor ?: OrientationSensor(ctx, mapView)
+                    }
                 }
             } else {
                 stopOrientationSensor()
@@ -979,19 +993,26 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mapRotation = !mapRotation
         //Log.d(TAG, "map rotation set to $mapRotation")
         sharedPreferences.edit { putBoolean(SettingsActivity.PREF_ROTATE, mapRotation) }
+        val fragmentContext = context
         if (mapRotation) {
             val lastLocation = locationViewModel?.currentLocation?.value
             if (lastLocation?.hasBearing() == true) {
                 stopOrientationSensor()
                 MapOrientation.setTargetMapOrientation(mapView, lastLocation.bearing)
             } else {
-                orientationSensor = orientationSensor ?: OrientationSensor(requireContext(), mapView)
+                fragmentContext?.let { ctx ->
+                    orientationSensor = orientationSensor ?: OrientationSensor(ctx, mapView)
+                }
             }
-            Toast.makeText(requireContext(), R.string.rotation_on, Toast.LENGTH_SHORT).show()
+            fragmentContext?.let { ctx ->
+                Toast.makeText(ctx, R.string.rotation_on, Toast.LENGTH_SHORT).show()
+            }
         } else {
             stopOrientationSensor()
             MapOrientation.reset(mapView)
-            Toast.makeText(requireContext(), R.string.rotation_off, Toast.LENGTH_SHORT).show()
+            fragmentContext?.let { ctx ->
+                Toast.makeText(ctx, R.string.rotation_off, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
