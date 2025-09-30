@@ -1021,7 +1021,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         fun getGpx(): Gpx?
 
         /**
-         * Clear GOX so it won't ne restored on config change
+         * Clear GPX so it won't be restored on config change
          */
         fun clearGpx()
 

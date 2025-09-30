@@ -54,10 +54,10 @@ class CacheSettingsFragment : DialogFragment() {
                 val newExternalStorage = swExternalStorage.isChecked
                 val newTileCache = etTileCache.text.toString()
                 val newCacheSizeText = etCacheSize.text.toString()
-                val newCacheSize = try {
-                    newCacheSizeText.toInt()
-                } catch (e: NumberFormatException) {
-                    Log.e(TAG, "Invalid cache size: $newCacheSizeText", e)
+                val newCacheSize = newCacheSizeText.toIntOrNull() ?: -1
+
+                if (newCacheSize == -1) {
+                    Log.e(TAG, "Invalid cache size: $newCacheSizeText")
                 }
 
                 if (newCacheSize > 0) {
