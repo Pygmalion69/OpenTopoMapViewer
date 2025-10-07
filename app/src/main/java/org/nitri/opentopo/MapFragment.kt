@@ -36,6 +36,7 @@ import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
@@ -916,6 +917,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         //   Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}, mapRotation: $mapRotation")
 
         activity?.runOnUiThread {
+
+            if (!isAdded || view == null) return@runOnUiThread
+            if (!viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                return@runOnUiThread
+            }
+
             locationViewModel?.currentLocation?.postValue(location)
             if (mapRotation) {
                 if (location.hasBearing()) {
