@@ -115,8 +115,9 @@ class SettingsActivity : AppCompatActivity() {
 
         private fun showCacheSettings() {
             val cacheSettingsFragment = CacheSettingsFragment()
-            val fm = requireActivity().supportFragmentManager
-            cacheSettingsFragment.show(fm, "cache_settings")
+            activity?.supportFragmentManager?.let { fm ->
+                cacheSettingsFragment.show(fm, "cache_settings")
+            }
         }
 
         private fun showOrsApiKeyDialog() {
@@ -206,9 +207,9 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         private fun recreate() {
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(id, SettingsFragment())
-                .commit()
+            activity?.supportFragmentManager?.beginTransaction()
+                ?.replace(id, SettingsFragment())
+                ?.commit()
         }
     }
 

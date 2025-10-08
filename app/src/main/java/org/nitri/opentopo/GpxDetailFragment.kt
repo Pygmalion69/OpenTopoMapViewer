@@ -294,10 +294,10 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
 
     override fun onItemClick(index: Int) {
         mSelectedIndex = index
-        if (activity != null && !requireActivity().isFinishing) {
+        activity?.takeIf { !it.isFinishing }?.let { fragmentActivity ->
             val wayPointDetailDialogFragment = WayPointDetailDialogFragment()
             wayPointDetailDialogFragment.show(
-                requireActivity().supportFragmentManager,
+                fragmentActivity.supportFragmentManager,
                 BaseMainActivity.WAY_POINT_DETAIL_FRAGMENT_TAG
             )
         }
