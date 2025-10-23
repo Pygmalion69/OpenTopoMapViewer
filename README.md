@@ -33,3 +33,12 @@ Basic routing with the [ORS Android Client](https://github.com/Pygmalion69/ors-a
     height="80"/></a>
 
 (FOSS, no ads.)
+
+## UI Verification
+
+To confirm that multi-track GPX files report the combined distance correctly:
+
+1. Copy [`test-data/multi_track_sample.gpx`](test-data/multi_track_sample.gpx) to your device.
+2. Open OpenTopoMapViewer and import the sample GPX.
+3. Open the GPX details screen.
+4. Verify that the total distance displays approximately **2.22 km**, which reflects the sum of both tracks in the sample file.
