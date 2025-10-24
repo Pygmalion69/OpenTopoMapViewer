@@ -56,11 +56,11 @@ object Utils {
 
 
     /**
-     * Get geo points bounds
+     * Get geo points bounds.
      *
-     * @param points List<GeoPoint>
-     * @return BoundingBox
-    </GeoPoint> */
+     * @param points list of geo points used to calculate the bounds.
+     * @return bounding box containing all provided geo points.
+     */
     private fun area(points: List<GeoPoint?>): BoundingBox {
         var north = Double.MIN_VALUE
         var south = Double.MAX_VALUE
