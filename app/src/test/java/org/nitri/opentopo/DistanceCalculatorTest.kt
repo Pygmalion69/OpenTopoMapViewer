@@ -46,25 +46,43 @@ class DistanceCalculatorTest {
     }
 
     private fun createPoint(latitude: Double, longitude: Double): Point {
-        val constructor = Point::class.java.declaredConstructors.firstOrNull { ctor ->
-            val parameterTypes = ctor.parameterTypes
-            parameterTypes.size >= 2 &&
-                    parameterTypes[0].isLatitudeLongitudeParameter() &&
-                    parameterTypes[1].isLatitudeLongitudeParameter()
-        } ?: error("Unable to locate Point constructor with latitude/longitude parameters")
+        val constructors = Point::class.java.declaredConstructors
 
-        constructor.isAccessible = true
+        for (constructor in constructors) {
+            constructor.isAccessible = true
+            val parameterTypes = constructor.parameterTypes
 
-        val parameterTypes = constructor.parameterTypes
-        val arguments = Array<Any?>(parameterTypes.size) { index ->
-            when (index) {
-                0 -> latitude
-                1 -> longitude
-                else -> parameterTypes[index].defaultValue()
+            var latAssigned = false
+            var lonAssigned = false
+
+            val arguments = Array<Any?>(parameterTypes.size) { index ->
+                val parameterType = parameterTypes[index]
+                when {
+                    !latAssigned && parameterType.isLatitudeLongitudeParameter() -> {
+                        latAssigned = true
+                        latitude
+                    }
+                    !lonAssigned && parameterType.isLatitudeLongitudeParameter() -> {
+                        lonAssigned = true
+                        longitude
+                    }
+                    else -> parameterType.defaultValue()
+                }
+            }
+
+            if (latAssigned && lonAssigned) {
+                try {
+                    val instance = constructor.newInstance(*arguments)
+                    if (instance is Point && instance.latitude == latitude && instance.longitude == longitude) {
+                        return instance
+                    }
+                } catch (ignored: ReflectiveOperationException) {
+                    // Try the next constructor
+                }
             }
         }
 
-        return constructor.newInstance(*arguments) as Point
+        error("Unable to instantiate Point via reflection. Constructors: ${constructors.joinToString { it.toGenericString() }}")
     }
 
     private fun Class<*>.isLatitudeLongitudeParameter(): Boolean {
@@ -80,6 +98,15 @@ class DistanceCalculatorTest {
         java.lang.Short.TYPE -> 0.toShort()
         java.lang.Byte.TYPE -> 0.toByte()
         java.lang.Character.TYPE -> 0.toChar()
+        java.lang.Double::class.java -> null
+        java.lang.Float::class.java -> null
+        java.lang.Long::class.java -> null
+        java.lang.Integer::class.java -> null
+        java.lang.Boolean::class.java -> null
+        java.lang.Short::class.java -> null
+        java.lang.Byte::class.java -> null
+        java.lang.Character::class.java -> null
+        kotlin.jvm.internal.DefaultConstructorMarker::class.java -> null
         else -> null
     }
 }
