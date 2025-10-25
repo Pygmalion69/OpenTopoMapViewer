@@ -28,12 +28,14 @@ class CacheSettingsFragment : DialogFragment() {
     private lateinit var etCacheSize: EditText
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = AlertDialog.Builder(requireActivity())
-        val inflater = requireActivity().layoutInflater
+        val fragmentActivity = activity ?: return super.onCreateDialog(savedInstanceState)
+        val fragmentContext = context ?: fragmentActivity
+        val builder = AlertDialog.Builder(fragmentActivity)
+        val inflater = fragmentActivity.layoutInflater
         @SuppressLint("InflateParams") val view =
             inflater.inflate(R.layout.fragment_cache_settings, null)
-        val defaultPrefs = PreferenceManager.getDefaultSharedPreferences(requireActivity().applicationContext)
-        val cachePrefs: SharedPreferences = requireActivity().getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
+        val defaultPrefs = PreferenceManager.getDefaultSharedPreferences(fragmentActivity.applicationContext)
+        val cachePrefs: SharedPreferences = fragmentActivity.getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
         val tvExternalStorageRoot = view.findViewById<TextView>(R.id.tvExternalStorageRoot)
         val swExternalStorage = view.findViewById<SwitchCompat>(R.id.swExternalStorage)
         etTileCache = view.findViewById(R.id.etTileCache)
@@ -75,18 +77,18 @@ class CacheSettingsFragment : DialogFragment() {
                     configuration.osmdroidTileCache = cacheDir
                     configuration.tileFileSystemCacheMaxBytes =
                         newCacheSize.toLong() * 1024 * 1024
-                    configuration.save(requireActivity().applicationContext, defaultPrefs)
+                    configuration.save(fragmentActivity.applicationContext, defaultPrefs)
                     val intent = Intent(ACTION_CACHE_CHANGED);
                     val localBroadcastManager = LocalBroadcastManager.getInstance(
-                        requireActivity()
+                        fragmentActivity
                     )
                     if (currentExternalStorage != newExternalStorage || currentTileCache != newTileCache || currentCacheSize != newCacheSize) {
                         localBroadcastManager.sendBroadcast(intent)
-                        requireActivity().finish()
+                        fragmentActivity.finish()
                     }
                     dismiss()
                 } else {
-                    Toast.makeText(requireContext(), R.string.invalid_cache_size, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(fragmentContext, R.string.invalid_cache_size, Toast.LENGTH_SHORT).show()
                 }
 
             }

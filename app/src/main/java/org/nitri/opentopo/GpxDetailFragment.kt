@@ -94,8 +94,13 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mGpxViewModel = ViewModelProvider(requireActivity())[GpxViewModel::class.java]
+        resetTrackDistanceData()
         mGpxViewModel.gpx?.tracks?.forEach {
             buildTrackDistanceLine(it)
+        }
+        if (!hasElevationData) {
+            minElevation = 0.0
+            maxElevation = 0.0
         }
         /* if (getActivity() != null) {
             regularTypeface = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
@@ -149,13 +154,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     }
 
     private fun buildTrackDistanceLine(track: Track) {
-        trackDistancePoints = ArrayList()
-        totalDistance = 0.0
-        hasElevationData = false
         var prevTrackPoint: TrackPoint? = null
-
-        minElevation = Double.MAX_VALUE
-        maxElevation = Double.MIN_VALUE
 
         track.trackSegments?.forEach { segment ->
             if (trackDistancePoints.isNotEmpty()) {
@@ -182,10 +181,14 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
             }
         }
 
-        if (!hasElevationData) {
-            minElevation = 0.0
-            maxElevation = 0.0
-        }
+    }
+
+    private fun resetTrackDistanceData() {
+        trackDistancePoints = ArrayList()
+        totalDistance = 0.0
+        hasElevationData = false
+        minElevation = Double.MAX_VALUE
+        maxElevation = Double.MIN_VALUE
     }
 
 
@@ -294,10 +297,10 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
 
     override fun onItemClick(index: Int) {
         mSelectedIndex = index
-        if (activity != null && !requireActivity().isFinishing) {
+        activity?.takeIf { !it.isFinishing }?.let { fragmentActivity ->
             val wayPointDetailDialogFragment = WayPointDetailDialogFragment()
             wayPointDetailDialogFragment.show(
-                requireActivity().supportFragmentManager,
+                fragmentActivity.supportFragmentManager,
                 BaseMainActivity.WAY_POINT_DETAIL_FRAGMENT_TAG
             )
         }
