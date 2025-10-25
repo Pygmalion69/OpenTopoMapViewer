@@ -98,6 +98,9 @@ class DistanceCalculatorTest {
         java.lang.Short.TYPE -> 0.toShort()
         java.lang.Byte.TYPE -> 0.toByte()
         java.lang.Character.TYPE -> 0.toChar()
+        java.lang.String::class.java -> ""
+        java.util.Date::class.java -> java.util.Date(0)
+        java.math.BigDecimal::class.java -> java.math.BigDecimal.ZERO
         java.lang.Double::class.java -> null
         java.lang.Float::class.java -> null
         java.lang.Long::class.java -> null
@@ -106,7 +109,9 @@ class DistanceCalculatorTest {
         java.lang.Short::class.java -> null
         java.lang.Byte::class.java -> null
         java.lang.Character::class.java -> null
-        kotlin.jvm.internal.DefaultConstructorMarker::class.java -> null
-        else -> null
+        else -> when (this.name) {
+            "kotlin.jvm.internal.DefaultConstructorMarker" -> null
+            else -> null
+        }
     }
 }
