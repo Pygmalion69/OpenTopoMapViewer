@@ -305,8 +305,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val hasCoarseLocationPermission =
             hostActivity?.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
         if (hasFineLocationPermission || hasCoarseLocationPermission) {
-            locationViewModel?.let {
-                it.currentLocation.value = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            locationViewModel?.let { viewModel ->
+                val lastKnownLocation =
+                    locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                        ?: locationManager?.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                        ?: locationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+                viewModel.currentLocation.value = lastKnownLocation
             }
         }
         savedInstanceState?.let {
@@ -798,7 +802,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             R.id.action_nearby -> {
                 listener?.let { listener ->
                     listener.clearSelectedNearbyPlace()
-                    val nearbyCenter = mapView.mapCenter as GeoPoint
+                    val nearbyCenter =
+                        locationViewModel?.currentLocation?.value?.let { location ->
+                            GeoPoint(location)
+                        } ?: mapView.mapCenter as GeoPoint
                     nearbyCenter.let { center ->
                         listener.addNearbyFragment(center)
                     }
