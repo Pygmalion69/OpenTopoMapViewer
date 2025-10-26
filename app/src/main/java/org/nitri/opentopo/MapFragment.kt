@@ -868,28 +868,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             versionTextView.text = getString(R.string.app_version, Utils.getAppVersion(it))
 
             val authorTextView = dialogView.findViewById<TextView>(R.id.authorName)
-            authorTextView.movementMethod = LinkMovementMethod.getInstance()
-            authorTextView.text = Utils.fromHtml(
-                getString(R.string.app_author)
-            )
+            authorTextView.setHtmlText(getString(R.string.app_author))
 
             val productPageTextView = dialogView.findViewById<TextView>(R.id.productPage)
-            productPageTextView.movementMethod = LinkMovementMethod.getInstance()
-            productPageTextView.text = Utils.fromHtml(
-                getString(R.string.app_product_page)
-            )
+            productPageTextView.setHtmlText(getString(R.string.app_product_page))
 
             val openTopoMapInfoTextView = dialogView.findViewById<TextView>(R.id.openTopoMapInfo)
-            openTopoMapInfoTextView.movementMethod = LinkMovementMethod.getInstance()
-            openTopoMapInfoTextView.text = Utils.fromHtml(
-                getString(R.string.about_open_topo_map)
-            )
+            openTopoMapInfoTextView.setHtmlText(getString(R.string.about_open_topo_map))
 
             val waymarkedTrailsInfoTextView = dialogView.findViewById<TextView>(R.id.waymarkedTrailsInfo)
-            waymarkedTrailsInfoTextView.movementMethod = LinkMovementMethod.getInstance()
-            waymarkedTrailsInfoTextView.text = Utils.fromHtml(
-                getString(R.string.about_waymarked_trails)
-            )
+            waymarkedTrailsInfoTextView.setHtmlText(getString(R.string.about_waymarked_trails))
 
             val dialog = AlertDialog.Builder(it)
                 .setTitle(Utils.getAppName(it))
@@ -899,6 +887,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
             dialog.show()
         }
+    }
+
+    private fun TextView.setHtmlText(htmlText: String) {
+        movementMethod = LinkMovementMethod.getInstance()
+        text = Utils.fromHtml(htmlText)
     }
 
     /**
