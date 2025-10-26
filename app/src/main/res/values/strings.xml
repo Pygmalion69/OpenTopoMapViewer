@@ -104,4 +104,6 @@
     <string name="profile_foot_hiking">Hiking</string>
     <string name="profile_wheelchair">Wheelchair</string>
 
+    <string name="no_browser_found" translatable="false">No browser app found to open link</string>
+
 </resources>

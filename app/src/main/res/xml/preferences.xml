@@ -30,10 +30,11 @@
         app:key="ors_section"
         app:title="@string/ors">
 
-        <Preference
+        <org.nitri.opentopo.view.OrsKeyPreference
             app:key="ors_set_key"
             app:title="@string/ors"
-            android:summary="@string/ors_key_prompt" />
+            android:summary="@string/ors_key_prompt"
+            app:widgetLayout="@layout/preference_ors_info_widget" />
 
         <Preference
             app:key="ors_erase_key"
