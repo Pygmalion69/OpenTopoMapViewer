@@ -873,6 +873,24 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 getString(R.string.app_author)
             )
 
+            val productPageTextView = dialogView.findViewById<TextView>(R.id.productPage)
+            productPageTextView.movementMethod = LinkMovementMethod.getInstance()
+            productPageTextView.text = Utils.fromHtml(
+                getString(R.string.app_product_page)
+            )
+
+            val openTopoMapInfoTextView = dialogView.findViewById<TextView>(R.id.openTopoMapInfo)
+            openTopoMapInfoTextView.movementMethod = LinkMovementMethod.getInstance()
+            openTopoMapInfoTextView.text = Utils.fromHtml(
+                getString(R.string.about_open_topo_map)
+            )
+
+            val waymarkedTrailsInfoTextView = dialogView.findViewById<TextView>(R.id.waymarkedTrailsInfo)
+            waymarkedTrailsInfoTextView.movementMethod = LinkMovementMethod.getInstance()
+            waymarkedTrailsInfoTextView.text = Utils.fromHtml(
+                getString(R.string.about_waymarked_trails)
+            )
+
             val dialog = AlertDialog.Builder(it)
                 .setTitle(Utils.getAppName(it))
                 .setView(dialogView)
