@@ -30,6 +30,7 @@ import org.nitri.opentopo.nearby.viewmodel.NearbyViewModelFactory
 import org.nitri.opentopo.util.DistanceCalculator
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlin.math.roundToInt
 
 class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     private var mListener: OnFragmentInteractionListener? = null
@@ -89,7 +90,8 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
         for (item in mNearbyItems) {
             item?.apply {
                 distance =
-                    Math.round(DistanceCalculator.distance(mLatitude, mLongitude, item.lat, item.lon)).toInt()
+                    DistanceCalculator.distance(mLatitude, mLongitude, item.lat, item.lon)
+                        .roundToInt()
             }
         }
     }

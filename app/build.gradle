@@ -134,6 +134,9 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-core-utils'
         exclude group: 'com.android.support', module: 'exifinterface'
     }
+    // OkHttp client and Picasso OkHttp3 downloader for custom headers on image requests
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
     playImplementation 'com.google.android.gms:play-services-ads:24.7.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:3.2.0'
     testImplementation 'junit:junit:4.13.2'
