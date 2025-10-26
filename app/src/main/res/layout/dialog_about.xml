@@ -10,13 +10,34 @@
         android:id="@+id/appVersion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
+        android:layout_marginTop="8dp"
         tools:text="Version 1.0" />
 
     <TextView
         android:id="@+id/authorName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
+        android:layout_marginTop="8dp"
         tools:text="By Author Name" />
+
+    <TextView
+        android:id="@+id/productPage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        tools:text="Product page" />
+
+    <TextView
+        android:id="@+id/openTopoMapInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        tools:text="OpenTopoMap info" />
+
+    <TextView
+        android:id="@+id/waymarkedTrailsInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        tools:text="Waymarked Trails info" />
 </LinearLayout>
