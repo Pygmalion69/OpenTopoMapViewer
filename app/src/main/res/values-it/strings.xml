@@ -58,6 +58,9 @@
     <string name="about">Info</string>
     <string name="app_version">Versione %1$s</string>
     <string name="app_author">Di &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+    <string name="app_product_page">Pagina del prodotto: &lt;a href="https://opentopomap.sergehelfrich.eu/"&gt;opentopomap.sergehelfrich.eu&lt;/a&gt;</string>
+    <string name="about_open_topo_map">Mappa di base di &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
+    <string name="about_waymarked_trails">Sovrapposizioni dei sentieri di &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; di Lonvia.</string>
 
     <string name="default_marker_name">Segnaposto %1$d</string>
     <string name="edit_marker">Modifica Segnaposto</string>

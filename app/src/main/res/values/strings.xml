@@ -60,6 +60,9 @@
     <string name="about">About</string>
     <string name="app_version">Version %1$s</string>
     <string name="app_author">By &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+    <string name="app_product_page">Product page: &lt;a href="https://opentopomap.sergehelfrich.eu/"&gt;opentopomap.sergehelfrich.eu&lt;/a&gt;</string>
+    <string name="about_open_topo_map">Base map by &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
+    <string name="about_waymarked_trails">Trail overlays by &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; by Lonvia.</string>
 
     <string name="default_marker_name">Marker %1$d</string>
     <string name="edit_marker">Edit Marker</string>
