@@ -164,6 +164,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val appContext = hostActivity.applicationContext
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext)
         val configuration = Configuration.getInstance()
+        // Load persisted osmdroid preferences first to avoid overwriting our changes later
+        configuration.load(appContext, sharedPreferences)
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
         val externalPrefs = hostActivity.getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
         val externalStorage = if (externalPrefs.contains(CacheSettingsFragment.PREF_EXTERNAL_STORAGE)) {
@@ -173,18 +175,27 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         val basePath = Utils.getOsmdroidBasePath(appContext, externalStorage)
         configuration.osmdroidBasePath = basePath
+        // Ensure base and tile cache directories exist and follow <cache>/osmdroid/tiles structure
+        if (!basePath.exists()) basePath.mkdirs()
         val tileCache = File(configuration.osmdroidBasePath.absolutePath,
             sharedPreferences.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
                 ?: CacheSettingsFragment.DEFAULT_TILE_CACHE)
+        if (!tileCache.exists()) tileCache.mkdirs()
         configuration.osmdroidTileCache = tileCache
         val maxCacheSize = sharedPreferences.getInt(CacheSettingsFragment.PREF_CACHE_SIZE, CacheSettingsFragment.DEFAULT_CACHE_SIZE)
         configuration.tileFileSystemCacheMaxBytes =
             maxCacheSize.toLong() * 1024 * 1024
+
+        // Remove any leftover sqlite files in the configured tile cache dir
+        if (externalStorage) {
+            Utils.clearOsmdroidSqliteCache(appContext)
+        }
+        // Persist the effective osmdroid settings so a later load() won't re-enable SQLite
         sharedPreferences.edit(commit = true) {
             putString("osmdroid.basePath", basePath.absolutePath)
             putString("osmdroid.cachePath", tileCache.absolutePath)
         }
-        configuration.load(appContext, sharedPreferences)
+        configuration.save(appContext, sharedPreferences)
         baseMap = sharedPreferences.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
         overlay = sharedPreferences.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
         mapRotation = sharedPreferences.getBoolean(SettingsActivity.PREF_ROTATE, false)

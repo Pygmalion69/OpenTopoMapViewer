@@ -17,6 +17,7 @@ import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.osmdroid.tileprovider.MapTileProviderBasic
+import org.nitri.opentopo.util.Utils
 import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
@@ -359,6 +360,8 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
             )
         }
         overlayTiles?.let { tiles ->
+//            // Ensure any leftover db files are removed
+//            Utils.clearOsmdroidSqliteCache(mContext)
             val tileProvider = MapTileProviderBasic(mContext).apply {
                 setTileSource(tiles)
                 tileRequestCompleteHandlers.clear()

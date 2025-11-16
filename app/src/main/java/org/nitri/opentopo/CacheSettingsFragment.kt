@@ -18,6 +18,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import android.content.SharedPreferences
 import org.osmdroid.config.Configuration
+import org.nitri.opentopo.util.Utils
 import java.io.File
 import androidx.core.content.edit
 
@@ -69,14 +70,19 @@ class CacheSettingsFragment : DialogFragment() {
                         apply()
                     }
                     cachePrefs.edit { putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage) }
+                    // Ensure base path and cache dir exist
+                    val baseDir = File(storageRoot)
+                    if (!baseDir.exists()) baseDir.mkdirs()
                     val cacheDir = File("$storageRoot/$newTileCache")
-                    if (cacheDir.mkdirs()) {
+                    if (!cacheDir.exists() && cacheDir.mkdirs()) {
                         Log.i(TAG, "Tile cache created: $newTileCache")
                     }
                     val configuration = Configuration.getInstance()
                     configuration.osmdroidTileCache = cacheDir
                     configuration.tileFileSystemCacheMaxBytes =
                         newCacheSize.toLong() * 1024 * 1024
+                    // Remove any leftover sqlite files to avoid SqlTileWriter using them
+                    Utils.clearOsmdroidSqliteCache(fragmentActivity.applicationContext)
                     configuration.save(fragmentActivity.applicationContext, defaultPrefs)
                     val intent = Intent(ACTION_CACHE_CHANGED);
                     val localBroadcastManager = LocalBroadcastManager.getInstance(

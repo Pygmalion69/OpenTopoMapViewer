@@ -28,6 +28,7 @@ import io.ticofab.androidgpxparser.parser.domain.TrackSegment
 import io.ticofab.androidgpxparser.parser.domain.WayPoint
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.config.Configuration
 import java.io.File
 
 object Utils {
@@ -309,6 +310,39 @@ object Utils {
         } else {
             File(context.cacheDir.absolutePath, "osmdroid")
         }
+    }
+
+    /**
+     * Remove any existing database files
+     * that might have been created by older versions or previous runs.
+     * This should be called before any MapView/MapTileProvider is constructed.
+     */
+    fun clearOsmdroidSqliteCache(context: Context) {
+        val configuration = Configuration.getInstance()
+
+        // Remove any existing sqlite database files in the current tile cache directory
+        val tileCacheDir: File? = configuration.osmdroidTileCache
+        tileCacheDir?.let { dir ->
+            val candidates = listOf(
+                File(dir, "cache.db"),
+                File(dir, "cache.db-journal"),
+                File(dir, "cache.db-shm"),
+                File(dir, "cache.db-wal")
+            )
+            for (f in candidates) {
+                if (f.exists()) {
+                    try {
+                        if (f.delete()) {
+                            Log.i("Utils", "Deleted leftover osmdroid sqlite cache file: ${f.absolutePath}")
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+        }
+
+        // Persist to preferences so a later load() won't re-enable it
+        val prefs = context.getSharedPreferences("org.osmdroid", Context.MODE_PRIVATE)
+        configuration.save(context, prefs)
     }
 
     fun getAppName(context: Context): String {
