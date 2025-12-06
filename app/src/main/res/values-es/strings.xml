@@ -37,6 +37,7 @@
     <string name="keep_screen_on">Mantener pantalla encendida</string>
     <string name="map_rotation">Rotación del mapa</string>
     <string name="tap_compass_to_rotate">Toca la brújula para girar el mapa</string>
+    <string name="max_zoom_level">Nivel máximo de zoom</string>
 
     <string name="nearby">Cerca</string>
 
