@@ -16,6 +16,14 @@
             app:title="@string/map_rotation"
             app:summary="@string/tap_compass_to_rotate" />
 
+        <ListPreference
+            app:key="max_zoom_level"
+            app:title="@string/max_zoom_level"
+            app:entries="@array/max_zoom_level_entries"
+            app:entryValues="@array/max_zoom_level_values"
+            app:defaultValue="17"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/cache_header">
