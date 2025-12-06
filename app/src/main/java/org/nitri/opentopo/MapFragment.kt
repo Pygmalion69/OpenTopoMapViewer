@@ -74,6 +74,7 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
+import kotlin.math.min
 
 class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
     GestureCallback, ClickableCompassOverlay.OnCompassClickListener {
@@ -149,6 +150,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private var overlay = OverlayHelper.OVERLAY_NONE
     private var mapCenterState: GeoPoint? = null
     private var zoomState = DEFAULT_ZOOM
+    private var maxZoomLevel = DEFAULT_MAX_ZOOM
     private var lastNearbyAnimateToId = 0
     private var locationViewModel: LocationViewModel? = null
     private var gestureOverlay: GestureOverlay? = null
@@ -199,6 +201,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         baseMap = sharedPreferences.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
         overlay = sharedPreferences.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
         mapRotation = sharedPreferences.getBoolean(SettingsActivity.PREF_ROTATE, false)
+        maxZoomLevel = readMaxZoomLevel()
         locationManager =
             hostActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationViewModel = ViewModelProvider(hostActivity)[LocationViewModel::class.java]
@@ -266,7 +269,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         rotationGestureOverlay?.isEnabled = true
         gestureOverlay = GestureOverlay(this)
         mapView.overlays.add(gestureOverlay)
-        mapView.maxZoomLevel = 17.0
+        mapView.maxZoomLevel = maxZoomLevel
         mapView.isTilesScaledToDpi = true
         showZoomControls(listener?.isFullscreen?.not() ?: true)
         mapView.setMultiTouchControls(true)
@@ -368,6 +371,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         if (!mapCenterSet) {
             centerOnFirstFix()
         }
+        zoomState = min(zoomState, maxZoomLevel)
         mapView.controller.setZoom(zoomState)
         if (sharedPreferences.getBoolean(PREF_FOLLOW, false)) enableFollow()
 
@@ -559,6 +563,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         // val basePath = Configuration.getInstance().osmdroidBasePath
         val cache = Configuration.getInstance().osmdroidTileCache
         Log.d(TAG, "Cache: " + cache.absolutePath)
+        val preferredMaxZoom = readMaxZoomLevel()
+        if (preferredMaxZoom != maxZoomLevel) {
+            maxZoomLevel = preferredMaxZoom
+            mapView.maxZoomLevel = maxZoomLevel
+        }
+        if (mapView.zoomLevelDouble > maxZoomLevel) {
+            mapView.controller.setZoom(maxZoomLevel)
+        }
         if (followEnabled) {
             locationOverlay?.enableFollowLocation()
             mapHandler.removeCallbacks(centerMapRunnable)
@@ -1148,6 +1160,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         private const val BASE_MAP_OTM = 1
         private const val BASE_MAP_OSM = 2
         private const val DEFAULT_ZOOM = 15.0
+        private const val DEFAULT_MAX_ZOOM = 17.0
         private val TAG = MapFragment::class.java.simpleName
         fun newInstance(): MapFragment {
             return MapFragment()
@@ -1161,6 +1174,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             mapFragment.arguments = arguments
             return mapFragment
         }
+    }
+
+    private fun readMaxZoomLevel(): Double {
+        return sharedPreferences.getString(
+            SettingsActivity.PREF_MAX_ZOOM_LEVEL,
+            DEFAULT_MAX_ZOOM.toInt().toString()
+        )?.toDoubleOrNull() ?: DEFAULT_MAX_ZOOM
     }
 
 }

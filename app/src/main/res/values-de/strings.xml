@@ -37,6 +37,7 @@
     <string name="keep_screen_on">Bildschirm eingeschaltet lassen</string>
     <string name="map_rotation">Kartenrotation</string>
     <string name="tap_compass_to_rotate">Tippen Sie auf den Kompass, um die Karte zu drehen</string>
+    <string name="max_zoom_level">Maximale Zoomstufe</string>
 
     <string name="nearby">In der Nähe</string>
 
