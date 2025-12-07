@@ -39,6 +39,7 @@
     <string name="keep_screen_on">Keep screen on</string>
     <string name="map_rotation">Map rotation</string>
     <string name="tap_compass_to_rotate">Tap compass to rotate map</string>
+    <string name="max_zoom_level">Maximum zoom level</string>
 
     <string name="nearby">Nearby</string>
 

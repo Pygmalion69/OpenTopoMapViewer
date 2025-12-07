@@ -37,6 +37,7 @@
     <string name="keep_screen_on">Scherm aan houden</string>
     <string name="map_rotation">Kaartrotatie</string>
     <string name="tap_compass_to_rotate">Tik op het kompas om de kaart te draaien</string>
+    <string name="max_zoom_level">Maximaal zoomniveau</string>
 
     <string name="nearby">In de buurt</string>
 

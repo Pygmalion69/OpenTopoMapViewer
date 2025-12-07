@@ -219,6 +219,7 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_KEEP_SCREEN_ON = "keep_screen_on"
         const val PREF_TAP_COMPASS_TO_ROTATE = "tap_compass_to_rotate"
         const val PREF_ROTATE = "rotate"
+        const val PREF_MAX_ZOOM_LEVEL = "max_zoom_level"
         const val PREF_ORS_API_KEY = "ors_api_key"
         const val PREF_ORS_PROFILE = "ors_profile"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
