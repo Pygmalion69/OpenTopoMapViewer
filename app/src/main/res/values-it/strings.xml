@@ -25,6 +25,7 @@
 
     <string name="layers">Sovrapposizioni</string>
     <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_topo_map_r">OpenTopoMap-R</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Escursionismo</string>
     <string name="lonvia_cycling">Lonvia Ciclismo</string>
@@ -38,6 +39,7 @@
     <string name="map_rotation">Rotazione mappa</string>
     <string name="tap_compass_to_rotate">Tap sulla bussola per ruotare la mappa</string>
     <string name="max_zoom_level">Livello di zoom massimo</string>
+    <string name="open_topo_map_source">Sorgente tile OpenTopoMap</string>
 
     <string name="nearby">Nei paraggi</string>
 
@@ -61,6 +63,7 @@
     <string name="app_author">Di &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
     <string name="about_open_topo_map">Mappa di base di &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Sovrapposizioni dei sentieri di &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; di Lonvia.</string>
+    <string name="open_topo_map_r_copyright">© OpenTopoMap-R (openmaps.fr)</string>
 
     <string name="default_marker_name">Segnaposto %1$d</string>
     <string name="edit_marker">Modifica Segnaposto</string>

@@ -61,7 +61,9 @@ import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
+import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.CustomZoomButtonsController
@@ -146,6 +148,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var sharedPreferences: SharedPreferences
     private var baseMap = BASE_MAP_OTM
+    private var openTopoMapSource = OTM_SOURCE_DEFAULT
     private var copyrightView: TextView? = null
     private var overlay = OverlayHelper.OVERLAY_NONE
     private var mapCenterState: GeoPoint? = null
@@ -199,6 +202,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         configuration.save(appContext, sharedPreferences)
         baseMap = sharedPreferences.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
+        openTopoMapSource = readOpenTopoMapSource()
         overlay = sharedPreferences.getInt(PREF_OVERLAY, OverlayHelper.OVERLAY_NONE)
         mapRotation = sharedPreferences.getBoolean(SettingsActivity.PREF_ROTATE, false)
         maxZoomLevel = readMaxZoomLevel()
@@ -491,12 +495,28 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     private fun setBaseMap() {
         when (baseMap) {
-            BASE_MAP_OTM -> mapView.setTileSource(TileSourceFactory.OpenTopo)
+            BASE_MAP_OTM -> mapView.setTileSource(resolveOpenTopoMapTileSource())
             BASE_MAP_OSM -> mapView.setTileSource(TileSourceFactory.MAPNIK)
         }
         mapView.invalidate()
 
         setCopyrightNotice()
+    }
+
+    private fun resolveOpenTopoMapTileSource(): ITileSource {
+        return if (openTopoMapSource == OTM_SOURCE_R) {
+            XYTileSource(
+                "OpenTopoMap-R",
+                1,
+                17,
+                256,
+                ".png",
+                arrayOf("https://tile.openmaps.fr/opentopomap/"),
+                getString(R.string.open_topo_map_r_copyright)
+            )
+        } else {
+            TileSourceFactory.OpenTopo
+        }
     }
 
     private fun setTilesOverlay() {
@@ -570,6 +590,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         if (mapView.zoomLevelDouble > maxZoomLevel) {
             mapView.controller.setZoom(maxZoomLevel)
+        }
+        val preferredBaseMap = sharedPreferences.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
+        val preferredOpenTopoMapSource = readOpenTopoMapSource()
+        if (preferredBaseMap != baseMap || preferredOpenTopoMapSource != openTopoMapSource) {
+            baseMap = preferredBaseMap
+            openTopoMapSource = preferredOpenTopoMapSource
+            setBaseMap()
         }
         if (followEnabled) {
             locationOverlay?.enableFollowLocation()
@@ -1153,12 +1180,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         private const val STATE_LONGITUDE = "longitude"
         private const val STATE_ZOOM = "zoom"
         private const val PREF_BASE_MAP = "base_map"
+        private const val PREF_OPEN_TOPO_MAP_SOURCE = "open_topo_map_source"
         private const val PREF_OVERLAY = "overlay"
         private const val PREF_LATITUDE = "latitude"
         private const val PREF_LONGITUDE = "longitude"
         private const val PREF_FOLLOW = "follow"
         private const val BASE_MAP_OTM = 1
         private const val BASE_MAP_OSM = 2
+        private const val OTM_SOURCE_DEFAULT = "opentopomap"
+        private const val OTM_SOURCE_R = "opentopomap_r"
         private const val DEFAULT_ZOOM = 15.0
         private const val DEFAULT_MAX_ZOOM = 17.0
         private val TAG = MapFragment::class.java.simpleName
@@ -1181,6 +1211,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             SettingsActivity.PREF_MAX_ZOOM_LEVEL,
             DEFAULT_MAX_ZOOM.toInt().toString()
         )?.toDoubleOrNull() ?: DEFAULT_MAX_ZOOM
+    }
+
+    private fun readOpenTopoMapSource(): String {
+        return sharedPreferences.getString(PREF_OPEN_TOPO_MAP_SOURCE, OTM_SOURCE_DEFAULT)
+            ?: OTM_SOURCE_DEFAULT
     }
 
 }

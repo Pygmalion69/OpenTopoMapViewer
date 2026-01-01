@@ -24,6 +24,14 @@
             app:defaultValue="17"
             app:useSimpleSummaryProvider="true" />
 
+        <ListPreference
+            app:key="open_topo_map_source"
+            app:title="@string/open_topo_map_source"
+            app:entries="@array/open_topo_map_source_entries"
+            app:entryValues="@array/open_topo_map_source_values"
+            app:defaultValue="opentopomap"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/cache_header">
