@@ -25,6 +25,7 @@
 
     <string name="layers">Ebenen</string>
     <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_topo_map_r">OpenTopoMap-R</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Wandern</string>
     <string name="lonvia_cycling">Lonvia Radfahren</string>
@@ -38,6 +39,7 @@
     <string name="map_rotation">Kartenrotation</string>
     <string name="tap_compass_to_rotate">Tippen Sie auf den Kompass, um die Karte zu drehen</string>
     <string name="max_zoom_level">Maximale Zoomstufe</string>
+    <string name="open_topo_map_source">OpenTopoMap-Kachelquelle</string>
 
     <string name="nearby">In der Nähe</string>
 
@@ -61,6 +63,7 @@
     <string name="app_author">Von &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
     <string name="about_open_topo_map">Grundkarte von &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Streckenkarten von &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; von Lonvia.</string>
+    <string name="open_topo_map_r_copyright">© OpenTopoMap-R (openmaps.fr)</string>
 
     <string name="default_marker_name">Markierung %1$d</string>
     <string name="edit_marker">Markierung bearbeiten</string>

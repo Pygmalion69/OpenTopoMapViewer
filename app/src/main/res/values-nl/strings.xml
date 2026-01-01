@@ -25,6 +25,7 @@
 
     <string name="layers">Lagen</string>
     <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_topo_map_r">OpenTopoMap-R</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Wandelen</string>
     <string name="lonvia_cycling">Lonvia Fietsen</string>
@@ -38,6 +39,7 @@
     <string name="map_rotation">Kaartrotatie</string>
     <string name="tap_compass_to_rotate">Tik op het kompas om de kaart te draaien</string>
     <string name="max_zoom_level">Maximaal zoomniveau</string>
+    <string name="open_topo_map_source">OpenTopoMap-tegelbron</string>
 
     <string name="nearby">In de buurt</string>
 
@@ -61,6 +63,7 @@
     <string name="app_author">Door &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
     <string name="about_open_topo_map">Basiskaart door &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Route-overlays door &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; van Lonvia.</string>
+    <string name="open_topo_map_r_copyright">© OpenTopoMap-R (openmaps.fr)</string>
 
     <string name="default_marker_name">Markering %1$d</string>
     <string name="edit_marker">Markering bewerken</string>

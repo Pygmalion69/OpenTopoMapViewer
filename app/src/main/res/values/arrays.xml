@@ -13,4 +13,12 @@
         <item>16</item>
         <item>17</item>
     </string-array>
+    <string-array name="open_topo_map_source_entries">
+        <item>@string/open_topo_map</item>
+        <item>@string/open_topo_map_r</item>
+    </string-array>
+    <string-array name="open_topo_map_source_values">
+        <item>opentopomap</item>
+        <item>opentopomap_r</item>
+    </string-array>
 </resources>
