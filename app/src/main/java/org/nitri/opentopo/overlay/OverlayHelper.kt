@@ -75,6 +75,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 val markerModel = it.relatedObject as MarkerModel
                 markerModel.latitude = it.position.latitude
                 markerModel.longitude = it.position.longitude
+                markerInteractionListener.onMarkerMoved(markerModel)
             }
         }
 

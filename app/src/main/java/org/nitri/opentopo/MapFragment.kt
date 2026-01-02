@@ -384,7 +384,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         markerViewModel.markers.observe(viewLifecycleOwner) { markers ->
             overlayHelper?.setMarkers(markers, object : OverlayHelper.MarkerInteractionListener {
                 override fun onMarkerMoved(markerModel: MarkerModel) {
-                    //NOP
+                    markerViewModel.updateMarker(markerModel)
+                    if (markerModel.routeWaypoint) {
+                        calculateRoute()
+                    }
                 }
 
                 override fun onMarkerClicked(markerModel: MarkerModel) {
