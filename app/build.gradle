@@ -103,7 +103,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
     implementation 'androidx.core:core-ktx:1.17.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0"
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
@@ -115,16 +115,16 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
     implementation 'com.google.code.gson:gson:2.13.2'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.room:room-runtime:2.8.3'
+    implementation 'androidx.room:room-runtime:2.8.4'
     implementation 'androidx.test.ext:junit:1.3.0'
-    annotationProcessor 'androidx.room:room-compiler:2.8.3'
-    implementation "androidx.room:room-ktx:2.8.3"
-    kapt "androidx.room:room-compiler:2.8.3"
+    annotationProcessor 'androidx.room:room-compiler:2.8.4'
+    implementation "androidx.room:room-ktx:2.8.4"
+    kapt "androidx.room:room-compiler:2.8.4"
     implementation "androidx.preference:preference:1.2.1"
-    implementation 'net.danlew:android.joda:2.13.1'
+    implementation 'net.danlew:android.joda:2.14.0'
     implementation 'com.github.k3b:k3b-geoHelper:1.1.5'
     implementation 'com.github.ticofab:android-gpx-parser:2.3.1'
-    implementation 'com.github.Pygmalion69:ors-android-client:0.1.4'
+    implementation 'com.github.Pygmalion69:ors-android-client:0.2.1'
     implementation('com.squareup.picasso:picasso:2.71828') {
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
@@ -135,10 +135,10 @@ dependencies {
         exclude group: 'com.android.support', module: 'exifinterface'
     }
     // OkHttp client and Picasso OkHttp3 downloader for custom headers on image requests
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.squareup.okhttp3:okhttp:5.3.2'
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    playImplementation 'com.google.android.gms:play-services-ads:24.7.0'
-    playImplementation 'com.google.android.ump:user-messaging-platform:3.2.0'
+    playImplementation 'com.google.android.gms:play-services-ads:24.9.0'
+    playImplementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
