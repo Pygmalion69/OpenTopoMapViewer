@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'kotlin-kapt'
 
-
 def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
 
 def isCi = System.getenv("GITHUB_ACTIONS") == "true" || System.getenv("CI") == "true"
@@ -18,8 +17,8 @@ android {
         applicationId "org.nitri.opentopo"
         minSdkVersion 24
         targetSdkVersion 35
-        versionCode 60
-        versionName "1.26.1"
+        versionCode 61
+        versionName "1.26.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
