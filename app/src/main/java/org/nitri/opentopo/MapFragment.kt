@@ -601,6 +601,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             openTopoMapSource = preferredOpenTopoMapSource
             setBaseMap()
         }
+        syncMapRotationPreference()
         if (followEnabled) {
             locationOverlay?.enableFollowLocation()
             mapHandler.removeCallbacks(centerMapRunnable)
@@ -650,6 +651,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
+        stopOrientationSensor()
         mapHandler.removeCallbacks(centerMapRunnable)
         compassOverlay?.disableCompass()
         locationOverlay?.disableFollowLocation()
@@ -994,6 +996,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return@runOnUiThread
             }
 
+            syncMapRotationPreference()
             locationViewModel?.currentLocation?.postValue(location)
             if (mapRotation) {
                 if (location.hasBearing()) {
@@ -1008,8 +1011,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
             } else {
                 stopOrientationSensor()
-                if (mapView.mapOrientation != 0f) MapOrientation.reset(mapView)
+                MapOrientation.reset(mapView)
             }
+        }
+    }
+
+    private fun syncMapRotationPreference() {
+        mapRotation = sharedPreferences.getBoolean(SettingsActivity.PREF_ROTATE, false)
+        if (!mapRotation) {
+            stopOrientationSensor()
+            MapOrientation.reset(mapView)
         }
     }
 
