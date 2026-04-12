@@ -104,6 +104,8 @@ object MapOrientation {
         // Log.d(TAG, "reset orientation")
         debounceJob?.cancel()
         animationJob?.cancel()
+        mapOrientation = 0f
+        previousMapOrientation = 0f
         targetMapOrientation = 0f
         mapView.mapOrientation = 0f
     }
