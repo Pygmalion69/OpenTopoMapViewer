@@ -12,7 +12,7 @@ def myKeyAlias = System.getenv('KEY_ALIAS')
 def myKeyPassword = System.getenv('KEY_PASSWORD')
 
 android {
-    compileSdk 36
+    compileSdk = 36
     defaultConfig {
         applicationId "org.nitri.opentopo"
         minSdkVersion 24

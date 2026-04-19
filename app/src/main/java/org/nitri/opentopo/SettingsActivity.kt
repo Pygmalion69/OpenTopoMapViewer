@@ -70,6 +70,15 @@ class SettingsActivity : AppCompatActivity() {
             val setKeyPref = findPreference<Preference>("ors_set_key")
             val eraseKeyPref = findPreference<Preference>("ors_erase_key")
             val profilePref = findPreference<Preference>("ors_select_profile")
+            val tapCompassToRotatePref = findPreference<Preference>(PREF_TAP_COMPASS_TO_ROTATE)
+
+            tapCompassToRotatePref?.setOnPreferenceChangeListener { _, newValue ->
+                val enabled = newValue as Boolean
+                if (!enabled) {
+                    prefs.edit { putBoolean(PREF_ROTATE, false) }
+                }
+                true
+            }
 
             if (apiKey.isNullOrBlank()) {
                 setKeyPref?.isVisible = true
