@@ -28,6 +28,7 @@
     <string name="layers">Layers</string>
     <string name="open_topo_map">OpenTopoMap</string>
     <string name="open_topo_map_r">OpenTopoMap-R</string>
+    <string name="top_o_map">Top-O-Map</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Hiking</string>
     <string name="lonvia_cycling">Lonvia Cycling</string>
@@ -67,6 +68,7 @@
     <string name="about_open_topo_map">Base map by &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Trail overlays by &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; by Lonvia.</string>
     <string name="open_topo_map_r_copyright">© OpenTopoMap-R (openmaps.fr)</string>
+    <string name="top_o_map_copyright">© Top-O-Map (top-o-map.de)</string>
 
     <string name="default_marker_name">Marker %1$d</string>
     <string name="edit_marker">Edit Marker</string>
