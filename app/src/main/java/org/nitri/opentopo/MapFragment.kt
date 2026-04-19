@@ -507,8 +507,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun resolveOpenTopoMapTileSource(): ITileSource {
-        return if (openTopoMapSource == OTM_SOURCE_R) {
-            XYTileSource(
+        return when (openTopoMapSource) {
+            OTM_SOURCE_R -> XYTileSource(
                 "OpenTopoMap-R",
                 1,
                 17,
@@ -517,8 +517,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 arrayOf("https://tile.openmaps.fr/opentopomap/"),
                 getString(R.string.open_topo_map_r_copyright)
             )
-        } else {
-            TileSourceFactory.OpenTopo
+
+            OTM_SOURCE_TOP_O_MAP -> XYTileSource(
+                "Top-O-Map",
+                1,
+                17,
+                256,
+                ".png",
+                arrayOf("https://tile.top-o-map.de/"),
+                getString(R.string.top_o_map_copyright)
+            )
+
+            else -> TileSourceFactory.OpenTopo
         }
     }
 
@@ -1203,6 +1213,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         private const val BASE_MAP_OSM = 2
         private const val OTM_SOURCE_DEFAULT = "opentopomap"
         private const val OTM_SOURCE_R = "opentopomap_r"
+        private const val OTM_SOURCE_TOP_O_MAP = "top_o_map"
         private const val DEFAULT_ZOOM = 15.0
         private const val DEFAULT_MAX_ZOOM = 17.0
         private val TAG = MapFragment::class.java.simpleName
