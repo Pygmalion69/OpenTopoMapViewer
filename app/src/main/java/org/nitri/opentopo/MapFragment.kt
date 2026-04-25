@@ -148,7 +148,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var sharedPreferences: SharedPreferences
     private var baseMap = BASE_MAP_OTM
-    private var openTopoMapSource = OTM_SOURCE_DEFAULT
+    private var openTopoMapSource = OTM_SOURCE_R
     private var copyrightView: TextView? = null
     private var overlay = OverlayHelper.OVERLAY_NONE
     private var mapCenterState: GeoPoint? = null
@@ -1211,7 +1211,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         private const val PREF_FOLLOW = "follow"
         private const val BASE_MAP_OTM = 1
         private const val BASE_MAP_OSM = 2
-        private const val OTM_SOURCE_DEFAULT = "opentopomap"
+        private const val OTM_SOURCE_OTM = "opentopomap"
         private const val OTM_SOURCE_R = "opentopomap_r"
         private const val OTM_SOURCE_TOP_O_MAP = "top_o_map"
         private const val DEFAULT_ZOOM = 15.0
@@ -1239,8 +1239,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun readOpenTopoMapSource(): String {
-        return sharedPreferences.getString(PREF_OPEN_TOPO_MAP_SOURCE, OTM_SOURCE_DEFAULT)
-            ?: OTM_SOURCE_DEFAULT
+        return sharedPreferences.getString(PREF_OPEN_TOPO_MAP_SOURCE, OTM_SOURCE_R)
+            ?: OTM_SOURCE_R
     }
 
 }
