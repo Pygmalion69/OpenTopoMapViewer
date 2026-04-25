@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId "org.nitri.opentopo"
         minSdkVersion 24
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 63
         versionName "1.27"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

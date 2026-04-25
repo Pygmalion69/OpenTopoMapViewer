@@ -357,11 +357,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                onBackPressedDispatcher.onBackPressed()
-            } else {
-                onBackPressed()
-            }
+            onBackPressedDispatcher.onBackPressed()
         }
         return super.onOptionsItemSelected(item)
     }
