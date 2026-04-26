@@ -13,6 +13,9 @@
         <item
             android:id="@+id/ohm"
             android:title="@string/open_hiking_map" />
+        <item
+            android:id="@+id/freemap_sk"
+            android:title="@string/freemap_sk" />
     </group>
     <item android:title="@string/overlay" />
     <group
