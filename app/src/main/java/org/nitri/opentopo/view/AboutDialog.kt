@@ -26,6 +26,18 @@ object AboutDialog {
         val openTopoMapInfoTextView = dialogView.findViewById<TextView>(R.id.openTopoMapInfo)
         openTopoMapInfoTextView.setHtmlText(context.getString(R.string.about_open_topo_map))
 
+        val openStreetMapInfoTextView = dialogView.findViewById<TextView>(R.id.openStreetMapInfo)
+        openStreetMapInfoTextView.setHtmlText(context.getString(R.string.about_open_street_map))
+
+        val openTopoMapRInfoTextView = dialogView.findViewById<TextView>(R.id.openTopoMapRInfo)
+        openTopoMapRInfoTextView.setHtmlText(context.getString(R.string.about_open_topo_map_r))
+
+        val topOMapInfoTextView = dialogView.findViewById<TextView>(R.id.topOMapInfo)
+        topOMapInfoTextView.setHtmlText(context.getString(R.string.about_top_o_map))
+
+        val freemapSkInfoTextView = dialogView.findViewById<TextView>(R.id.freemapSkInfo)
+        freemapSkInfoTextView.setHtmlText(context.getString(R.string.about_freemap_sk))
+
         val waymarkedTrailsInfoTextView = dialogView.findViewById<TextView>(R.id.waymarkedTrailsInfo)
         waymarkedTrailsInfoTextView.setHtmlText(context.getString(R.string.about_waymarked_trails))
 

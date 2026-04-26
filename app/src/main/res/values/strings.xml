@@ -72,7 +72,11 @@
     <string name="app_version">Version %1$s</string>
     <string name="app_author">By &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
     <string name="app_product_page" translatable="false">&lt;a href="https://opentopomap.sergehelfrich.eu/"&gt;opentopomap.sergehelfrich.eu&lt;/a&gt;</string>
-    <string name="about_open_topo_map">Base map by &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
+    <string name="about_open_topo_map">Map by &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© OpenStreetMap contributors, SRTM).</string>
+    <string name="about_open_street_map">Map data by &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt; contributors.</string>
+    <string name="about_open_topo_map_r">Map by &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>
+    <string name="about_top_o_map">Map by &lt;a href="https://top-o-map.de/"&gt;Top-O-Map&lt;/a&gt;.</string>
+    <string name="about_freemap_sk">Map by &lt;a href="https://www.freemap.sk/"&gt;Freemap.sk&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Trail overlays by &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; by Lonvia.</string>
 
     <string name="default_marker_name">Marker %1$d</string>
