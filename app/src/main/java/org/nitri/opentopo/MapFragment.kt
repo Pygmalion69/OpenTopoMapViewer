@@ -500,6 +500,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         when (baseMap) {
             BASE_MAP_OTM -> mapView.setTileSource(resolveOpenTopoMapTileSource())
             BASE_MAP_OSM -> mapView.setTileSource(TileSourceFactory.MAPNIK)
+            BASE_MAP_OHM -> mapView.setTileSource(XYTileSource(
+                "OpenHikingMap",
+                1,
+                17,
+                256,
+                ".png",
+                arrayOf("https://tile.openmaps.fr/openhikingmap/"),
+                getString(R.string.open_hiking_map_copyright)
+            ))
         }
         mapView.invalidate()
 
@@ -890,12 +899,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     inflater.inflate(R.menu.menu_tile_sources, popup.menu)
                     val openTopoMapItem = popup.menu.findItem(R.id.otm)
                     val openStreetMapItem = popup.menu.findItem(R.id.osm)
+                    val openHikingMapItem = popup.menu.findItem(R.id.ohm)
                     val overlayNoneItem = popup.menu.findItem(R.id.none)
                     val overlayHikingItem = popup.menu.findItem(R.id.lonvia_hiking)
                     val overlayCyclingItem = popup.menu.findItem(R.id.lonvia_cycling)
                     when (baseMap) {
                         BASE_MAP_OTM -> openTopoMapItem.isChecked = true
                         BASE_MAP_OSM -> openStreetMapItem.isChecked = true
+                        BASE_MAP_OHM -> openHikingMapItem.isChecked = true
                     }
                     when (overlay) {
                         OverlayHelper.OVERLAY_NONE -> overlayNoneItem.isChecked = true
@@ -975,6 +986,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
                 R.id.osm -> {
                     baseMap = BASE_MAP_OSM
+                }
+                R.id.ohm -> {
+                    baseMap = BASE_MAP_OHM
                 }
                 R.id.none -> {
                     overlay = OverlayHelper.OVERLAY_NONE
@@ -1211,6 +1225,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         private const val PREF_FOLLOW = "follow"
         private const val BASE_MAP_OTM = 1
         private const val BASE_MAP_OSM = 2
+        private const val BASE_MAP_OHM = 3
         private const val OTM_SOURCE_OTM = "opentopomap"
         private const val OTM_SOURCE_R = "opentopomap_r"
         private const val OTM_SOURCE_TOP_O_MAP = "top_o_map"

@@ -30,6 +30,8 @@
     <string name="open_topo_map_archive">OpenTopoMap (Archive)</string>
     <string name="open_topo_map_r" translatable="false">OpenTopoMap-R</string>
     <string name="open_topo_map_r_copyright" translatable="false">© OpenTopoMap-R (openmaps.fr)</string>
+    <string name="open_hiking_map" translatable="false">OpenHikingMap</string>
+    <string name="open_hiking_map_copyright" translatable="false">© OpenHikingMap (openmaps.fr)</string>
     <string name="top_o_map" translatable="false">Top-O-Map</string>
     <string name="top_o_map_copyright" translatable="false">© Top-O-Map (top-o-map.de)</string>
     <string name="open_street_map">OpenStreetMap</string>
