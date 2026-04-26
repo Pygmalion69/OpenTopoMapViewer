@@ -346,6 +346,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         tilesOverlay?.let {
             mMapView?.overlays?.remove(it)
         }
+        overlayTileProvider = null
         when (overlayType) {
             OVERLAY_NONE -> {}
             OVERLAY_HIKING -> overlayTiles = XYTileSource(
@@ -368,6 +369,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 tileRequestCompleteHandlers.clear()
                 tileRequestCompleteHandlers.add(mMapView?.tileRequestCompleteHandler)
             }
+            overlayTileProvider = tileProvider
 
             tilesOverlay = TilesOverlay(tileProvider, mContext).apply {
                 loadingBackgroundColor = Color.TRANSPARENT

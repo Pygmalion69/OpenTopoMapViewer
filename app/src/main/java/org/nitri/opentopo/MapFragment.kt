@@ -559,13 +559,17 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private fun setCopyrightNotice() {
         val copyrightStringBuilder = StringBuilder()
         val mapCopyrightNotice = mapView.tileProvider.tileSource.copyrightNotice
-        copyrightStringBuilder.append(mapCopyrightNotice)
+        if (!TextUtils.isEmpty(mapCopyrightNotice)) {
+            copyrightStringBuilder.append(mapCopyrightNotice)
+        }
         overlayHelper?.let {
             val overlayCopyRightNotice = it.copyrightNotice
-            if (!TextUtils.isEmpty(mapCopyrightNotice) && !TextUtils.isEmpty(overlayCopyRightNotice)) {
-                copyrightStringBuilder.append(", ")
+            if (!TextUtils.isEmpty(overlayCopyRightNotice)) {
+                if (copyrightStringBuilder.isNotEmpty()) {
+                    copyrightStringBuilder.append(", ")
+                }
+                copyrightStringBuilder.append(overlayCopyRightNotice)
             }
-            copyrightStringBuilder.append(overlayCopyRightNotice)
         }
         val copyRightNotice = copyrightStringBuilder.toString()
         if (!TextUtils.isEmpty(copyRightNotice)) {
