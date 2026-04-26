@@ -52,6 +52,7 @@ import org.nitri.opentopo.overlay.OverlayHelper
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
+import org.nitri.opentopo.view.AboutDialog
 import org.nitri.opentopo.viewmodel.LocationViewModel
 import org.nitri.opentopo.viewmodel.MarkerViewModel
 import org.nitri.ors.OrsClient
@@ -937,7 +938,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 startActivity(settingsIntent)
             }
             R.id.action_about -> {
-                showAboutDialog()
+                context?.let { AboutDialog.show(it) }
                 return true
             }
             R.id.action_privacy_settings -> {
@@ -947,39 +948,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         return super.onOptionsItemSelected(item)
     }
 
-    private fun showAboutDialog() {
-        activity?.let {
-            val dialogView = layoutInflater.inflate(R.layout.dialog_about, null)
-
-            val versionTextView = dialogView.findViewById<TextView>(R.id.appVersion)
-            versionTextView.text = getString(R.string.app_version, Utils.getAppVersion(it))
-
-            val authorTextView = dialogView.findViewById<TextView>(R.id.authorName)
-            authorTextView.setHtmlText(getString(R.string.app_author))
-
-            val productPageTextView = dialogView.findViewById<TextView>(R.id.productPage)
-            productPageTextView.setHtmlText(getString(R.string.app_product_page))
-
-            val openTopoMapInfoTextView = dialogView.findViewById<TextView>(R.id.openTopoMapInfo)
-            openTopoMapInfoTextView.setHtmlText(getString(R.string.about_open_topo_map))
-
-            val waymarkedTrailsInfoTextView = dialogView.findViewById<TextView>(R.id.waymarkedTrailsInfo)
-            waymarkedTrailsInfoTextView.setHtmlText(getString(R.string.about_waymarked_trails))
-
-            val dialog = AlertDialog.Builder(it)
-                .setTitle(Utils.getAppName(it))
-                .setView(dialogView)
-                .setPositiveButton(R.string.close) { dialog, _ -> dialog.dismiss() }
-                .create()
-            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-            dialog.show()
-        }
-    }
-
-    private fun TextView.setHtmlText(htmlText: String) {
-        movementMethod = LinkMovementMethod.getInstance()
-        text = Utils.fromHtml(htmlText)
-    }
 
     /**
      * Popup menu click
