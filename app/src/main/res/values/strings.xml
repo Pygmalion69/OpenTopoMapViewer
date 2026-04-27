@@ -124,4 +124,24 @@
 
     <string name="no_browser_found" translatable="false">No browser app found to open link</string>
 
+
+    <string name="markers">Markers</string>
+    <string name="import_gpx">Import GPX</string>
+    <string name="select_all">Select all</string>
+    <string name="export_selected">Export selected</string>
+    <string name="delete_selected">Delete selected</string>
+    <string name="no_markers_available">No markers available.</string>
+    <string name="no_markers_selected">No markers selected.</string>
+    <string name="markers_selected_count">%1$d selected</string>
+    <string name="delete_selected_markers_message">Delete %1$d selected markers?
+
+This cannot be undone.</string>
+    <string name="markers_export_success">Markers exported.</string>
+    <string name="markers_export_failed">Export failed: could not write the GPX file.</string>
+    <string name="markers_import_failed">Import failed.</string>
+    <string name="import_no_valid_waypoints">No valid GPX waypoints found.</string>
+    <string name="import_success_count">Imported %1$d markers.</string>
+    <string name="import_success_with_skipped">Imported %1$d markers. Skipped %2$d invalid waypoints.</string>
+    <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
+
 </resources>

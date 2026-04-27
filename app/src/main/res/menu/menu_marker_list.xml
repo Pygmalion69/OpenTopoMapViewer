@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_import_markers"
+        android:icon="@drawable/ic_action_gpx"
+        android:title="@string/import_gpx"
+        app:showAsAction="ifRoom" />
+</menu>

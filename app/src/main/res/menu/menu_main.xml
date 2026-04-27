@@ -54,6 +54,12 @@
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_markers"
+        android:icon="@drawable/ic_place"
+        android:title="@string/markers"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_settings"
         android:icon="@drawable/ic_action_settings"
         android:title="@string/settings"
