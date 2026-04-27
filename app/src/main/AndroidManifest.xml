@@ -18,6 +18,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".MarkerListActivity"
+            android:parentActivityName=".MainActivity"
+            android:exported="false"
+            android:label="@string/markers" />
+        <activity
             android:name=".SettingsActivity"
             android:parentActivityName=".MainActivity"
             android:exported="false"
