@@ -900,6 +900,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
                 return true
             }
+            R.id.action_markers -> {
+                startActivity(Intent(requireActivity(), MarkerListActivity::class.java))
+                return true
+            }
             R.id.action_gpx_zoom -> {
                 disableFollow()
                 listener?.let { zoomToBounds(Utils.area(it.getGpx())) }

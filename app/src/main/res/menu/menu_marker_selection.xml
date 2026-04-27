@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_select_all_markers"
+        android:title="@string/select_all"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_export_selected_markers"
+        android:title="@string/export_selected"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_delete_selected_markers"
+        android:title="@string/delete_selected"
+        app:showAsAction="ifRoom" />
+</menu>
