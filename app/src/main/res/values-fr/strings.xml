@@ -60,7 +60,11 @@
     <string name="about">À propos</string>
     <string name="app_version">Version %1$s</string>
     <string name="app_author">Par &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
-    <string name="about_open_topo_map">Fond de carte par &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
+    <string name="about_open_topo_map">Carte par &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© contributeurs d\'OpenStreetMap, SRTM).</string>
+    <string name="about_open_street_map">Données cartographiques par les contributeurs d\'&lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;.</string>
+    <string name="about_open_topo_map_r">Carte par &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>
+    <string name="about_top_o_map">Carte par &lt;a href="https://top-o-map.de/"&gt;Top-O-Map&lt;/a&gt;.</string>
+    <string name="about_freemap_sk">Carte par &lt;a href="https://www.freemap.sk/"&gt;Freemap.sk&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Calques d\'itinéraires par &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; de Lonvia.</string>
 
     <string name="default_marker_name">Marqueur %1$d</string>
@@ -109,4 +113,22 @@
     <string name="profile_foot_hiking">Randonnée</string>
     <string name="profile_wheelchair">Fauteuil roulant</string>
 
+    <string name="markers">Marqueurs</string>
+    <string name="import_gpx">Importer GPX</string>
+    <string name="select_all">Tout sélectionner</string>
+    <string name="export_selected">Exporter la sélection</string>
+    <string name="delete_selected">Supprimer la sélection</string>
+    <string name="no_markers_available">Aucun marqueur disponible.</string>
+    <string name="no_markers_selected">Aucun marqueur sélectionné.</string>
+    <string name="markers_selected_count">%1$d sélectionnés</string>
+    <string name="delete_selected_markers_message">Supprimer les %1$d marqueurs sélectionnés ?
+
+Cette action est irréversible.</string>
+    <string name="markers_export_success">Marqueurs exportés.</string>
+    <string name="markers_export_failed">L\'exportation a échoué : impossible d\'écrire le fichier GPX.</string>
+    <string name="markers_import_failed">L\'importation a échoué.</string>
+    <string name="import_no_valid_waypoints">Aucun point de cheminement GPX valide trouvé.</string>
+    <string name="import_success_count">%1$d marqueurs importés.</string>
+    <string name="import_success_with_skipped">%1$d marqueurs importés. %2$d points de cheminement non valides ignorés.</string>
+    <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 </resources>

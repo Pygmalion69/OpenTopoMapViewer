@@ -60,7 +60,11 @@
     <string name="about">Info</string>
     <string name="app_version">Versione %1$s</string>
     <string name="app_author">Di &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
-    <string name="about_open_topo_map">Mappa di base di &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
+    <string name="about_open_topo_map">Mappa di &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© contributori di OpenStreetMap, SRTM).</string>
+    <string name="about_open_street_map">Dati cartografici dei contributori di &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;.</string>
+    <string name="about_open_topo_map_r">Mappa di &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>
+    <string name="about_top_o_map">Mappa di &lt;a href="https://top-o-map.de/"&gt;Top-O-Map&lt;/a&gt;.</string>
+    <string name="about_freemap_sk">Mappa di &lt;a href="https://www.freemap.sk/"&gt;Freemap.sk&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Sovrapposizioni dei sentieri di &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; di Lonvia.</string>
 
     <string name="default_marker_name">Segnaposto %1$d</string>
@@ -109,4 +113,22 @@
     <string name="profile_foot_hiking">Escursionismo</string>
     <string name="profile_wheelchair">Sedia a rotelle</string>
 
+    <string name="markers">Segnaposti</string>
+    <string name="import_gpx">Importa GPX</string>
+    <string name="select_all">Seleziona tutto</string>
+    <string name="export_selected">Esporta selezionati</string>
+    <string name="delete_selected">Elimina selezionati</string>
+    <string name="no_markers_available">Nessun segnaposto disponibile.</string>
+    <string name="no_markers_selected">Nessun segnaposto selezionato.</string>
+    <string name="markers_selected_count">%1$d selezionati</string>
+    <string name="delete_selected_markers_message">Eliminare i %1$d segnaposti selezionati?
+
+L\'azione è irreversibile.</string>
+    <string name="markers_export_success">Segnaposti esportati.</string>
+    <string name="markers_export_failed">Esportazione fallita: impossibile scrivere il file GPX.</string>
+    <string name="markers_import_failed">Importazione fallita.</string>
+    <string name="import_no_valid_waypoints">Nessun waypoint GPX valido trovato.</string>
+    <string name="import_success_count">%1$d segnaposti importati.</string>
+    <string name="import_success_with_skipped">%1$d segnaposti importati. %2$d waypoint non validi saltati.</string>
+    <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 </resources>

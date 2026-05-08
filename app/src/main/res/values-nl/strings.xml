@@ -60,7 +60,11 @@
     <string name="about">Over</string>
     <string name="app_version">Versie %1$s</string>
     <string name="app_author">Door &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
-    <string name="about_open_topo_map">Basiskaart door &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt;.</string>
+    <string name="about_open_topo_map">Kaart door &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© OpenStreetMap-bijdragers, SRTM).</string>
+    <string name="about_open_street_map">Kaartgegevens door &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;-bijdragers.</string>
+    <string name="about_open_topo_map_r">Kaart door &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>
+    <string name="about_top_o_map">Kaart door &lt;a href="https://top-o-map.de/"&gt;Top-O-Map&lt;/a&gt;.</string>
+    <string name="about_freemap_sk">Kaart door &lt;a href="https://www.freemap.sk/"&gt;Freemap.sk&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Route-overlays door &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; van Lonvia.</string>
 
     <string name="default_marker_name">Markering %1$d</string>
@@ -109,4 +113,22 @@
     <string name="profile_foot_hiking">Wandelen</string>
     <string name="profile_wheelchair">Rolstoel</string>
 
+    <string name="markers">Markeringen</string>
+    <string name="import_gpx">Importeer GPX</string>
+    <string name="select_all">Alles selecteren</string>
+    <string name="export_selected">Geselecteerde exporteren</string>
+    <string name="delete_selected">Geselecteerde verwijderen</string>
+    <string name="no_markers_available">Geen markeringen beschikbaar.</string>
+    <string name="no_markers_selected">Geen markeringen geselecteerd.</string>
+    <string name="markers_selected_count">%1$d geselecteerd</string>
+    <string name="delete_selected_markers_message">De %1$d geselecteerde markeringen verwijderen?
+
+Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="markers_export_success">Markeringen geëxporteerd.</string>
+    <string name="markers_export_failed">Export mislukt: kon het GPX-bestand niet schrijven.</string>
+    <string name="markers_import_failed">Import mislukt.</string>
+    <string name="import_no_valid_waypoints">Geen geldige GPX-routepunten gevonden.</string>
+    <string name="import_success_count">%1$d markeringen geïmporteerd.</string>
+    <string name="import_success_with_skipped">%1$d markeringen geïmporteerd. %2$d ongeldige routepunten overgeslagen.</string>
+    <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 </resources>
