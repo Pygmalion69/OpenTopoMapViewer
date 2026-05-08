@@ -42,21 +42,21 @@
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_markers"
+        android:icon="@drawable/ic_action_markers"
+        android:title="@string/markers"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_location_details"
-        android:icon="@drawable/ic_action_location_detail"
+        android:icon="@drawable/ic_action_details"
         android:title="@string/location_details"
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_nearby"
-        android:icon="@drawable/ic_action_layers"
+        android:icon="@drawable/ic_action_nearby"
         android:title="@string/nearby"
-        android:visible="true"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_markers"
-        android:icon="@drawable/ic_place"
-        android:title="@string/markers"
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
