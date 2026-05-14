@@ -170,6 +170,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val appContext = hostActivity.applicationContext
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext)
         val configuration = Configuration.getInstance()
+        if (BuildConfig.DEBUG) {
+            configuration.isDebugMode = true;
+            configuration.isDebugTileProviders = true;
+        }
         // Load persisted osmdroid preferences first to avoid overwriting our changes later
         configuration.load(appContext, sharedPreferences)
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
