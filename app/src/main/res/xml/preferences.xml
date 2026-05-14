@@ -40,6 +40,11 @@
             app:key="cache_settings"
             app:title="@string/cache_settings"/>
 
+        <Preference
+            app:key="import_tiles"
+            app:title="@string/import_offline_tiles_title"
+            app:summary="@string/import_offline_tiles_summary"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory

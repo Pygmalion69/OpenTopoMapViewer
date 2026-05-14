@@ -24,7 +24,7 @@
     <string name="poi">POI</string>
 
     <string name="layers">Ebenen</string>
-    <string name="open_topo_map_archive">OpenTopoMap (Archiv)</string>
+    <string name="open_topo_map_archive">OpenTopoMap (Archiv/Vorinstalliert)</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Wandern</string>
     <string name="lonvia_cycling">Lonvia Radfahren</string>
@@ -43,6 +43,12 @@
     <string name="nearby">In der Nähe</string>
 
     <string name="cache_settings">Cache-Einstellungen</string>
+    <string name="import_offline_tiles_title">Offline-Kacheln importieren</string>
+    <string name="import_offline_tiles_summary">Wählen Sie eine OpenTopoMap-ZIP-Datei aus und importieren Sie deren Kacheln in den Offline-Cache</string>
+    <string name="import_started">Kachelimport gestartet…</string>
+    <string name="import_success">%1$d Kacheln importiert.</string>
+    <string name="import_failed">Import fehlgeschlagen: %1$s</string>
+    <string name="import_no_tiles">Keine Kacheln importiert. Überprüfen Sie das ZIP-Format.</string>
     <string name="tile_cache">Kachel-Cache</string>
     <string name="max_cache_size">Max. Cache-Größe (MB)</string>
     <string name="reset">Zurücksetzen</string>

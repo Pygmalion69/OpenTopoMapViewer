@@ -2,24 +2,30 @@ package org.nitri.opentopo
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.Window
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NavUtils
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.launch
 import org.nitri.opentopo.util.Utils
+import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -60,6 +66,34 @@ class SettingsActivity : AppCompatActivity() {
             "wheelchair"
         )
 
+        private val openZipLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+            uri?.let {
+                importZip(it)
+            }
+        }
+
+        private fun importZip(uri: Uri) {
+            val context = context ?: return
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            
+            Toast.makeText(context, R.string.import_started, Toast.LENGTH_SHORT).show()
+            
+            lifecycleScope.launch {
+                val result = importOpenTopoMapZipToSqliteCache(context, uri)
+                if (result.error != null) {
+                    Toast.makeText(context, getString(R.string.import_failed, result.error), Toast.LENGTH_LONG).show()
+                } else if (result.imported > 0) {
+                    Toast.makeText(context, getString(R.string.import_success, result.imported), Toast.LENGTH_LONG).show()
+                    Log.d("SettingsFragment", "Imported ${result.imported}, skipped ${result.skipped}")
+                    if (result.skippedSamples.isNotEmpty()) {
+                        Log.d("SettingsFragment", "Skipped samples: ${result.skippedSamples.joinToString()}")
+                    }
+                } else {
+                    Toast.makeText(context, R.string.import_no_tiles, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
 
@@ -71,6 +105,12 @@ class SettingsActivity : AppCompatActivity() {
             val eraseKeyPref = findPreference<Preference>("ors_erase_key")
             val profilePref = findPreference<Preference>("ors_select_profile")
             val tapCompassToRotatePref = findPreference<Preference>(PREF_TAP_COMPASS_TO_ROTATE)
+            val importTilesPref = findPreference<Preference>("import_tiles")
+
+            importTilesPref?.setOnPreferenceClickListener {
+                openZipLauncher.launch(arrayOf("application/zip", "application/octet-stream", "application/x-zip-compressed"))
+                true
+            }
 
             tapCompassToRotatePref?.setOnPreferenceChangeListener { _, newValue ->
                 val enabled = newValue as Boolean

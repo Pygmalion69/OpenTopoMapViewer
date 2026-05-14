@@ -54,7 +54,6 @@ import org.nitri.opentopo.overlay.OverlayHelper
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
-import org.nitri.opentopo.util.importOpenTopoMapTilesToSqliteCache
 import org.nitri.opentopo.view.AboutDialog
 import org.nitri.opentopo.viewmodel.LocationViewModel
 import org.nitri.opentopo.viewmodel.MarkerViewModel
@@ -162,7 +161,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private var locationViewModel: LocationViewModel? = null
     private var gestureOverlay: GestureOverlay? = null
 
-    private var pendingTileImport: Job? = null
     private var mapViewInitialized = false
 
     private val markerViewModel: MarkerViewModel by viewModels()
@@ -202,16 +200,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val maxCacheSize = sharedPreferences.getInt(CacheSettingsFragment.PREF_CACHE_SIZE, CacheSettingsFragment.DEFAULT_CACHE_SIZE)
         configuration.tileFileSystemCacheMaxBytes =
             maxCacheSize.toLong() * 1024 * 1024
-
-        pendingTileImport = lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val result = importOpenTopoMapTilesToSqliteCache()
-                Log.d(TAG, "Tile import finished: imported=${result[0]}, insertFailures=${result[1]}, deleted=${result[2]}, deleteFailures=${result[3]}")
-                Log.d(TAG, "Import source dir: ${Configuration.getInstance().osmdroidTileCache.absolutePath}")
-            } catch (e: Exception) {
-                Log.e(TAG, "Tile import failed", e)
-            }
-        }
 
         // Persist the effective osmdroid settings so a later load() won't re-enable SQLite
         sharedPreferences.edit(commit = true) {
@@ -325,14 +313,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val root = Configuration.getInstance().osmdroidTileCache
-        val otm = File(root, "OpenTopoMap")
-        Log.d(TAG, "OpenTopoMap exists=${otm.exists()}, dirs=${otm.listFiles()?.joinToString { it.name }}")
-        Log.d(TAG, "Sample tile exists=${File(otm, "13/4233/2712.png").exists()}")
-        
         viewLifecycleOwner.lifecycleScope.launch {
-            pendingTileImport?.join()
-
             if (!mapViewInitialized) {
                 initializeMapView()
                 initializeMapState(savedInstanceState)
@@ -569,6 +550,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     private fun resolveOpenTopoMapTileSource(): ITileSource {
         return when (openTopoMapSource) {
+            OTM_SOURCE_OTM -> XYTileSource(
+                "OpenTopoMap",
+                0,
+                17,
+                256,
+                ".png",
+                arrayOf("https://a.tile.opentopomap.org/", "https://b.tile.opentopomap.org/", "https://c.tile.opentopomap.org/"),
+                "Kartendaten: \u00a9 OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: \u00a9 OpenTopoMap (CC-BY-SA)"
+            )
+
             OTM_SOURCE_R -> XYTileSource(
                 "OpenTopoMap-R",
                 1,
@@ -589,7 +580,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 getString(R.string.top_o_map_copyright)
             )
 
-            else -> TileSourceFactory.OpenTopo
+            else -> XYTileSource(
+                "OpenTopoMap",
+                0,
+                17,
+                256,
+                ".png",
+                arrayOf("https://a.tile.opentopomap.org/", "https://b.tile.opentopomap.org/", "https://c.tile.opentopomap.org/"),
+                "Kartendaten: \u00a9 OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: \u00a9 OpenTopoMap (CC-BY-SA)"
+            )
         }
     }
 

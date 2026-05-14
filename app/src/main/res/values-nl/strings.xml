@@ -24,7 +24,7 @@
     <string name="poi">POI</string>
 
     <string name="layers">Lagen</string>
-    <string name="open_topo_map_archive">OpenTopoMap (Archief)</string>
+    <string name="open_topo_map_archive">OpenTopoMap (Archief/Vooraf geladen)</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Wandelen</string>
     <string name="lonvia_cycling">Lonvia Fietsen</string>
@@ -43,6 +43,12 @@
     <string name="nearby">In de buurt</string>
 
     <string name="cache_settings">Cache-instellingen</string>
+    <string name="import_offline_tiles_title">Offline tegels importeren</string>
+    <string name="import_offline_tiles_summary">Selecteer een OpenTopoMap ZIP-bestand en importeer de tegels in de offline cache</string>
+    <string name="import_started">Tegelimport gestart…</string>
+    <string name="import_success">%1$d tegels geïmporteerd.</string>
+    <string name="import_failed">Import mislukt: %1$s</string>
+    <string name="import_no_tiles">Geen tegels geïmporteerd. Controleer ZIP-formaat.</string>
     <string name="tile_cache">Tegelcache</string>
     <string name="max_cache_size">Max. cachegrootte (MB)</string>
     <string name="reset">Resetten</string>
