@@ -1,8 +1,7 @@
-package org.nitri.opentopo
+package org.nitri.opentopo.util
 
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Test
-import org.nitri.opentopo.util.DistanceCalculator
 
 class DistanceCalculatorTest {
 
@@ -13,7 +12,7 @@ class DistanceCalculatorTest {
 
         val distance = DistanceCalculator.distance(latitude, longitude, latitude, longitude)
 
-        assertEquals(0.0, distance, 0.0)
+        Assert.assertEquals(0.0, distance, 0.0)
     }
 
     @Test
@@ -28,6 +27,6 @@ class DistanceCalculatorTest {
         val expectedDistanceMeters = 343_556.0
         val toleranceMeters = 1_000.0
 
-        assertEquals(expectedDistanceMeters, distance, toleranceMeters)
+        Assert.assertEquals(expectedDistanceMeters, distance, toleranceMeters)
     }
 }
