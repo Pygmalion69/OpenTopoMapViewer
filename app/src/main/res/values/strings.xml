@@ -27,7 +27,7 @@
 
     <string name="layers">Layers</string>
     <string name="open_topo_map" translatable="false">OpenTopoMap</string>
-    <string name="open_topo_map_archive">OpenTopoMap (Archive)</string>
+    <string name="open_topo_map_archive">OpenTopoMap (Archive/Preloaded)</string>
     <string name="open_topo_map_r" translatable="false">OpenTopoMap-R</string>
     <string name="open_topo_map_r_copyright" translatable="false">© OpenTopoMap-R (openmaps.fr)</string>
     <string name="open_hiking_map" translatable="false">OpenHikingMap</string>
@@ -54,6 +54,12 @@
     <string name="nearby">Nearby</string>
 
     <string name="cache_settings">Cache settings</string>
+    <string name="import_offline_tiles_title">Import offline tiles</string>
+    <string name="import_offline_tiles_summary">Select an OpenTopoMap ZIP file and import its tiles into the offline cache</string>
+    <string name="import_started">Tile import started…</string>
+    <string name="import_success">Imported %1$d tiles.</string>
+    <string name="import_failed">Import failed: %1$s</string>
+    <string name="import_no_tiles">No tiles imported. Check ZIP format.</string>
     <string name="tile_cache">Tile cache</string>
     <string name="max_cache_size">Max. cache size (MB)</string>
     <string name="reset">Reset</string>

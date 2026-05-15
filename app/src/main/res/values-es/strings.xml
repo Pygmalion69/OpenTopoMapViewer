@@ -24,7 +24,7 @@
     <string name="poi">POI</string>
 
     <string name="layers">Capas</string>
-    <string name="open_topo_map_archive">OpenTopoMap (Archivo)</string>
+    <string name="open_topo_map_archive">OpenTopoMap (Archivo/Preinstalado)</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Senderismo</string>
     <string name="lonvia_cycling">Lonvia Ciclismo</string>
@@ -43,6 +43,12 @@
     <string name="nearby">Cerca</string>
 
     <string name="cache_settings">Ajustes de caché</string>
+    <string name="import_offline_tiles_title">Importar teselas offline</string>
+    <string name="import_offline_tiles_summary">Selecciona un archivo ZIP de OpenTopoMap e importa sus teselas al caché offline</string>
+    <string name="import_started">Importación de teselas iniciada…</string>
+    <string name="import_success">Se han importado %1$d teselas.</string>
+    <string name="import_failed">Importación fallida: %1$s</string>
+    <string name="import_no_tiles">No se han importado teselas. Comprueba el formato ZIP.</string>
     <string name="tile_cache">Caché de teselas</string>
     <string name="max_cache_size">Tamaño máx. de caché (MB)</string>
     <string name="reset">Restablecer</string>

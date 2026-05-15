@@ -24,7 +24,7 @@
     <string name="poi">POI</string>
 
     <string name="layers">Sovrapposizioni</string>
-    <string name="open_topo_map_archive">OpenTopoMap (Archivio)</string>
+    <string name="open_topo_map_archive">OpenTopoMap (Archivio/Precaricata)</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Escursionismo</string>
     <string name="lonvia_cycling">Lonvia Ciclismo</string>
@@ -43,6 +43,12 @@
     <string name="nearby">Nei paraggi</string>
 
     <string name="cache_settings">Impostazione cache</string>
+    <string name="import_offline_tiles_title">Importa tile offline</string>
+    <string name="import_offline_tiles_summary">Seleziona un file ZIP di OpenTopoMap e importa le sue tile nella cache offline</string>
+    <string name="import_started">Importazione tile iniziata…</string>
+    <string name="import_success">Importate %1$d tile.</string>
+    <string name="import_failed">Importazione fallita: %1$s</string>
+    <string name="import_no_tiles">Nessuna tile importata. Controlla il formato ZIP.</string>
     <string name="tile_cache">Cache dei tile</string>
     <string name="max_cache_size">Dimensione max cache (MB)</string>
     <string name="reset">Ripristina</string>

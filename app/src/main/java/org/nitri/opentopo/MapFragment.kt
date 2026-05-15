@@ -16,7 +16,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
-import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -34,12 +33,15 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_PROFILE
 import org.nitri.opentopo.model.MarkerModel
@@ -159,17 +161,24 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private var locationViewModel: LocationViewModel? = null
     private var gestureOverlay: GestureOverlay? = null
 
+    private var mapViewInitialized = false
+
     private val markerViewModel: MarkerViewModel by viewModels()
 
     @SuppressLint("ApplySharedPref")
     @Suppress("deprecation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mapHandler = Handler(Looper.getMainLooper())
         setHasOptionsMenu(true)
         val hostActivity = activity ?: return
         val appContext = hostActivity.applicationContext
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext)
         val configuration = Configuration.getInstance()
+        if (BuildConfig.DEBUG) {
+            configuration.isDebugMode = true
+            configuration.isDebugTileProviders = true
+        }
         // Load persisted osmdroid preferences first to avoid overwriting our changes later
         configuration.load(appContext, sharedPreferences)
         configuration.userAgentValue = BuildConfig.APPLICATION_ID
@@ -192,10 +201,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         configuration.tileFileSystemCacheMaxBytes =
             maxCacheSize.toLong() * 1024 * 1024
 
-        // Remove any leftover sqlite files in the configured tile cache dir
-        if (externalStorage) {
-            Utils.clearOsmdroidSqliteCache(appContext)
-        }
         // Persist the effective osmdroid settings so a later load() won't re-enable SQLite
         sharedPreferences.edit(commit = true) {
             putString("osmdroid.basePath", basePath.absolutePath)
@@ -225,8 +230,17 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     ): View? {
         val view = inflater.inflate(R.layout.fragment_map, container, false)
         mapView = view.findViewById(R.id.mapview)
+        return view
+    }
+
+    fun initializeMapView() {
+
+        if (mapViewInitialized || !::mapView.isInitialized) return
+
         val dm = this.resources.displayMetrics
-        val hostActivity = activity ?: return null
+        val hostActivity = activity ?: return
+
+        mapViewInitialized = true
 
         mapView.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
@@ -283,7 +297,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mapView.overlays.add(compassOverlay)
         mapView.overlays.add(scaleBarOverlay)
         mapView.addMapListener(DelayedMapListener(dragListener))
-        copyrightView = view.findViewById(R.id.copyrightView)
+        copyrightView = view?.findViewById(R.id.copyrightView)
         setBaseMap()
         locationOverlay?.enableMyLocation()
         locationOverlay?.disableFollowLocation()
@@ -292,13 +306,22 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mapView.visibility = View.VISIBLE
         overlayHelper = OverlayHelper(hostActivity, mapView)
         setTilesOverlay()
-        return view
     }
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val looper = activity?.mainLooper ?: Looper.getMainLooper()
-        mapHandler = Handler(looper)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (!mapViewInitialized) {
+                initializeMapView()
+                initializeMapState(savedInstanceState)
+            }
+        }
+    }
+
+    private fun initializeMapState(savedInstanceState: Bundle?) {
         listener?.setGpx()
 
         // Check if there's already a GPX track loaded and update the state accordingly
@@ -527,6 +550,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     private fun resolveOpenTopoMapTileSource(): ITileSource {
         return when (openTopoMapSource) {
+            OTM_SOURCE_OTM -> XYTileSource(
+                "OpenTopoMap",
+                0,
+                17,
+                256,
+                ".png",
+                arrayOf("https://a.tile.opentopomap.org/", "https://b.tile.opentopomap.org/", "https://c.tile.opentopomap.org/"),
+                "Kartendaten: \u00a9 OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: \u00a9 OpenTopoMap (CC-BY-SA)"
+            )
+
             OTM_SOURCE_R -> XYTileSource(
                 "OpenTopoMap-R",
                 1,
@@ -547,7 +580,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 getString(R.string.top_o_map_copyright)
             )
 
-            else -> TileSourceFactory.OpenTopo
+            else -> XYTileSource(
+                "OpenTopoMap",
+                0,
+                17,
+                256,
+                ".png",
+                arrayOf("https://a.tile.opentopomap.org/", "https://b.tile.opentopomap.org/", "https://c.tile.opentopomap.org/"),
+                "Kartendaten: \u00a9 OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: \u00a9 OpenTopoMap (CC-BY-SA)"
+            )
         }
     }
 
@@ -586,7 +627,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         locationOverlay?.enableFollowLocation()
         locationOverlay?.enableAutoStop = true
         mapHandler.removeCallbacks(centerMapRunnable)
-        mapHandler.post(centerMapRunnable);
+        mapHandler.post(centerMapRunnable)
         sharedPreferences.edit { putBoolean(PREF_FOLLOW, true) }
     }
 
@@ -616,6 +657,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     @SuppressLint("MissingPermission")
     override fun onResume() {
         super.onResume()
+        if (!::mapView.isInitialized) return
         // val basePath = Configuration.getInstance().osmdroidBasePath
         val cache = Configuration.getInstance().osmdroidTileCache
         Log.d(TAG, "Cache: " + cache.absolutePath)
@@ -678,14 +720,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onPause() {
-        mapCenterState = mapView.mapCenter as GeoPoint
+        if (::mapView.isInitialized) {
+            mapCenterState = mapView.mapCenter as GeoPoint
+        }
         try {
             locationManager?.removeUpdates(this)
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
         stopOrientationSensor()
-        mapHandler.removeCallbacks(centerMapRunnable)
+        if (::mapHandler.isInitialized) {
+            mapHandler.removeCallbacks(centerMapRunnable)
+        }
         compassOverlay?.disableCompass()
         locationOverlay?.disableFollowLocation()
         locationOverlay?.disableMyLocation()
@@ -695,20 +741,22 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     override fun onSaveInstanceState(outState: Bundle) {
         Log.d(TAG, "onSaveInstanceState()")
-        mapCenterState = mapView.mapCenter as GeoPoint
-        mapCenterState?.let {
-            outState.putDouble(STATE_LATITUDE, it.latitude)
-            outState.putDouble(STATE_LONGITUDE, it.longitude)
-            Log.d(
-                TAG,
-                String.format(
-                    "Saving center state: %f, %f",
-                    it.latitude,
-                    it.longitude
+        if (::mapView.isInitialized) {
+            mapCenterState = mapView.mapCenter as GeoPoint
+            mapCenterState?.let {
+                outState.putDouble(STATE_LATITUDE, it.latitude)
+                outState.putDouble(STATE_LONGITUDE, it.longitude)
+                Log.d(
+                    TAG,
+                    String.format(
+                        "Saving center state: %f, %f",
+                        it.latitude,
+                        it.longitude
+                    )
                 )
-            )
+            }
+            outState.putDouble(STATE_ZOOM, mapView.zoomLevelDouble)
         }
-        outState.putDouble(STATE_ZOOM, mapView.zoomLevelDouble)
         super.onSaveInstanceState(outState)
     }
 
@@ -843,7 +891,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val fm: FragmentManager
         val itemId = item.itemId
         when (itemId) {
             R.id.action_gpx -> {
@@ -1069,6 +1116,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         listener = null
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        mapViewInitialized = false
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         gpxDisplayState = GpxDisplayState.IDLE
@@ -1082,7 +1134,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onUserMapInteraction() {
-        if (followEnabled) {
+        if (followEnabled && ::mapHandler.isInitialized) {
             // follow disabled by gesture -> re-enable with delay
             mapHandler.removeCallbacksAndMessages(null)
             mapHandler.postDelayed(enableFollowRunnable, 5000)
