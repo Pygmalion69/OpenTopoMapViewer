@@ -35,6 +35,33 @@ class UtilsTest {
     }
 
     @Test
+    fun area_fallsBackToRoutePoints() {
+        val routePoints = listOf(
+            RoutePoint.Builder().setLatitude(5.0).setLongitude(10.0).build() as RoutePoint,
+            RoutePoint.Builder().setLatitude(15.0).setLongitude(5.0).build() as RoutePoint
+        )
+        val route = Route.Builder().setRoutePoints(routePoints).build()
+        val bounds = Utils.area(buildGpx(routes = listOf(route)))
+        assertEquals(15.0, bounds.latNorth, 0.0)
+        assertEquals(5.0, bounds.latSouth, 0.0)
+        assertEquals(10.0, bounds.lonEast, 0.0)
+        assertEquals(5.0, bounds.lonWest, 0.0)
+    }
+
+    @Test
+    fun area_usesWayPointsWhenNoTracksOrRoutes() {
+        val wayPoints = listOf(
+            WayPoint.Builder().setLatitude(-1.0).setLongitude(1.0).build() as WayPoint,
+            WayPoint.Builder().setLatitude(1.0).setLongitude(-1.0).build() as WayPoint
+        )
+        val bounds = Utils.area(buildGpx(wayPoints = wayPoints))
+        assertEquals(1.0, bounds.latNorth, 0.0)
+        assertEquals(-1.0, bounds.latSouth, 0.0)
+        assertEquals(1.0, bounds.lonEast, 0.0)
+        assertEquals(-1.0, bounds.lonWest, 0.0)
+    }
+
+    @Test
     fun convertRouteToTrack_createsSyntheticTrackWhenNoTrackExists() {
         val routePoints = listOf(
             RoutePoint.Builder().setLatitude(1.0).setLongitude(2.0).setDesc("a").build() as RoutePoint,

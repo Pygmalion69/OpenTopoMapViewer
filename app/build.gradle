@@ -138,6 +138,15 @@ dependencies {
     playImplementation 'com.google.android.gms:play-services-ads:25.2.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.mockito:mockito-core:5.11.0"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:5.2.1"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0"
+    testImplementation "androidx.arch.core:core-testing:2.2.0"
     androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.7.0'
+    androidTestImplementation "androidx.room:room-testing:2.8.4"
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0"
+    androidTestImplementation "org.mockito:mockito-android:5.11.0"
+    androidTestImplementation "org.mockito.kotlin:mockito-kotlin:5.2.1"
 }
