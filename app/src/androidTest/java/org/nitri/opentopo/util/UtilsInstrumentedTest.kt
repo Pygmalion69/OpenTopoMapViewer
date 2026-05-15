@@ -3,6 +3,8 @@ package org.nitri.opentopo.util
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.ticofab.androidgpxparser.parser.domain.Gpx
+import io.ticofab.androidgpxparser.parser.domain.WayPoint
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -36,5 +38,27 @@ class UtilsInstrumentedTest {
     fun elevationFromNmea_invalidSentenceReturnsNoElevationValue() {
         val elevation = Utils.elevationFromNmea("INVALID")
         assertEquals(Utils.NO_ELEVATION_VALUE.toDouble(), elevation, 0.0)
+    }
+
+    @Test
+    fun getWayPointTypes_returnsSortedDistinctTypes() {
+        val points = listOf(
+            WayPoint.Builder().setType("summit").build() as WayPoint,
+            WayPoint.Builder().setType("cafe").build() as WayPoint,
+            WayPoint.Builder().setType("").build() as WayPoint,
+            WayPoint.Builder().setType("summit").build() as WayPoint
+        )
+        val gpx = Gpx.Builder().setTracks(emptyList()).setRoutes(emptyList()).setWayPoints(points).build()
+        val types = Utils.getWayPointTypes(gpx, "default")
+        assertEquals(listOf("cafe", "default", "summit"), types)
+    }
+
+    @Test
+    fun getWayPointsByType_filtersCorrectly() {
+        val summit = WayPoint.Builder().setType("summit").build() as WayPoint
+        val blank = WayPoint.Builder().setType("").build() as WayPoint
+        val gpx = Gpx.Builder().setTracks(emptyList()).setRoutes(emptyList()).setWayPoints(listOf(summit, blank)).build()
+        assertEquals(1, Utils.getWayPointsByType(gpx, "summit").size)
+        assertEquals(1, Utils.getWayPointsByType(gpx, "").size)
     }
 }
