@@ -12,6 +12,7 @@
     <string name="discard_current_gpx">The current GPX will be discarded.</string>
     <string name="gpx_details">GPX details</string>
     <string name="gpx_zoom">Zoom to GPX</string>
+    <string name="gpx_remove">Remove GPX</string>
 
     <string name="location_details">Location detail</string>
     <string name="label_latitude">Latitude:</string>
