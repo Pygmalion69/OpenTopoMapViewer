@@ -42,6 +42,7 @@ import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN_ON_MAP_TAP
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
 import org.nitri.opentopo.viewmodel.GpxViewModel
+import org.nitri.opentopo.viewmodel.KmlViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.util.Utils
@@ -59,11 +60,11 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     private var gpxUriString: String? = null
     private var gpxUri: Uri? = null
     private var shouldZoomToGpx = false
-    private var kmlUriString: String? = null
     private var shouldZoomToKml = false
     override var selectedNearbyPlace: NearbyItem? = null
     private var mapFragment: MapFragment? = null
     private val gpxViewModel: GpxViewModel by viewModels()
+    private val kmlViewModel: KmlViewModel by viewModels()
     override var isFullscreen = false
 
     private var windowInsetsController: WindowInsetsControllerCompat? = null
@@ -118,7 +119,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
         if (savedInstanceState != null) {
             gpxUriString = savedInstanceState.getString(GPX_URI_STATE)
-            kmlUriString = savedInstanceState.getString(KML_URI_STATE)
+            kmlViewModel.kmlUriString = savedInstanceState.getString(KML_URI_STATE)
         }
 
         mapContainer = findViewById(R.id.map_container)
@@ -360,7 +361,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun setKml() {
-        kmlUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
+        kmlViewModel.kmlUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
             parseKml(uriString.toUri())
         }
     }
@@ -376,8 +377,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         if (!TextUtils.isEmpty(gpxUriString)) {
             outState.putString(GPX_URI_STATE, gpxUriString)
         }
-        if (!TextUtils.isEmpty(kmlUriString)) {
-            outState.putString(KML_URI_STATE, kmlUriString)
+        if (!TextUtils.isEmpty(kmlViewModel.kmlUriString)) {
+            outState.putString(KML_URI_STATE, kmlViewModel.kmlUriString)
         }
         mapFragment?.let {
             supportFragmentManager.putFragment(outState, MAP_FRAGMENT_TAG, it)
@@ -443,7 +444,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     private fun handleParsedKml(kmlDocument: KmlDocument, kmlUriString: String?) {
         (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.let { mapFragment ->
             mapFragment.setKml(kmlDocument, shouldZoomToKml)
-            kmlUriString?.let { this.kmlUriString = it }
+            kmlUriString?.let { kmlViewModel.kmlUriString = it }
             shouldZoomToKml = false
         }
     }
@@ -507,7 +508,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun clearKml() {
-        kmlUriString = null
+        kmlViewModel.kmlUriString = null
     }
 
     override fun showNearbyPlace(nearbyItem: NearbyItem?) {
