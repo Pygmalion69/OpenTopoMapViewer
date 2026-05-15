@@ -884,6 +884,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val gpxVisible = gpxDisplayState != GpxDisplayState.IDLE
         menu.findItem(R.id.action_gpx_details).isVisible = gpxVisible
         menu.findItem(R.id.action_gpx_zoom).isVisible = gpxVisible
+        menu.findItem(R.id.action_gpx_remove).isVisible = gpxVisible
 
         listener?.let {
             menu.findItem(R.id.action_privacy_settings).isVisible = it.isPrivacyOptionsRequired()
@@ -954,6 +955,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             R.id.action_gpx_zoom -> {
                 disableFollow()
                 listener?.let { zoomToBounds(Utils.area(it.getGpx())) }
+                return true
+            }
+            R.id.action_gpx_remove -> {
+                showGpxDialog()
                 return true
             }
             R.id.action_layers -> {
