@@ -37,6 +37,7 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_gpx_remove"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/gpx_remove"
         android:visible="false"
         app:showAsAction="never" />
