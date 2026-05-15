@@ -33,10 +33,10 @@ class UtilsTest {
     @Test
     fun getWayPointTypes_returnsSortedDistinctTypes() {
         val points = listOf(
-            WayPoint.Builder().setType("summit").build(),
-            WayPoint.Builder().setType("cafe").build(),
-            WayPoint.Builder().setType("").build(),
-            WayPoint.Builder().setType("summit").build()
+            WayPoint.Builder().setType("summit").build() as WayPoint,
+            WayPoint.Builder().setType("cafe").build() as WayPoint,
+            WayPoint.Builder().setType("").build() as WayPoint,
+            WayPoint.Builder().setType("summit").build() as WayPoint
         )
         val gpx = Gpx.Builder().setWayPoints(points).build()
         val types = Utils.getWayPointTypes(gpx, "default")
@@ -45,8 +45,8 @@ class UtilsTest {
 
     @Test
     fun getWayPointsByType_filtersCorrectly() {
-        val summit = WayPoint.Builder().setType("summit").build()
-        val blank = WayPoint.Builder().setType("").build()
+        val summit = WayPoint.Builder().setType("summit").build() as WayPoint
+        val blank = WayPoint.Builder().setType("").build() as WayPoint
         val gpx = Gpx.Builder().setWayPoints(listOf(summit, blank)).build()
         assertEquals(1, Utils.getWayPointsByType(gpx, "summit").size)
         assertEquals(1, Utils.getWayPointsByType(gpx, "").size)
@@ -55,8 +55,8 @@ class UtilsTest {
     @Test
     fun convertRouteToTrack_createsSyntheticTrackWhenNoTrackExists() {
         val routePoints = listOf(
-            RoutePoint.Builder().setLatitude(1.0).setLongitude(2.0).setDesc("a").build(),
-            RoutePoint.Builder().setLatitude(3.0).setLongitude(4.0).setDesc("b").build()
+            RoutePoint.Builder().setLatitude(1.0).setLongitude(2.0).setDesc("a").build() as RoutePoint,
+            RoutePoint.Builder().setLatitude(3.0).setLongitude(4.0).setDesc("b").build() as RoutePoint
         )
         val gpx = Gpx.Builder().setRoutes(listOf(Route.Builder().setRoutePoints(routePoints).build())).build()
         val converted = Utils.convertRouteToTrack(gpx)
