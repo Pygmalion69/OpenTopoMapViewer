@@ -1,0 +1,87 @@
+package org.nitri.opentopo.util
+
+import io.ticofab.androidgpxparser.parser.domain.Gpx
+import io.ticofab.androidgpxparser.parser.domain.Route
+import io.ticofab.androidgpxparser.parser.domain.RoutePoint
+import io.ticofab.androidgpxparser.parser.domain.Track
+import io.ticofab.androidgpxparser.parser.domain.TrackPoint
+import io.ticofab.androidgpxparser.parser.domain.TrackSegment
+import io.ticofab.androidgpxparser.parser.domain.WayPoint
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class UtilsTest {
+    @Test
+    fun area_usesTrackPointsWhenPresent() {
+        val trackPoints = listOf(
+            TrackPoint.Builder().setLatitude(10.0).setLongitude(20.0).build() as TrackPoint,
+            TrackPoint.Builder().setLatitude(12.0).setLongitude(18.0).build() as TrackPoint,
+            TrackPoint.Builder().setLatitude(8.0).setLongitude(25.0).build() as TrackPoint
+        )
+        val gpx = Gpx.Builder()
+            .setTracks(listOf(Track.Builder().setTrackSegments(listOf(TrackSegment.Builder().setTrackPoints(trackPoints).build())).build()))
+            .build()
+        val bounds = Utils.area(gpx)
+        assertEquals(12.0, bounds.latNorth, 0.0)
+        assertEquals(8.0, bounds.latSouth, 0.0)
+        assertEquals(25.0, bounds.lonEast, 0.0)
+        assertEquals(18.0, bounds.lonWest, 0.0)
+    }
+
+    @Test
+    fun getWayPointTypes_returnsSortedDistinctTypes() {
+        val points = listOf(
+            WayPoint.Builder().setType("summit").build(),
+            WayPoint.Builder().setType("cafe").build(),
+            WayPoint.Builder().setType("").build(),
+            WayPoint.Builder().setType("summit").build()
+        )
+        val gpx = Gpx.Builder().setWayPoints(points).build()
+        val types = Utils.getWayPointTypes(gpx, "default")
+        assertEquals(listOf("cafe", "default", "summit"), types)
+    }
+
+    @Test
+    fun getWayPointsByType_filtersCorrectly() {
+        val summit = WayPoint.Builder().setType("summit").build()
+        val blank = WayPoint.Builder().setType("").build()
+        val gpx = Gpx.Builder().setWayPoints(listOf(summit, blank)).build()
+        assertEquals(1, Utils.getWayPointsByType(gpx, "summit").size)
+        assertEquals(1, Utils.getWayPointsByType(gpx, "").size)
+    }
+
+    @Test
+    fun convertRouteToTrack_createsSyntheticTrackWhenNoTrackExists() {
+        val routePoints = listOf(
+            RoutePoint.Builder().setLatitude(1.0).setLongitude(2.0).setDesc("a").build(),
+            RoutePoint.Builder().setLatitude(3.0).setLongitude(4.0).setDesc("b").build()
+        )
+        val gpx = Gpx.Builder().setRoutes(listOf(Route.Builder().setRoutePoints(routePoints).build())).build()
+        val converted = Utils.convertRouteToTrack(gpx)
+        assertEquals(1, converted.tracks?.size)
+        assertEquals(2, converted.tracks?.first()?.trackSegments?.first()?.trackPoints?.size)
+        assertTrue(converted.routes?.isNotEmpty() == true)
+    }
+
+    @Test
+    fun convertRouteToTrack_returnsOriginalWhenTrackPresent() {
+        val gpx = Gpx.Builder().setTracks(listOf(Track.Builder().setTrackSegments(emptyList()).build())).build()
+        val converted = Utils.convertRouteToTrack(gpx)
+        assertSame(gpx, converted)
+    }
+
+    @Test
+    fun elevationFromNmea_validSentenceReturnsElevation() {
+        val nmea = "\$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,100.0,M,46.9,M,,*47"
+        val elevation = Utils.elevationFromNmea(nmea)
+        assertEquals(100.0, elevation, 0.0)
+    }
+
+    @Test
+    fun elevationFromNmea_invalidSentenceReturnsNoElevationValue() {
+        val elevation = Utils.elevationFromNmea("INVALID")
+        assertEquals(Utils.NO_ELEVATION_VALUE.toDouble(), elevation, 0.0)
+    }
+}
