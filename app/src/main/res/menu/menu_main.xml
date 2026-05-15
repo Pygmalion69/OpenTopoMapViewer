@@ -36,6 +36,20 @@
         android:visible="false"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_kml"
+        android:title="@string/kml"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_kml_zoom"
+        android:title="@string/kml_zoom"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_kml_remove"
+        android:title="@string/kml_remove"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_gpx_remove"
         android:icon="@drawable/ic_action_delete"
         android:title="@string/gpx_remove"
