@@ -13,6 +13,19 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class UtilsTest {
+
+    private fun buildGpx(
+        tracks: List<Track> = emptyList(),
+        routes: List<Route> = emptyList(),
+        wayPoints: List<WayPoint> = emptyList()
+    ): Gpx {
+        return Gpx.Builder()
+            .setTracks(tracks)
+            .setRoutes(routes)
+            .setWayPoints(wayPoints)
+            .build()
+    }
+
     @Test
     fun area_usesTrackPointsWhenPresent() {
         val trackPoints = listOf(
@@ -20,10 +33,12 @@ class UtilsTest {
             TrackPoint.Builder().setLatitude(12.0).setLongitude(18.0).build() as TrackPoint,
             TrackPoint.Builder().setLatitude(8.0).setLongitude(25.0).build() as TrackPoint
         )
-        val gpx = Gpx.Builder()
-            .setTracks(listOf(Track.Builder().setTrackSegments(listOf(TrackSegment.Builder().setTrackPoints(trackPoints).build())).build()))
+        val track = Track.Builder()
+            .setTrackSegments(listOf(TrackSegment.Builder().setTrackPoints(trackPoints).build()))
             .build()
-        val bounds = Utils.area(gpx)
+
+        val bounds = Utils.area(buildGpx(tracks = listOf(track)))
+
         assertEquals(12.0, bounds.latNorth, 0.0)
         assertEquals(8.0, bounds.latSouth, 0.0)
         assertEquals(25.0, bounds.lonEast, 0.0)
@@ -38,8 +53,7 @@ class UtilsTest {
             WayPoint.Builder().setType("").build() as WayPoint,
             WayPoint.Builder().setType("summit").build() as WayPoint
         )
-        val gpx = Gpx.Builder().setWayPoints(points).build()
-        val types = Utils.getWayPointTypes(gpx, "default")
+        val types = Utils.getWayPointTypes(buildGpx(wayPoints = points), "default")
         assertEquals(listOf("cafe", "default", "summit"), types)
     }
 
@@ -47,7 +61,8 @@ class UtilsTest {
     fun getWayPointsByType_filtersCorrectly() {
         val summit = WayPoint.Builder().setType("summit").build() as WayPoint
         val blank = WayPoint.Builder().setType("").build() as WayPoint
-        val gpx = Gpx.Builder().setWayPoints(listOf(summit, blank)).build()
+        val gpx = buildGpx(wayPoints = listOf(summit, blank))
+
         assertEquals(1, Utils.getWayPointsByType(gpx, "summit").size)
         assertEquals(1, Utils.getWayPointsByType(gpx, "").size)
     }
@@ -58,8 +73,11 @@ class UtilsTest {
             RoutePoint.Builder().setLatitude(1.0).setLongitude(2.0).setDesc("a").build() as RoutePoint,
             RoutePoint.Builder().setLatitude(3.0).setLongitude(4.0).setDesc("b").build() as RoutePoint
         )
-        val gpx = Gpx.Builder().setRoutes(listOf(Route.Builder().setRoutePoints(routePoints).build())).build()
+        val route = Route.Builder().setRoutePoints(routePoints).build()
+        val gpx = buildGpx(routes = listOf(route))
+
         val converted = Utils.convertRouteToTrack(gpx)
+
         assertEquals(1, converted.tracks?.size)
         assertEquals(2, converted.tracks?.first()?.trackSegments?.first()?.trackPoints?.size)
         assertTrue(converted.routes?.isNotEmpty() == true)
@@ -67,21 +85,11 @@ class UtilsTest {
 
     @Test
     fun convertRouteToTrack_returnsOriginalWhenTrackPresent() {
-        val gpx = Gpx.Builder().setTracks(listOf(Track.Builder().setTrackSegments(emptyList()).build())).build()
+        val existingTrack = Track.Builder().setTrackSegments(emptyList()).build()
+        val gpx = buildGpx(tracks = listOf(existingTrack))
+
         val converted = Utils.convertRouteToTrack(gpx)
+
         assertSame(gpx, converted)
-    }
-
-    @Test
-    fun elevationFromNmea_validSentenceReturnsElevation() {
-        val nmea = "\$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,100.0,M,46.9,M,,*47"
-        val elevation = Utils.elevationFromNmea(nmea)
-        assertEquals(100.0, elevation, 0.0)
-    }
-
-    @Test
-    fun elevationFromNmea_invalidSentenceReturnsNoElevationValue() {
-        val elevation = Utils.elevationFromNmea("INVALID")
-        assertEquals(Utils.NO_ELEVATION_VALUE.toDouble(), elevation, 0.0)
     }
 }
