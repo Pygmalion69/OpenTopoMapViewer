@@ -10,6 +10,7 @@
     <string name="discard_current_gpx">Il GPX caricato verrà sostituito</string>
     <string name="gpx_details">Dettagli GPX</string>
     <string name="gpx_zoom">Centra GPX</string>
+    <string name="gpx_remove">Rimuovi GPX</string>
 
     <string name="location_details">Dettagli posizione</string>
     <string name="label_latitude">Latitudine:</string>
