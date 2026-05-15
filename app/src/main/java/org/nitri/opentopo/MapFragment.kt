@@ -958,7 +958,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
             R.id.action_gpx_remove -> {
-                showGpxDialog()
+                showGpxDialog {
+                    markerViewModel.markers.value?.forEach {
+                        it.routeWaypoint = false
+                    }
+                    listener?.clearGpx()
+                }
                 return true
             }
             R.id.action_layers -> {
