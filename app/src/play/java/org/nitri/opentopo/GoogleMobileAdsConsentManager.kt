@@ -58,15 +58,11 @@ class GoogleMobileAdsConsentManager private constructor(context: Context) {
         onConsentGatheringCompleteListener: OnConsentGatheringCompleteListener,
     ) {
         // For testing purposes, you can force a DebugGeography of EEA or NOT_EEA.
-        val debugSettingsBuilder = ConsentDebugSettings.Builder(activity)
-            .addTestDeviceHashedId(activity.getString(R.string.test_device_hashed_id))
-
-        try {
-            Class.forName("androidx.test.espresso.Espresso")
-            debugSettingsBuilder.setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_NOT_EEA)
-        } catch (_: ClassNotFoundException) {}
-
-        val debugSettings = debugSettingsBuilder.build()
+        val debugSettings =
+            ConsentDebugSettings.Builder(activity)
+                // .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                .addTestDeviceHashedId(activity.getString(R.string.test_device_hashed_id))
+                .build()
 
         val params =
             ConsentRequestParameters.Builder().setConsentDebugSettings(debugSettings).build()
