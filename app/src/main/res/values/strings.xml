@@ -13,6 +13,10 @@
     <string name="gpx_details">GPX details</string>
     <string name="gpx_zoom">Zoom to GPX</string>
     <string name="gpx_remove">Remove GPX</string>
+    <string name="kml">KML</string>
+    <string name="kml_zoom">Zoom to KML</string>
+    <string name="kml_remove">Remove KML</string>
+    <string name="invalid_kml">Invalid KML</string>
 
     <string name="location_details">Location detail</string>
     <string name="label_latitude">Latitude:</string>

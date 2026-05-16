@@ -73,6 +73,7 @@ import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.ScaleBarOverlay
+import org.osmdroid.bonuspack.kml.KmlDocument
 import org.osmdroid.views.overlay.compass.CompassOverlay
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
@@ -92,6 +93,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         LOADED_FROM_FILE, // GPX loaded from file
         CALCULATED      // GPX calculated from routing service
     }
+    private var kmlDocument: KmlDocument? = null
 
     private var gpxDisplayState: GpxDisplayState = GpxDisplayState.IDLE
     private var orientationSensor: OrientationSensor? = null
@@ -323,6 +325,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     private fun initializeMapState(savedInstanceState: Bundle?) {
         listener?.setGpx()
+        listener?.setKml()
 
         // Check if there's already a GPX track loaded and update the state accordingly
         if (overlayHelper?.hasGpx() == true) {
@@ -777,6 +780,24 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
     }
 
+    fun setKml(document: KmlDocument, zoom: Boolean) {
+        kmlDocument = document
+        overlayHelper?.setKml(document)
+        if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
+        if (zoom) {
+            document.mKmlRoot.boundingBox?.let {
+                disableFollow()
+                zoomToBounds(it)
+            }
+        }
+    }
+
+    private fun clearKml() {
+        kmlDocument = null
+        overlayHelper?.clearKml()
+        if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
+    }
+
     private fun removeGpx() {
         overlayHelper?.let {
             it.clearGpx()
@@ -885,6 +906,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         menu.findItem(R.id.action_gpx_details).isVisible = gpxVisible
         menu.findItem(R.id.action_gpx_zoom).isVisible = gpxVisible
         menu.findItem(R.id.action_gpx_remove).isVisible = gpxVisible
+        val kmlVisible = overlayHelper?.hasKml() == true && kmlDocument != null
+        menu.findItem(R.id.action_kml_zoom).isVisible = kmlVisible
+        menu.findItem(R.id.action_kml_remove).isVisible = kmlVisible
 
         listener?.let {
             menu.findItem(R.id.action_privacy_settings).isVisible = it.isPrivacyOptionsRequired()
@@ -912,6 +936,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 locationViewModel?.currentLocation?.value?.let { location ->
                     mapView.controller.animateTo(GeoPoint(location))
                 }
+                return true
+            }
+            R.id.action_kml -> {
+                listener?.selectKml()
                 return true
             }
             R.id.action_follow -> {
@@ -964,6 +992,18 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     }
                     listener?.clearGpx()
                 }
+                return true
+            }
+            R.id.action_kml_zoom -> {
+                kmlDocument?.mKmlRoot?.boundingBox?.let {
+                    disableFollow()
+                    zoomToBounds(it)
+                }
+                return true
+            }
+            R.id.action_kml_remove -> {
+                clearKml()
+                listener?.clearKml()
                 return true
             }
             R.id.action_layers -> {
@@ -1186,11 +1226,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
          * Start GPX file selection flow
          */
         fun selectGpx()
+        fun selectKml()
 
         /**
          * Request to set a GPX layer, e.g. after a configuration change
          */
         fun setGpx()
+        fun setKml()
 
         /**
          * Retrieve the current GPX
@@ -1203,6 +1245,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
          * Clear GPX so it won't be restored on config change
          */
         fun clearGpx()
+        fun clearKml()
 
         /**
          * Present GPX details
