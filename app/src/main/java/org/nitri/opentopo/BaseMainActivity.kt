@@ -33,6 +33,12 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
 import io.ticofab.androidgpxparser.parser.GPXParser
@@ -397,14 +403,26 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     private fun parseGpx(uri: Uri) {
-        try {
-            contentResolver.openInputStream(uri)?.use { inputStream ->
-                val gpx = parser.parse(inputStream)
-                handleParsedGpx(gpx, MapFragment.GpxDisplayState.LOADED_FROM_FILE, uri.toString())
-            } ?: showGpxError(getString(R.string.invalid_gpx) + ": empty input stream")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val gpx = parser.parse(inputStream)
+                    withContext(Dispatchers.Main) {
+                        handleParsedGpx(
+                            gpx,
+                            MapFragment.GpxDisplayState.LOADED_FROM_FILE,
+                            uri.toString()
+                        )
+                    }
+                } ?: withContext(Dispatchers.Main) {
+                    showGpxError(getString(R.string.invalid_gpx) + ": empty input stream")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+                }
+            }
         }
     }
 
@@ -412,7 +430,10 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "*/*"
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/vnd.google-earth.kml+xml", "application/vnd.google-earth.kmz"))
+        intent.putExtra(
+            Intent.EXTRA_MIME_TYPES,
+            arrayOf("application/vnd.google-earth.kml+xml", "application/vnd.google-earth.kmz")
+        )
         val activityIntent = Intent.createChooser(intent, "KML")
         kmlActivityResultLauncher.launch(activityIntent)
     }
@@ -429,51 +450,85 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     private fun parseKml(uri: Uri) {
-        try {
-            contentResolver.openInputStream(uri)?.use { inputStream ->
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val isKmz = uri.toString().lowercase().endsWith(".kmz") ||
+                        contentResolver.getType(uri) == "application/vnd.google-earth.kmz"
                 val kmlDocument = KmlDocument()
-                kmlDocument.parseKMLStream(inputStream, null)
-                handleParsedKml(kmlDocument, uri.toString())
-            } ?: showKmlError(getString(R.string.invalid_kml) + ": empty input stream")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            showKmlError(getString(R.string.invalid_kml) + ": ${e.message}")
+                var success = false
+                if (isKmz) {
+                    val tempFile = File(cacheDir, "temp_kml.kmz")
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
+                        FileOutputStream(tempFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    success = kmlDocument.parseKMZFile(tempFile)
+                    if (tempFile.exists()) tempFile.delete()
+                } else {
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
+                        success = kmlDocument.parseKMLStream(inputStream, null)
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    if (success) {
+                        handleParsedKml(kmlDocument, uri.toString())
+                    } else {
+                        showKmlError(getString(R.string.invalid_kml))
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showKmlError(getString(R.string.invalid_kml) + ": ${e.message}")
+                }
+            }
         }
     }
 
     private fun handleParsedKml(kmlDocument: KmlDocument, kmlUriString: String?) {
         (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.let { mapFragment ->
             mapFragment.setKml(kmlDocument, shouldZoomToKml)
-            kmlUriString?.let { kmlViewModel.kmlUriString = it }
-            shouldZoomToKml = false
         }
-    }
-
-    private fun showKmlError(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        kmlUriString?.let { kmlViewModel.kmlUriString = it }
+        shouldZoomToKml = false
     }
 
     override fun parseCalculatedGpx(gpxString: String) {
-        try {
-            val inputStream = gpxString.byteInputStream()
-            val gpx = parser.parse(inputStream)
-            val convertedGpx = Utils.convertRouteToTrack(gpx)
-            handleParsedGpx(convertedGpx, MapFragment.GpxDisplayState.CALCULATED, null)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val inputStream = gpxString.byteInputStream()
+                val gpx = parser.parse(inputStream)
+                val convertedGpx = Utils.convertRouteToTrack(gpx)
+                withContext(Dispatchers.Main) {
+                    handleParsedGpx(convertedGpx, MapFragment.GpxDisplayState.CALCULATED, null)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+                }
+            }
         }
     }
 
-    private fun handleParsedGpx(parsedGpx: Gpx?, displayState: MapFragment.GpxDisplayState, gpxUriString: String?) {
+    private fun handleParsedGpx(
+        parsedGpx: Gpx?,
+        displayState: MapFragment.GpxDisplayState,
+        gpxUriString: String?
+    ) {
         parsedGpx?.let { validGpx ->
             gpxViewModel.gpx = validGpx
             (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.let { mapFragment ->
                 mapFragment.setGpx(validGpx, displayState, shouldZoomToGpx)
-                gpxUriString?.let { this.gpxUriString = it }
-                shouldZoomToGpx = false
             }
+            gpxUriString?.let { this.gpxUriString = it }
         } ?: showGpxError(getString(R.string.invalid_gpx) + ": no GPX data")
+        shouldZoomToGpx = false
+    }
+
+    private fun showKmlError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun showGpxError(message: String) {

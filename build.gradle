@@ -7,7 +7,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:9.2.0'
+        classpath 'com.android.tools.build:gradle:9.2.1'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10'
         classpath 'com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.3.6'
     }
@@ -18,14 +18,17 @@ allprojects {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven {
-            url = uri("https://maven.pkg.github.com/Pygmalion69/ors-android-client")
-            credentials {
-                username = System.getenv("GPR_USER") ?: findProperty("gpr.user")
-                password = System.getenv("GPR_TOKEN") ?: findProperty("gpr.token")
+        def gprUser = System.getenv("GPR_USER") ?: findProperty("gpr.user")
+        def gprToken = System.getenv("GPR_TOKEN") ?: findProperty("gpr.token")
+        if (gprUser != null && gprToken != null) {
+            maven {
+                url = uri("https://maven.pkg.github.com/Pygmalion69/ors-android-client")
+                credentials {
+                    username = gprUser
+                    password = gprToken
+                }
             }
         }
-        maven { url = uri("https://jitpack.io") }
     }
     tasks.withType(JavaCompile).tap {
         configureEach {

@@ -785,7 +785,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         overlayHelper?.setKml(document)
         if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
         if (zoom) {
-            document.mKmlRoot.boundingBox?.let {
+            document.mKmlRoot.getBoundingBox()?.let {
                 disableFollow()
                 zoomToBounds(it)
             }
@@ -995,7 +995,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
             R.id.action_kml_zoom -> {
-                kmlDocument?.mKmlRoot?.boundingBox?.let {
+                kmlDocument?.mKmlRoot?.getBoundingBox()?.let {
                     disableFollow()
                     zoomToBounds(it)
                 }
