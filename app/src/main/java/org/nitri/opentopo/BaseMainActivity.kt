@@ -33,6 +33,10 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
 import io.ticofab.androidgpxparser.parser.GPXParser
@@ -52,7 +56,6 @@ import org.nitri.ors.OrsClient
 
 open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener,
     GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
-    private val parser = GPXParser()
     private var orsClient: OrsClient? = null
     private var geoPointFromIntent: GeoPointDto? = null
     private var gpxUriString: String? = null
@@ -383,26 +386,49 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     private fun parseGpx(uri: Uri) {
-        try {
-            contentResolver.openInputStream(uri)?.use { inputStream ->
-                val gpx = parser.parse(inputStream)
-                handleParsedGpx(gpx, MapFragment.GpxDisplayState.LOADED_FROM_FILE, uri.toString())
-            } ?: showGpxError(getString(R.string.invalid_gpx) + ": empty input stream")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                contentResolver.openInputStream(uri)?.use { inputStream ->
+                    val gpx = GPXParser().parse(inputStream)
+                    withContext(Dispatchers.Main) {
+                        handleParsedGpx(
+                            gpx,
+                            MapFragment.GpxDisplayState.LOADED_FROM_FILE,
+                            uri.toString()
+                        )
+                    }
+                } ?: withContext(Dispatchers.Main) {
+                    showGpxError(getString(R.string.invalid_gpx) + ": empty input stream")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+                }
+            }
         }
     }
 
     override fun parseCalculatedGpx(gpxString: String) {
-        try {
-            val inputStream = gpxString.byteInputStream()
-            val gpx = parser.parse(inputStream)
-            val convertedGpx = Utils.convertRouteToTrack(gpx)
-            handleParsedGpx(convertedGpx, MapFragment.GpxDisplayState.CALCULATED, null)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Normalize the ORS namespace to standard GPX for better compatibility
+                val normalizedGpx = gpxString.replace(
+                    "https://raw.githubusercontent.com/GIScience/openrouteservice-schema/main/gpx/v2/ors-gpx.xsd",
+                    "http://www.topografix.com/GPX/1/1"
+                )
+                val inputStream = normalizedGpx.byteInputStream()
+                val gpx = GPXParser().parse(inputStream)
+                val convertedGpx = gpx?.let { Utils.convertRouteToTrack(it) }
+                withContext(Dispatchers.Main) {
+                    handleParsedGpx(convertedGpx, MapFragment.GpxDisplayState.CALCULATED, null)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showGpxError(getString(R.string.invalid_gpx) + ": ${e.message}")
+                }
+            }
         }
     }
 
