@@ -61,7 +61,6 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
     private var orsClient: OrsClient? = null
     private var geoPointFromIntent: GeoPointDto? = null
-    private var gpxUriString: String? = null
     private var shouldZoomToGpx = false
     private var shouldZoomToKml = false
     override var selectedNearbyPlace: NearbyItem? = null
@@ -121,7 +120,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         setSupportActionBar(toolbar)
 
         if (savedInstanceState != null) {
-            gpxUriString = savedInstanceState.getString(GPX_URI_STATE)
+            gpxViewModel.gpxUriString = savedInstanceState.getString(GPX_URI_STATE)
             kmlViewModel.kmlUriString = savedInstanceState.getString(KML_URI_STATE)
         }
 
@@ -219,8 +218,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
                         kmlViewModel.kmlUriString = uri.toString()
                         shouldZoomToKml = true
                     } else {
-                        gpxUriString = uri.toString()
-                        Log.i(TAG, "Uri: $gpxUriString")
+                        gpxViewModel.gpxUriString = uri.toString()
+                        Log.i(TAG, "Uri: ${gpxViewModel.gpxUriString}")
                         shouldZoomToGpx = true
                     }
                 }
@@ -365,18 +364,23 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     override fun setGpx() {
         val currentGpx = gpxViewModel.gpx
         if (currentGpx != null) {
-            val displayState = if (gpxUriString == null) MapFragment.GpxDisplayState.CALCULATED else MapFragment.GpxDisplayState.LOADED_FROM_FILE
-            handleParsedGpx(currentGpx, displayState, gpxUriString)
+            val displayState = if (gpxViewModel.gpxUriString == null) MapFragment.GpxDisplayState.CALCULATED else MapFragment.GpxDisplayState.LOADED_FROM_FILE
+            handleParsedGpx(currentGpx, displayState, gpxViewModel.gpxUriString)
         } else {
-            gpxUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
+            gpxViewModel.gpxUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
                 parseGpx(uriString.toUri())
             }
         }
     }
 
     override fun setKml() {
-        kmlViewModel.kmlUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
-            parseKml(uriString.toUri())
+        val currentKml = kmlViewModel.kmlDocument
+        if (currentKml != null) {
+            handleParsedKml(currentKml, kmlViewModel.kmlUriString)
+        } else {
+            kmlViewModel.kmlUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
+                parseKml(uriString.toUri())
+            }
         }
     }
 
@@ -388,8 +392,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        if (!TextUtils.isEmpty(gpxUriString)) {
-            outState.putString(GPX_URI_STATE, gpxUriString)
+        if (!TextUtils.isEmpty(gpxViewModel.gpxUriString)) {
+            outState.putString(GPX_URI_STATE, gpxViewModel.gpxUriString)
         }
         if (!TextUtils.isEmpty(kmlViewModel.kmlUriString)) {
             outState.putString(KML_URI_STATE, kmlViewModel.kmlUriString)
@@ -496,6 +500,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     private fun handleParsedKml(kmlDocument: KmlDocument, kmlUriString: String?) {
         (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.setKml(kmlDocument, shouldZoomToKml)
+        kmlViewModel.kmlDocument = kmlDocument
         kmlUriString?.let { kmlViewModel.kmlUriString = it }
         shouldZoomToKml = false
     }
@@ -531,7 +536,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         parsedGpx?.let { validGpx ->
             gpxViewModel.gpx = validGpx
             (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.setGpx(validGpx, displayState, shouldZoomToGpx)
-            this.gpxUriString = gpxUriString
+            gpxViewModel.gpxUriString = gpxUriString
         } ?: showGpxError(getString(R.string.invalid_gpx) + ": no GPX data")
         shouldZoomToGpx = false
     }
@@ -568,11 +573,12 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun clearGpx() {
         gpxViewModel.gpx = null
-        gpxUriString = null
+        gpxViewModel.gpxUriString = null
     }
 
     override fun clearKml() {
         kmlViewModel.kmlUriString = null
+        kmlViewModel.kmlDocument = null
     }
 
     override fun showNearbyPlace(nearbyItem: NearbyItem?) {
