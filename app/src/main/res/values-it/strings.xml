@@ -11,6 +11,10 @@
     <string name="gpx_details">Dettagli GPX</string>
     <string name="gpx_zoom">Centra GPX</string>
     <string name="gpx_remove">Rimuovi GPX</string>
+    <string name="kml">KML</string>
+    <string name="kml_zoom">Zoom su KML</string>
+    <string name="kml_remove">Rimuovi KML</string>
+    <string name="invalid_kml">KML non valido</string>
 
     <string name="location_details">Dettagli posizione</string>
     <string name="label_latitude">Latitudine:</string>
@@ -88,6 +92,10 @@
     <string name="settings">Impostazioni</string>
     <string name="screen_header">Schermo</string>
     <string name="cache_header">Cache</string>
+
+    <string name="kml_header">KML</string>
+    <string name="kml_enable">Abilita il supporto KML</string>
+    <string name="kml_enable_summary">Mostra le opzioni KML nel menu</string>
 
     <string name="waypoint_added">Waypoint aggiunto</string>
     <string name="waypoint_removed">Waypoint rimosso</string>

@@ -11,6 +11,10 @@
     <string name="gpx_details">GPX details</string>
     <string name="gpx_zoom">Zoom naar GPX</string>
     <string name="gpx_remove">GPX verwijderen</string>
+    <string name="kml">KML</string>
+    <string name="kml_zoom">Zoom naar KML</string>
+    <string name="kml_remove">KML verwijderen</string>
+    <string name="invalid_kml">Ongeldige KML</string>
 
     <string name="location_details">Locatie-detail</string>
     <string name="label_latitude">Breedtegraad:</string>
@@ -88,6 +92,10 @@
     <string name="settings">Instellingen</string>
     <string name="screen_header">Scherm</string>
     <string name="cache_header">Cache</string>
+
+    <string name="kml_header">KML</string>
+    <string name="kml_enable">KML-ondersteuning inschakelen</string>
+    <string name="kml_enable_summary">KML-opties in het menu tonen</string>
 
     <string name="waypoint_added">Routepunt toegevoegd</string>
     <string name="waypoint_removed">Routepunt verwijderd</string>

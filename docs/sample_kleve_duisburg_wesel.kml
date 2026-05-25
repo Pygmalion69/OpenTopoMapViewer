@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <!--
+    Simple KML test file for the OpenTopoMapViewer KML implementation.  
+    It defines three points (Kleve, Wesel and Duisburg in Germany) and a LineString
+    connecting them.  Each point includes coordinates in the order longitude, 
+    latitude and altitude (altitude set to 0).  Use this file to verify that
+    markers and polylines appear on the map once KML support is implemented.
+  -->
+  <Document>
+    <name>Kleve‑Duisburg‑Wesel Route</name>
+    <open>1</open>
+
+    <!-- Point: Kleve -->
+    <Placemark>
+      <name>Kleve</name>
+      <Point>
+        <!-- coordinates are in longitude, latitude, altitude order -->
+        <coordinates>6.1381,51.7883,0</coordinates>
+      </Point>
+    </Placemark>
+
+    <!-- Point: Wesel -->
+    <Placemark>
+      <name>Wesel</name>
+      <Point>
+        <coordinates>6.6200,51.6550,0</coordinates>
+      </Point>
+    </Placemark>
+
+    <!-- Point: Duisburg -->
+    <Placemark>
+      <name>Duisburg</name>
+      <Point>
+        <coordinates>6.7613,51.4321,0</coordinates>
+      </Point>
+    </Placemark>
+
+    <!-- LineString connecting the three cities -->
+    <Placemark>
+      <name>Route</name>
+      <LineString>
+        <tessellate>1</tessellate>
+        <coordinates>
+          6.1381,51.7883,0
+          6.6200,51.6550,0
+          6.7613,51.4321,0
+        </coordinates>
+      </LineString>
+    </Placemark>
+  </Document>
+</kml>

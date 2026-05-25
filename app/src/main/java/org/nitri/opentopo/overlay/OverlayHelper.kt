@@ -25,6 +25,8 @@ import org.osmdroid.views.overlay.Marker.OnMarkerDragListener
 import org.osmdroid.views.overlay.OverlayItem
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace
 import org.osmdroid.views.overlay.TilesOverlay
+import org.osmdroid.views.overlay.FolderOverlay
+import org.osmdroid.bonuspack.kml.KmlDocument
 
 class OverlayHelper(private val mContext: Context, private val mMapView: MapView?) {
     private var wayPointOverlay: ItemizedIconInfoOverlay? = null
@@ -159,6 +161,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
     private var markerInfoWindow: MarkerInfoWindow? = null
 
     private var trackOverlay: TrackOverlay? = null
+    private var kmlOverlay: FolderOverlay? = null
     private val mapMarkers = ArrayList<Marker>()
 
     /**
@@ -231,6 +234,26 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
             }
         }
     }
+
+    fun setKml(kmlDocument: KmlDocument) {
+        clearKml()
+        val folderOverlay = kmlDocument.mKmlRoot.buildOverlay(mMapView, null, null, kmlDocument) as? FolderOverlay
+        folderOverlay?.let {
+            kmlOverlay = it
+            mMapView?.overlays?.add(it)
+            mMapView?.invalidate()
+        }
+    }
+
+    fun clearKml() {
+        kmlOverlay?.let { overlay ->
+            mMapView?.overlays?.remove(overlay)
+        }
+        kmlOverlay = null
+        mMapView?.invalidate()
+    }
+
+    fun hasKml(): Boolean = kmlOverlay != null
 
     /**
      * Set the collection of user markers

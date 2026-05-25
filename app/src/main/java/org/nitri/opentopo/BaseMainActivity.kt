@@ -1,7 +1,6 @@
 package org.nitri.opentopo
 
 import android.Manifest
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -26,44 +25,48 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
 import io.ticofab.androidgpxparser.parser.GPXParser
 import io.ticofab.androidgpxparser.parser.domain.Gpx
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN_ON_MAP_TAP
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
-import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.util.Utils
-import org.osmdroid.util.GeoPoint
-import androidx.core.net.toUri
+import org.nitri.opentopo.viewmodel.GpxViewModel
+import org.nitri.opentopo.viewmodel.KmlViewModel
 import org.nitri.ors.Ors
 import org.nitri.ors.OrsClient
+import org.osmdroid.bonuspack.kml.KmlDocument
+import org.osmdroid.util.GeoPoint
+import java.io.File
+import java.io.FileOutputStream
 
 open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInteractionListener,
     GpxDetailFragment.OnFragmentInteractionListener, NearbyFragment.OnFragmentInteractionListener {
     private var orsClient: OrsClient? = null
     private var geoPointFromIntent: GeoPointDto? = null
-    private var gpxUriString: String? = null
-    private var gpxUri: Uri? = null
     private var shouldZoomToGpx = false
+    private var shouldZoomToKml = false
     override var selectedNearbyPlace: NearbyItem? = null
     private var mapFragment: MapFragment? = null
     private val gpxViewModel: GpxViewModel by viewModels()
+    private val kmlViewModel: KmlViewModel by viewModels()
     override var isFullscreen = false
 
     private var windowInsetsController: WindowInsetsControllerCompat? = null
@@ -117,7 +120,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         setSupportActionBar(toolbar)
 
         if (savedInstanceState != null) {
-            gpxUriString = savedInstanceState.getString(GPX_URI_STATE)
+            gpxViewModel.gpxUriString = savedInstanceState.getString(GPX_URI_STATE)
+            kmlViewModel.kmlUriString = savedInstanceState.getString(KML_URI_STATE)
         }
 
         mapContainer = findViewById(R.id.map_container)
@@ -205,10 +209,19 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             when (uri.scheme) {
                 "geo" -> geoPointFromIntent = getGeoPointDtoFromIntent(intent)
                 "file", "content" -> {
-                    gpxUri = uri
-                    gpxUriString = uri.toString()
-                    Log.i(TAG, "Uri: $gpxUriString")
-                    shouldZoomToGpx = true
+                    val type = contentResolver.getType(uri)
+                    val isKml = type == "application/vnd.google-earth.kml+xml" ||
+                            type == "application/vnd.google-earth.kmz" ||
+                            uri.toString().lowercase().endsWith(".kml") ||
+                            uri.toString().lowercase().endsWith(".kmz")
+                    if (isKml) {
+                        kmlViewModel.kmlUriString = uri.toString()
+                        shouldZoomToKml = true
+                    } else {
+                        gpxViewModel.gpxUriString = uri.toString()
+                        Log.i(TAG, "Uri: ${gpxViewModel.gpxUriString}")
+                        shouldZoomToGpx = true
+                    }
                 }
                 else -> Log.i(TAG, "Unsupported scheme: ${uri.scheme}")
             }
@@ -291,7 +304,6 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
                 .replace(R.id.map_container, it, MAP_FRAGMENT_TAG)
                 .commit()
         }
-        setGpx()
     }
 
     private fun mapFragmentAdded(): Boolean {
@@ -341,20 +353,34 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            result.data?.let {data ->
-                gpxUri = data.data
+            result.data?.data?.let { uri ->
                 shouldZoomToGpx = true
-                gpxUri?.let {
-                    Log.i(TAG, "Uri: $it")
-                    parseGpx(it)
-                }
+                Log.i(TAG, "Uri: $uri")
+                parseGpx(uri)
             }
         }
     }
 
     override fun setGpx() {
-        gpxUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
-            parseGpx(uriString.toUri())
+        val currentGpx = gpxViewModel.gpx
+        if (currentGpx != null) {
+            val displayState = if (gpxViewModel.gpxUriString == null) MapFragment.GpxDisplayState.CALCULATED else MapFragment.GpxDisplayState.LOADED_FROM_FILE
+            handleParsedGpx(currentGpx, displayState, gpxViewModel.gpxUriString)
+        } else {
+            gpxViewModel.gpxUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
+                parseGpx(uriString.toUri())
+            }
+        }
+    }
+
+    override fun setKml() {
+        val currentKml = kmlViewModel.kmlDocument
+        if (currentKml != null) {
+            handleParsedKml(currentKml, kmlViewModel.kmlUriString)
+        } else {
+            kmlViewModel.kmlUriString?.takeIf { it.isNotEmpty() }?.let { uriString ->
+                parseKml(uriString.toUri())
+            }
         }
     }
 
@@ -366,8 +392,11 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        if (!TextUtils.isEmpty(gpxUriString)) {
-            outState.putString(GPX_URI_STATE, gpxUriString)
+        if (!TextUtils.isEmpty(gpxViewModel.gpxUriString)) {
+            outState.putString(GPX_URI_STATE, gpxViewModel.gpxUriString)
+        }
+        if (!TextUtils.isEmpty(kmlViewModel.kmlUriString)) {
+            outState.putString(KML_URI_STATE, kmlViewModel.kmlUriString)
         }
         mapFragment?.let {
             supportFragmentManager.putFragment(outState, MAP_FRAGMENT_TAG, it)
@@ -409,6 +438,73 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
     }
 
+    override fun selectKml() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "*/*"
+        intent.putExtra(
+            Intent.EXTRA_MIME_TYPES,
+            arrayOf("application/vnd.google-earth.kml+xml", "application/vnd.google-earth.kmz")
+        )
+        val activityIntent = Intent.createChooser(intent, "KML")
+        kmlActivityResultLauncher.launch(activityIntent)
+    }
+
+    private var kmlActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.data?.let {
+                shouldZoomToKml = true
+                parseKml(it)
+            }
+        }
+    }
+
+    private fun parseKml(uri: Uri) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val isKmz = uri.toString().lowercase().endsWith(".kmz") ||
+                        contentResolver.getType(uri) == "application/vnd.google-earth.kmz"
+                val kmlDocument = KmlDocument()
+                var success = false
+                if (isKmz) {
+                    val tempFile = File(cacheDir, "temp_kml.kmz")
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
+                        FileOutputStream(tempFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    success = kmlDocument.parseKMZFile(tempFile)
+                    if (tempFile.exists()) tempFile.delete()
+                } else {
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
+                        success = kmlDocument.parseKMLStream(inputStream, null)
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    if (success) {
+                        handleParsedKml(kmlDocument, uri.toString())
+                    } else {
+                        showKmlError(getString(R.string.invalid_kml))
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    showKmlError(getString(R.string.invalid_kml) + ": ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun handleParsedKml(kmlDocument: KmlDocument, kmlUriString: String?) {
+        (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.setKml(kmlDocument, shouldZoomToKml)
+        kmlViewModel.kmlDocument = kmlDocument
+        kmlUriString?.let { kmlViewModel.kmlUriString = it }
+        shouldZoomToKml = false
+    }
+
     override fun parseCalculatedGpx(gpxString: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -432,15 +528,21 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
     }
 
-    private fun handleParsedGpx(parsedGpx: Gpx?, displayState: MapFragment.GpxDisplayState, gpxUriString: String?) {
+    private fun handleParsedGpx(
+        parsedGpx: Gpx?,
+        displayState: MapFragment.GpxDisplayState,
+        gpxUriString: String?
+    ) {
         parsedGpx?.let { validGpx ->
             gpxViewModel.gpx = validGpx
-            (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.let { mapFragment ->
-                mapFragment.setGpx(validGpx, displayState, shouldZoomToGpx)
-                gpxUriString?.let { this.gpxUriString = it }
-                shouldZoomToGpx = false
-            }
+            (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.setGpx(validGpx, displayState, shouldZoomToGpx)
+            gpxViewModel.gpxUriString = gpxUriString
         } ?: showGpxError(getString(R.string.invalid_gpx) + ": no GPX data")
+        shouldZoomToGpx = false
+    }
+
+    private fun showKmlError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun showGpxError(message: String) {
@@ -471,7 +573,12 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun clearGpx() {
         gpxViewModel.gpx = null
-        gpxUriString = null
+        gpxViewModel.gpxUriString = null
+    }
+
+    override fun clearKml() {
+        kmlViewModel.kmlUriString = null
+        kmlViewModel.kmlDocument = null
     }
 
     override fun showNearbyPlace(nearbyItem: NearbyItem?) {
@@ -504,7 +611,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         startActivity(intent)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
-                Activity.OVERRIDE_TRANSITION_CLOSE,
+                OVERRIDE_TRANSITION_CLOSE,
                 0,
                 0,
                 Color.TRANSPARENT
@@ -522,5 +629,6 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         private const val NEARBY_FRAGMENT_TAG = "nearby_fragment"
         private const val REQUEST_LOCATION_PERMISSION = 1
         private const val GPX_URI_STATE = "gpx_uri"
+        private const val KML_URI_STATE = "kml_uri"
     }
 }
