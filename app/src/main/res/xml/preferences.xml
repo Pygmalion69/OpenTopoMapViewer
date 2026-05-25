@@ -47,6 +47,14 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/kml_header">
+        <SwitchPreferenceCompat
+            app:key="kml_enabled"
+            app:title="@string/kml_enable"
+            app:summary="@string/kml_enable_summary"
+            app:defaultValue="false" />
+    </PreferenceCategory>
+
     <PreferenceCategory
         app:key="ors_section"
         app:title="@string/ors">

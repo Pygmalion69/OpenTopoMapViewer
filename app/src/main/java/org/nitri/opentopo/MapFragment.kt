@@ -43,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_KML_ENABLED
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_PROFILE
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
@@ -680,6 +681,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             setBaseMap()
         }
         syncMapRotationPreference()
+        if (!sharedPreferences.getBoolean(PREF_KML_ENABLED, true)) {
+            clearKml()
+            listener?.clearKml()
+        }
         if (followEnabled) {
             locationOverlay?.enableFollowLocation()
             mapHandler.removeCallbacks(centerMapRunnable)
@@ -785,7 +790,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         overlayHelper?.setKml(document)
         if (activity != null) (activity as AppCompatActivity).supportInvalidateOptionsMenu()
         if (zoom) {
-            document.mKmlRoot.getBoundingBox()?.let {
+            document.mKmlRoot.boundingBox?.let {
                 disableFollow()
                 zoomToBounds(it)
             }
@@ -906,7 +911,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         menu.findItem(R.id.action_gpx_details).isVisible = gpxVisible
         menu.findItem(R.id.action_gpx_zoom).isVisible = gpxVisible
         menu.findItem(R.id.action_gpx_remove).isVisible = gpxVisible
-        val kmlVisible = overlayHelper?.hasKml() == true && kmlDocument != null
+
+        val kmlEnabled = sharedPreferences.getBoolean(PREF_KML_ENABLED, true)
+        menu.findItem(R.id.action_kml).isVisible = kmlEnabled
+        val kmlVisible = kmlEnabled && overlayHelper?.hasKml() == true && kmlDocument != null
         menu.findItem(R.id.action_kml_zoom).isVisible = kmlVisible
         menu.findItem(R.id.action_kml_remove).isVisible = kmlVisible
 
