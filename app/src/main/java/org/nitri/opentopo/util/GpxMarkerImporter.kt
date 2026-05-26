@@ -3,6 +3,7 @@ package org.nitri.opentopo.util
 import org.nitri.opentopo.model.MarkerModel
 import org.w3c.dom.Element
 import java.io.InputStream
+import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 
 class GpxMarkerImporter {
@@ -12,7 +13,8 @@ class GpxMarkerImporter {
     )
 
     fun import(inputStream: InputStream, baseSeq: Int): ImportResult {
-        val documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val documentBuilderFactory = createSecureDocumentBuilderFactory()
+        val documentBuilder = documentBuilderFactory.newDocumentBuilder()
         val document = documentBuilder.parse(inputStream)
         val waypointNodes = document.getElementsByTagName("wpt")
 
@@ -59,4 +61,18 @@ class GpxMarkerImporter {
 
         return ImportResult(markers, skippedCount)
     }
+
+    private fun createSecureDocumentBuilderFactory(): DocumentBuilderFactory =
+        DocumentBuilderFactory.newInstance().apply {
+            setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
+            setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+            setFeature("http://xml.org/sax/features/external-general-entities", false)
+            setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+            setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+            setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "")
+            setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "")
+            isXIncludeAware = false
+            isExpandEntityReferences = false
+        }
 }
+

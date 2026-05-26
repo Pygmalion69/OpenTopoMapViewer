@@ -45,4 +45,19 @@ class GpxMarkerImportExportTest {
         assertEquals("Desc 1", result.markers[0].description)
         assertEquals("Marker 12", result.markers[1].name)
     }
+
+    @Test(expected = org.xml.sax.SAXParseException::class)
+    fun importMarkers_rejectsDoctypeToPreventXxe() {
+        val gpx = """
+            <?xml version="1.0"?>
+            <!DOCTYPE gpx [
+              <!ENTITY xxe SYSTEM "file:///etc/passwd">
+            ]>
+            <gpx version="1.1" creator="test">
+              <wpt lat="51.123" lon="6.456"><name>&xxe;</name></wpt>
+            </gpx>
+        """.trimIndent()
+
+        GpxMarkerImporter().import(ByteArrayInputStream(gpx.toByteArray()), 0)
+    }
 }
