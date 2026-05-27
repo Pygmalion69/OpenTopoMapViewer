@@ -7,6 +7,11 @@ import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 
 class GpxMarkerImporter {
+    companion object {
+        private const val XML_ACCESS_EXTERNAL_DTD = "http://javax.xml.XMLConstants/property/accessExternalDTD"
+        private const val XML_ACCESS_EXTERNAL_SCHEMA = "http://javax.xml.XMLConstants/property/accessExternalSchema"
+    }
+
     data class ImportResult(
         val markers: List<MarkerModel>,
         val skippedCount: Int
@@ -69,8 +74,8 @@ class GpxMarkerImporter {
             setFeature("http://xml.org/sax/features/external-general-entities", false)
             setFeature("http://xml.org/sax/features/external-parameter-entities", false)
             setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
-            setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "")
-            setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "")
+            setAttribute(XML_ACCESS_EXTERNAL_DTD, "")
+            setAttribute(XML_ACCESS_EXTERNAL_SCHEMA, "")
             isXIncludeAware = false
             isExpandEntityReferences = false
         }
