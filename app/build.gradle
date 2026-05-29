@@ -14,31 +14,31 @@ def myKeyPassword = System.getenv('KEY_PASSWORD')
 android {
     compileSdk = 36
     defaultConfig {
-        applicationId "org.nitri.opentopo"
+        applicationId = "org.nitri.opentopo"
         minSdkVersion 24
         targetSdkVersion 36
-        versionCode 65
-        versionName "1.28.1"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        versionCode = 65
+        versionName = "1.28.1"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
         release {
             if (myStoreFile) {
-                storeFile rootProject.file(myStoreFile)
-                storePassword myStorePassword
-                keyAlias myKeyAlias
-                keyPassword myKeyPassword
+                storeFile = rootProject.file(myStoreFile)
+                storePassword = myStorePassword
+                keyAlias = myKeyAlias
+                keyPassword = myKeyPassword
             }
         }
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
             if (myStoreFile && myStorePassword && myKeyAlias && myKeyPassword) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
             }
         }
     }
@@ -47,12 +47,12 @@ android {
 
     productFlavors {
         foss {
-            dimension "distribution"
+            dimension = "distribution"
             // Configuration for FOSS (GitHub, F-Droid)
             // No proprietary services, no ads
         }
         play {
-            dimension "distribution"
+            dimension = "distribution"
             // Configuration for Google Play
             // Google Services, Admob
         }
@@ -85,13 +85,13 @@ android {
         jvmTarget = "17"
     }
 
-    namespace 'org.nitri.opentopo'
+    namespace = 'org.nitri.opentopo'
     lint {
-        abortOnError false
+        abortOnError = false
         disable 'ExpiredTargetSdkVersion', 'ExpiringTargetSdkVersion'
     }
     buildFeatures {
-        buildConfig true
+        buildConfig = true
     }
     configurations.configureEach {
         resolutionStrategy.force 'androidx.appcompat:appcompat:1.6.1'
