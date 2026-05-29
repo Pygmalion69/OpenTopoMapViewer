@@ -2,6 +2,8 @@ package org.nitri.opentopo.util
 
 import org.nitri.opentopo.model.MarkerModel
 import org.w3c.dom.Element
+import org.xml.sax.ErrorHandler
+import org.xml.sax.SAXParseException
 import java.io.InputStream
 import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
@@ -17,9 +19,23 @@ class GpxMarkerImporter {
         val skippedCount: Int
     )
 
+    private object RethrowingErrorHandler : ErrorHandler {
+        override fun warning(exception: SAXParseException) = Unit
+
+        override fun error(exception: SAXParseException) {
+            throw exception
+        }
+
+        override fun fatalError(exception: SAXParseException) {
+            throw exception
+        }
+    }
+
     fun import(inputStream: InputStream, baseSeq: Int): ImportResult {
         val documentBuilderFactory = createSecureDocumentBuilderFactory()
-        val documentBuilder = documentBuilderFactory.newDocumentBuilder()
+        val documentBuilder = documentBuilderFactory.newDocumentBuilder().apply {
+            setErrorHandler(RethrowingErrorHandler)
+        }
         val document = documentBuilder.parse(inputStream)
         val waypointNodes = document.getElementsByTagName("wpt")
 
