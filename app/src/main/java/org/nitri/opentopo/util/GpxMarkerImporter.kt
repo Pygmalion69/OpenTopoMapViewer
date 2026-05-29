@@ -2,17 +2,40 @@ package org.nitri.opentopo.util
 
 import org.nitri.opentopo.model.MarkerModel
 import org.w3c.dom.Element
+import org.xml.sax.ErrorHandler
+import org.xml.sax.SAXParseException
 import java.io.InputStream
+import javax.xml.XMLConstants
 import javax.xml.parsers.DocumentBuilderFactory
 
 class GpxMarkerImporter {
+    companion object {
+        private const val XML_ACCESS_EXTERNAL_DTD = "http://javax.xml.XMLConstants/property/accessExternalDTD"
+        private const val XML_ACCESS_EXTERNAL_SCHEMA = "http://javax.xml.XMLConstants/property/accessExternalSchema"
+    }
+
     data class ImportResult(
         val markers: List<MarkerModel>,
         val skippedCount: Int
     )
 
+    private object RethrowingErrorHandler : ErrorHandler {
+        override fun warning(exception: SAXParseException) = Unit
+
+        override fun error(exception: SAXParseException) {
+            throw exception
+        }
+
+        override fun fatalError(exception: SAXParseException) {
+            throw exception
+        }
+    }
+
     fun import(inputStream: InputStream, baseSeq: Int): ImportResult {
-        val documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val documentBuilderFactory = createSecureDocumentBuilderFactory()
+        val documentBuilder = documentBuilderFactory.newDocumentBuilder().apply {
+            setErrorHandler(RethrowingErrorHandler)
+        }
         val document = documentBuilder.parse(inputStream)
         val waypointNodes = document.getElementsByTagName("wpt")
 
@@ -59,4 +82,18 @@ class GpxMarkerImporter {
 
         return ImportResult(markers, skippedCount)
     }
+
+    private fun createSecureDocumentBuilderFactory(): DocumentBuilderFactory =
+        DocumentBuilderFactory.newInstance().apply {
+            setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
+            setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+            setFeature("http://xml.org/sax/features/external-general-entities", false)
+            setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+            setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+            setAttribute(XML_ACCESS_EXTERNAL_DTD, "")
+            setAttribute(XML_ACCESS_EXTERNAL_SCHEMA, "")
+            isXIncludeAware = false
+            isExpandEntityReferences = false
+        }
 }
+

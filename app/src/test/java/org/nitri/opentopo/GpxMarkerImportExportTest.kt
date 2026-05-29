@@ -1,6 +1,7 @@
 package org.nitri.opentopo
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.nitri.opentopo.model.MarkerModel
@@ -8,6 +9,7 @@ import org.nitri.opentopo.util.GpxMarkerExporter
 import org.nitri.opentopo.util.GpxMarkerImporter
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 
 class GpxMarkerImportExportTest {
     @Test
@@ -44,5 +46,32 @@ class GpxMarkerImportExportTest {
         assertEquals("Point 1", result.markers[0].name)
         assertEquals("Desc 1", result.markers[0].description)
         assertEquals("Marker 12", result.markers[1].name)
+    }
+
+    @Test
+    fun importMarkers_rejectsDoctypeToPreventXxeWithoutLoggingParserError() {
+        val gpx = """
+            <?xml version="1.0"?>
+            <!DOCTYPE gpx [
+              <!ENTITY xxe SYSTEM "file:///etc/passwd">
+            ]>
+            <gpx version="1.1" creator="test">
+              <wpt lat="51.123" lon="6.456"><name>&xxe;</name></wpt>
+            </gpx>
+        """.trimIndent()
+
+        val originalErr = System.err
+        val parserErr = ByteArrayOutputStream()
+        System.setErr(PrintStream(parserErr))
+
+        try {
+            assertThrows(org.xml.sax.SAXParseException::class.java) {
+                GpxMarkerImporter().import(ByteArrayInputStream(gpx.toByteArray()), 0)
+            }
+        } finally {
+            System.setErr(originalErr)
+        }
+
+        assertEquals("", parserErr.toString(Charsets.UTF_8))
     }
 }
