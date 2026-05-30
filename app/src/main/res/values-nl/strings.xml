@@ -71,6 +71,7 @@
     <string name="about">Over</string>
     <string name="app_version">Versie %1$s</string>
     <string name="app_author">Door &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+    <string name="issue_tracker">Bugrapporten en functionaliteitsverzoeken: &lt;a href="https://github.com/Pygmalion69/OpenTopoMapViewer/issues"&gt;GitHub Issues&lt;/a&gt;</string>
     <string name="about_open_topo_map">Kaart door &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© OpenStreetMap-bijdragers, SRTM).</string>
     <string name="about_open_street_map">Kaartgegevens door &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;-bijdragers.</string>
     <string name="about_open_topo_map_r">Kaart door &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>

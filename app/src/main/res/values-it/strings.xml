@@ -71,6 +71,7 @@
     <string name="about">Info</string>
     <string name="app_version">Versione %1$s</string>
     <string name="app_author">Di &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+    <string name="issue_tracker">Segnalazione bug e richieste di funzionalità: &lt;a href="https://github.com/Pygmalion69/OpenTopoMapViewer/issues"&gt;GitHub Issues&lt;/a&gt;</string>
     <string name="about_open_topo_map">Mappa di &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© contributori di OpenStreetMap, SRTM).</string>
     <string name="about_open_street_map">Dati cartografici dei contributori di &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;.</string>
     <string name="about_open_topo_map_r">Mappa di &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>

@@ -23,6 +23,9 @@ object AboutDialog {
         val productPageTextView = dialogView.findViewById<TextView>(R.id.productPage)
         productPageTextView.setHtmlText(context.getString(R.string.app_product_page))
 
+        val issueTrackerTextView = dialogView.findViewById<TextView>(R.id.issueTracker)
+        issueTrackerTextView.setHtmlText(context.getString(R.string.issue_tracker))
+
         val openTopoMapInfoTextView = dialogView.findViewById<TextView>(R.id.openTopoMapInfo)
         openTopoMapInfoTextView.setHtmlText(context.getString(R.string.about_open_topo_map))
 
