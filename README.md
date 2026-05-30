@@ -9,7 +9,7 @@ OpenTopoMap viewer for Android
 - Lonvia hiking routes
 - Lonvia cycling routes
 
-Check out this post to learn more about preloading the cache for offline use: [Preloading Offline Maps in OpenTopoMap Viewer](https://pygmalion.nitri.org/preloading-offline-maps-in-opentopomap-viewer-1714.html).
+Check out this post to learn more about preloading the cache for offline use: [Offline tile ZIP import for OpenTopoMap Viewerr](https://pygmalion.nitri.org/offline-tile).
 
 Basic routing with the [ORS Android Client](https://github.com/Pygmalion69/ors-android-client) is an experimental feature: [How to Enable Basic Routing with OpenRouteService (ORS) in OpenTopoMap Viewer](https://pygmalion.nitri.org/how-to-enable-basic-routing-with-openrouteservice-ors-in-opentopomap-viewer-1818.html).
 
