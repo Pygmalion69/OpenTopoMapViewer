@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -217,7 +218,11 @@ class MarkerListActivity : AppCompatActivity() {
                 actionMode?.finish()
             }
             .setNegativeButton(R.string.cancel, null)
-            .show()
+            .create()
+            .also {
+                it.requestWindowFeature(Window.FEATURE_NO_TITLE)
+                it.show()
+            }
     }
 
     private fun exportSelectedMarkers(uri: Uri) {
