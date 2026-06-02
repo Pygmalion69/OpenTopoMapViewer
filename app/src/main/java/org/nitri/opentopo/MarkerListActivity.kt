@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
+import android.view.Window
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,6 +14,11 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -45,6 +52,7 @@ class MarkerListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_marker_list)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -54,6 +62,7 @@ class MarkerListActivity : AppCompatActivity() {
 
         recyclerView = findViewById(R.id.markerRecyclerView)
         emptyView = findViewById(R.id.emptyView)
+        applyEdgeToEdgeInsets(toolbar)
 
         adapter = MarkerListAdapter(
             onClick = { marker ->
@@ -86,6 +95,26 @@ class MarkerListActivity : AppCompatActivity() {
                 updateSelectionUi()
             }
         }
+    }
+
+    private fun applyEdgeToEdgeInsets(toolbar: Toolbar) {
+        val root = findViewById<View>(R.id.markerListRoot)
+        val initialToolbarHeight = toolbar.layoutParams.height
+        val initialToolbarPaddingTop = toolbar.paddingTop
+        val initialRecyclerPaddingBottom = recyclerView.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
+            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            toolbar.updatePadding(top = initialToolbarPaddingTop + systemBarsInsets.top)
+            toolbar.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = initialToolbarHeight + systemBarsInsets.top
+            }
+            recyclerView.updatePadding(bottom = initialRecyclerPaddingBottom + systemBarsInsets.bottom)
+
+            insets
+        }
+        ViewCompat.requestApplyInsets(root)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -189,7 +218,11 @@ class MarkerListActivity : AppCompatActivity() {
                 actionMode?.finish()
             }
             .setNegativeButton(R.string.cancel, null)
-            .show()
+            .create()
+            .also {
+                it.requestWindowFeature(Window.FEATURE_NO_TITLE)
+                it.show()
+            }
     }
 
     private fun exportSelectedMarkers(uri: Uri) {
