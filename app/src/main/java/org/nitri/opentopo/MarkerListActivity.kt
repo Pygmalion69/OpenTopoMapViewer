@@ -24,6 +24,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import org.nitri.opentopo.adapter.MarkerListAdapter
+import org.nitri.opentopo.analytics.AnalyticsNames
+import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.util.GpxMarkerExporter
 import org.nitri.opentopo.util.GpxMarkerImporter
@@ -59,6 +61,10 @@ class MarkerListActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = getString(R.string.markers)
+        AnalyticsProvider.get(this).trackScreen(
+            AnalyticsNames.Screen.MARKERS,
+            MarkerListActivity::class.java.simpleName
+        )
 
         recyclerView = findViewById(R.id.markerRecyclerView)
         emptyView = findViewById(R.id.emptyView)
@@ -205,7 +211,10 @@ class MarkerListActivity : AppCompatActivity() {
             context = this,
             markerModel = marker.copy(),
             onUpdate = { updated -> markerViewModel.updateMarker(updated) },
-            onDelete = { toDelete -> markerViewModel.removeMarker(toDelete.id) }
+            onDelete = { toDelete ->
+                markerViewModel.removeMarker(toDelete.id)
+                AnalyticsProvider.get(this).trackMarkersDeleted(1)
+            }
         )
     }
 
@@ -214,7 +223,9 @@ class MarkerListActivity : AppCompatActivity() {
             .setTitle(getString(R.string.confirm_delete))
             .setMessage(getString(R.string.delete_selected_markers_message, selectedMarkerIds.size))
             .setPositiveButton(R.string.delete) { _, _ ->
+                val deletedCount = selectedMarkerIds.size
                 markerViewModel.removeMarkers(selectedMarkerIds.toList())
+                AnalyticsProvider.get(this@MarkerListActivity).trackMarkersDeleted(deletedCount)
                 actionMode?.finish()
             }
             .setNegativeButton(R.string.cancel, null)
@@ -238,6 +249,7 @@ class MarkerListActivity : AppCompatActivity() {
                     GpxMarkerExporter().export(markersToExport, outputStream)
                 } ?: error("Output stream unavailable")
             }.onSuccess {
+                AnalyticsProvider.get(this@MarkerListActivity).trackMarkersExported(markersToExport.size)
                 Toast.makeText(this@MarkerListActivity, R.string.markers_export_success, Toast.LENGTH_SHORT).show()
             }.onFailure {
                 Toast.makeText(this@MarkerListActivity, R.string.markers_export_failed, Toast.LENGTH_SHORT).show()
@@ -263,6 +275,10 @@ class MarkerListActivity : AppCompatActivity() {
                 }
 
                 markerViewModel.addMarkers(result.markers)
+                AnalyticsProvider.get(this@MarkerListActivity).trackMarkersImported(
+                    importedCount = result.markers.size,
+                    skippedCount = result.skippedCount
+                )
                 if (result.skippedCount > 0) {
                     Toast.makeText(
                         this@MarkerListActivity,
