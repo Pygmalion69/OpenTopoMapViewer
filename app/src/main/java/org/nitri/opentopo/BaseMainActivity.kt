@@ -45,6 +45,7 @@ import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN_ON_MAP_TAP
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
+import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.util.Utils
@@ -537,6 +538,19 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             gpxViewModel.gpx = validGpx
             (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.setGpx(validGpx, displayState, shouldZoomToGpx)
             gpxViewModel.gpxUriString = gpxUriString
+
+            // Track GPX loaded event only for files (Play flavor will provide Firebase impl)
+            if (displayState == MapFragment.GpxDisplayState.LOADED_FROM_FILE) {
+                val fileName = try {
+                    gpxUriString?.toUri()?.lastPathSegment
+                } catch (e: Exception) { null }
+                AnalyticsProvider.get(this).trackGpxLoaded(
+                    source = "file",
+                    gpx = validGpx,
+                    fileName = fileName
+                )
+            }
+
         } ?: showGpxError(getString(R.string.invalid_gpx) + ": no GPX data")
         shouldZoomToGpx = false
     }
