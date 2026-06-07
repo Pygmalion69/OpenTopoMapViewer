@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'com.google.devtools.ksp'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 
 def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
 
@@ -136,10 +138,20 @@ dependencies {
     // OkHttp client and Picasso OkHttp3 downloader for custom headers on image requests
     implementation 'com.squareup.okhttp3:okhttp:5.3.2'
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
+    playImplementation platform('com.google.firebase:firebase-bom:34.14.0')
     playImplementation 'com.google.android.gms:play-services-ads:25.3.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:4.0.0'
-    playImplementation 'com.google.android.gms:play-services-measurement-api:23.2.0'
+    playImplementation 'com.google.firebase:firebase-analytics'
+    playImplementation 'com.google.firebase:firebase-crashlytics'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+}
+
+tasks.matching { it.name.contains("Crashlytics") }.configureEach {
+    onlyIf { it.name.toLowerCase().contains("play") }
+}
+
+tasks.matching { it.name.endsWith("GoogleServices") }.configureEach {
+    onlyIf { it.name.toLowerCase().contains("play") }
 }
