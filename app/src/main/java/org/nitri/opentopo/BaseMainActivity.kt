@@ -45,6 +45,7 @@ import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN_ON_MAP_TAP
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
+import org.nitri.opentopo.analytics.AnalyticsNames
 import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.nearby.NearbyFragment
 import org.nitri.opentopo.nearby.entity.NearbyItem
@@ -304,6 +305,10 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             supportFragmentManager.beginTransaction()
                 .replace(R.id.map_container, it, MAP_FRAGMENT_TAG)
                 .commit()
+            AnalyticsProvider.get(this).trackScreen(
+                AnalyticsNames.Screen.MAP,
+                MapFragment::class.java.simpleName
+            )
         }
     }
 
@@ -317,6 +322,10 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         supportFragmentManager.beginTransaction().addToBackStack("gpx")
             .replace(R.id.map_container, gpxDetailFragment, GPX_DETAIL_FRAGMENT_TAG)
             .commit()
+        AnalyticsProvider.get(this).trackScreen(
+            AnalyticsNames.Screen.GPX_DETAIL,
+            GpxDetailFragment::class.java.simpleName
+        )
     }
 
     override fun addNearbyFragment(nearbyCenterPoint: GeoPoint) {
@@ -325,6 +334,10 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         supportFragmentManager.beginTransaction().addToBackStack("nearby")
             .replace(R.id.map_container, nearbyFragment, NEARBY_FRAGMENT_TAG)
             .commit()
+        AnalyticsProvider.get(this).trackScreen(
+            AnalyticsNames.Screen.NEARBY,
+            NearbyFragment::class.java.simpleName
+        )
     }
 
     override fun onRequestPermissionsResult(
@@ -503,6 +516,19 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.setKml(kmlDocument, shouldZoomToKml)
         kmlViewModel.kmlDocument = kmlDocument
         kmlUriString?.let { kmlViewModel.kmlUriString = it }
+        val fileName = try {
+            kmlUriString?.toUri()?.lastPathSegment
+        } catch (e: Exception) { null }
+        val contentType = if (kmlUriString?.lowercase()?.endsWith(".kmz") == true) {
+            AnalyticsNames.ContentType.KMZ
+        } else {
+            AnalyticsNames.ContentType.KML
+        }
+        AnalyticsProvider.get(this).trackKmlLoaded(
+            source = "file",
+            contentType = contentType,
+            fileName = fileName
+        )
         shouldZoomToKml = false
     }
 
