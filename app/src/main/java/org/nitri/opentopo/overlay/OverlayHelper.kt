@@ -4,12 +4,8 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
-import android.view.LayoutInflater
-import android.view.Window
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
-import com.google.android.material.textfield.TextInputLayout
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.R
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
@@ -17,6 +13,8 @@ import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.osmdroid.tileprovider.MapTileProviderBasic
+import org.nitri.opentopo.util.Utils
+import org.nitri.opentopo.view.MarkerEditorDialog
 import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
@@ -27,6 +25,8 @@ import org.osmdroid.views.overlay.Marker.OnMarkerDragListener
 import org.osmdroid.views.overlay.OverlayItem
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace
 import org.osmdroid.views.overlay.TilesOverlay
+import org.osmdroid.views.overlay.FolderOverlay
+import org.osmdroid.bonuspack.kml.KmlDocument
 
 class OverlayHelper(private val mContext: Context, private val mMapView: MapView?) {
     private var wayPointOverlay: ItemizedIconInfoOverlay? = null
@@ -74,6 +74,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 val markerModel = it.relatedObject as MarkerModel
                 markerModel.latitude = it.position.latitude
                 markerModel.longitude = it.position.longitude
+                markerInteractionListener.onMarkerMoved(markerModel)
             }
         }
 
@@ -112,38 +113,17 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
     private val onMarkerInfoEditClickListener : MarkerInfoWindow.OnMarkerInfoEditClickListener =
         object : MarkerInfoWindow.OnMarkerInfoEditClickListener {
             override fun onMarkerInfoEditClick(markerModel: MarkerModel) {
-                val dialogView =
-                    LayoutInflater.from(mContext).inflate(R.layout.dialog_edit_marker, null)
-                val nameInput = dialogView.findViewById<TextInputLayout>(R.id.nameInput)
-                val descriptionInput =
-                    dialogView.findViewById<TextInputLayout>(R.id.descriptionInput)
-
-                nameInput.editText?.setText(markerModel.name)
-                descriptionInput.editText?.setText(markerModel.description)
-
-                val alertDialog = AlertDialog.Builder(mContext)
-                    .setTitle(mContext.getString(R.string.edit_marker))
-                    .setView(dialogView)
-                    .setPositiveButton(mContext.getString(R.string.ok)) { _, _ ->
-                        markerModel.name = nameInput.editText?.text.toString()
-                        markerModel.description = descriptionInput.editText?.text.toString()
-                        markerInteractionListener.onMarkerUpdate(markerModel)
-                    }
-                    .setNegativeButton(mContext.getString(R.string.cancel)) { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .setNeutralButton(mContext.getString(R.string.delete)) { _, _ ->
-                        showDeleteConfirmationDialog(mContext) {
-                            if (markerModel.routeWaypoint) {
-                                removeWaypoint(markerModel)
-                            }
-                            markerInteractionListener.onMarkerDelete(markerModel)
+                MarkerEditorDialog.show(
+                    context = mContext,
+                    markerModel = markerModel,
+                    onUpdate = { markerInteractionListener.onMarkerUpdate(it) },
+                    onDelete = {
+                        if (it.routeWaypoint) {
+                            removeWaypoint(it)
                         }
+                        markerInteractionListener.onMarkerDelete(it)
                     }
-                    .create()
-                alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-                alertDialog.show()
-
+                )
             }
         }
 
@@ -157,19 +137,6 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
                 removeWaypoint(markerModel)
             }
         }
-
-    private fun showDeleteConfirmationDialog(context: Context, onDeleteConfirmed: () -> Unit) {
-        val alertDialog = AlertDialog.Builder(context)
-            .setTitle(mContext.getString(R.string.confirm_delete))
-            .setMessage(mContext.getString(R.string.prompt_confirm_delete))
-            .setPositiveButton(mContext.getString(R.string.delete)) { _, _ ->
-                onDeleteConfirmed()
-            }
-            .setNegativeButton(mContext.getString(R.string.cancel), null)
-            .create()
-        alertDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        alertDialog.show()
-    }
 
     private val nearbyItemGestureListener: OnItemGestureListener<OverlayItem?> =
         object : OnItemGestureListener<OverlayItem?> {
@@ -194,6 +161,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
     private var markerInfoWindow: MarkerInfoWindow? = null
 
     private var trackOverlay: TrackOverlay? = null
+    private var kmlOverlay: FolderOverlay? = null
     private val mapMarkers = ArrayList<Marker>()
 
     /**
@@ -266,6 +234,26 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
             }
         }
     }
+
+    fun setKml(kmlDocument: KmlDocument) {
+        clearKml()
+        val folderOverlay = kmlDocument.mKmlRoot.buildOverlay(mMapView, null, null, kmlDocument) as? FolderOverlay
+        folderOverlay?.let {
+            kmlOverlay = it
+            mMapView?.overlays?.add(it)
+            mMapView?.invalidate()
+        }
+    }
+
+    fun clearKml() {
+        kmlOverlay?.let { overlay ->
+            mMapView?.overlays?.remove(overlay)
+        }
+        kmlOverlay = null
+        mMapView?.invalidate()
+    }
+
+    fun hasKml(): Boolean = kmlOverlay != null
 
     /**
      * Set the collection of user markers
@@ -344,6 +332,7 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
         tilesOverlay?.let {
             mMapView?.overlays?.remove(it)
         }
+        overlayTileProvider = null
         when (overlayType) {
             OVERLAY_NONE -> {}
             OVERLAY_HIKING -> overlayTiles = XYTileSource(
@@ -359,11 +348,14 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
             )
         }
         overlayTiles?.let { tiles ->
+//            // Ensure any leftover db files are removed
+//            Utils.clearOsmdroidSqliteCache(mContext)
             val tileProvider = MapTileProviderBasic(mContext).apply {
                 setTileSource(tiles)
                 tileRequestCompleteHandlers.clear()
                 tileRequestCompleteHandlers.add(mMapView?.tileRequestCompleteHandler)
             }
+            overlayTileProvider = tileProvider
 
             tilesOverlay = TilesOverlay(tileProvider, mContext).apply {
                 loadingBackgroundColor = Color.TRANSPARENT

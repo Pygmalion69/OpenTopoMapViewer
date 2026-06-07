@@ -10,6 +10,11 @@
     <string name="discard_current_gpx">Il GPX caricato verrà sostituito</string>
     <string name="gpx_details">Dettagli GPX</string>
     <string name="gpx_zoom">Centra GPX</string>
+    <string name="gpx_remove">Rimuovi GPX</string>
+    <string name="kml">KML</string>
+    <string name="kml_zoom">Zoom su KML</string>
+    <string name="kml_remove">Rimuovi KML</string>
+    <string name="invalid_kml">KML non valido</string>
 
     <string name="location_details">Dettagli posizione</string>
     <string name="label_latitude">Latitudine:</string>
@@ -24,7 +29,7 @@
     <string name="poi">POI</string>
 
     <string name="layers">Sovrapposizioni</string>
-    <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_topo_map_archive">OpenTopoMap (Archivio/Precaricata)</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Escursionismo</string>
     <string name="lonvia_cycling">Lonvia Ciclismo</string>
@@ -37,10 +42,18 @@
     <string name="keep_screen_on">Mantieni lo schermo acceso</string>
     <string name="map_rotation">Rotazione mappa</string>
     <string name="tap_compass_to_rotate">Tap sulla bussola per ruotare la mappa</string>
+    <string name="max_zoom_level">Livello di zoom massimo</string>
+    <string name="open_topo_map_source">Sorgente tile OpenTopoMap</string>
 
     <string name="nearby">Nei paraggi</string>
 
     <string name="cache_settings">Impostazione cache</string>
+    <string name="import_offline_tiles_title">Importa tile offline</string>
+    <string name="import_offline_tiles_summary">Seleziona un file ZIP di OpenTopoMap e importa le sue tile nella cache offline</string>
+    <string name="import_started">Importazione tile iniziata…</string>
+    <string name="import_success">Importate %1$d tile.</string>
+    <string name="import_failed">Importazione fallita: %1$s</string>
+    <string name="import_no_tiles">Nessuna tile importata. Controlla il formato ZIP.</string>
     <string name="tile_cache">Cache dei tile</string>
     <string name="max_cache_size">Dimensione max cache (MB)</string>
     <string name="reset">Ripristina</string>
@@ -58,6 +71,13 @@
     <string name="about">Info</string>
     <string name="app_version">Versione %1$s</string>
     <string name="app_author">Di &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+    <string name="issue_tracker">Segnalazione bug e richieste di funzionalità: &lt;a href="https://github.com/Pygmalion69/OpenTopoMapViewer/issues"&gt;GitHub Issues&lt;/a&gt;</string>
+    <string name="about_open_topo_map">Mappa di &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© contributori di OpenStreetMap, SRTM).</string>
+    <string name="about_open_street_map">Dati cartografici dei contributori di &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;.</string>
+    <string name="about_open_topo_map_r">Mappa di &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>
+    <string name="about_top_o_map">Mappa di &lt;a href="https://top-o-map.de/"&gt;Top-O-Map&lt;/a&gt;.</string>
+    <string name="about_freemap_sk">Mappa di &lt;a href="https://www.freemap.sk/"&gt;Freemap.sk&lt;/a&gt;.</string>
+    <string name="about_waymarked_trails">Sovrapposizioni dei sentieri di &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; di Lonvia.</string>
 
     <string name="default_marker_name">Segnaposto %1$d</string>
     <string name="edit_marker">Modifica Segnaposto</string>
@@ -73,6 +93,10 @@
     <string name="settings">Impostazioni</string>
     <string name="screen_header">Schermo</string>
     <string name="cache_header">Cache</string>
+
+    <string name="kml_header">KML</string>
+    <string name="kml_enable">Abilita il supporto KML</string>
+    <string name="kml_enable_summary">Mostra le opzioni KML nel menu</string>
 
     <string name="waypoint_added">Waypoint aggiunto</string>
     <string name="waypoint_removed">Waypoint rimosso</string>
@@ -105,4 +129,22 @@
     <string name="profile_foot_hiking">Escursionismo</string>
     <string name="profile_wheelchair">Sedia a rotelle</string>
 
+    <string name="markers">Segnaposti</string>
+    <string name="import_gpx">Importa GPX</string>
+    <string name="select_all">Seleziona tutto</string>
+    <string name="export_selected">Esporta selezionati</string>
+    <string name="delete_selected">Elimina selezionati</string>
+    <string name="no_markers_available">Nessun segnaposto disponibile.</string>
+    <string name="no_markers_selected">Nessun segnaposto selezionato.</string>
+    <string name="markers_selected_count">%1$d selezionati</string>
+    <string name="delete_selected_markers_message">Eliminare i %1$d segnaposti selezionati?
+
+L\'azione è irreversibile.</string>
+    <string name="markers_export_success">Segnaposti esportati.</string>
+    <string name="markers_export_failed">Esportazione fallita: impossibile scrivere il file GPX.</string>
+    <string name="markers_import_failed">Importazione fallita.</string>
+    <string name="import_no_valid_waypoints">Nessun waypoint GPX valido trovato.</string>
+    <string name="import_success_count">%1$d segnaposti importati.</string>
+    <string name="import_success_with_skipped">%1$d segnaposti importati. %2$d waypoint non validi saltati.</string>
+    <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 </resources>

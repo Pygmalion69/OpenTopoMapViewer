@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
+import android.view.View
 import android.view.Window
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -30,10 +31,19 @@ class WayPointDetailDialogFragment : DialogFragment() {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         if (mCallback != null) {
             val item = mCallback?.getSelectedWayPointItem()
-            item?.wayPoint?.let{
-                tvName.text = it.name
-                tvDescription.text =
-                    fromHtml(it.desc.replace("href=\"//", "href=\"http://"))
+            item?.wayPoint?.let { wp ->
+                tvName.text = wp.name ?: ""
+
+                val rawDesc = wp.desc
+                if (!rawDesc.isNullOrBlank()) {
+                    tvDescription.text = fromHtml(
+                        rawDesc.replace("href=\"//", "href=\"http://")
+                    )
+                    tvDescription.visibility = View.VISIBLE
+                } else {
+                    tvDescription.text = ""
+                    tvDescription.visibility = View.GONE
+                }
             }
         }
         return dialog

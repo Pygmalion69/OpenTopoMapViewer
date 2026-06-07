@@ -5,4 +5,5 @@ import io.ticofab.androidgpxparser.parser.domain.Gpx
 
 class GpxViewModel : ViewModel() {
     var gpx: Gpx? = null
+    var gpxUriString: String? = null
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="OpenTopoMapViewer Tests" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Multi-track sample</name>
+    <desc>Two short tracks used to verify aggregated distances.</desc>
+  </metadata>
+  <trk>
+    <name>Sample Track 1</name>
+    <trkseg>
+      <trkpt lat="0.0" lon="0.0">
+        <ele>10</ele>
+      </trkpt>
+      <trkpt lat="0.0" lon="0.01">
+        <ele>12</ele>
+      </trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>Sample Track 2</name>
+    <trkseg>
+      <trkpt lat="0.0" lon="0.0">
+        <ele>8</ele>
+      </trkpt>
+      <trkpt lat="0.01" lon="0.0">
+        <ele>15</ele>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

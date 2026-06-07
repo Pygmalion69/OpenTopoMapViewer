@@ -10,6 +10,11 @@
     <string name="discard_current_gpx">De huidige GPX wordt verwijderd.</string>
     <string name="gpx_details">GPX details</string>
     <string name="gpx_zoom">Zoom naar GPX</string>
+    <string name="gpx_remove">GPX verwijderen</string>
+    <string name="kml">KML</string>
+    <string name="kml_zoom">Zoom naar KML</string>
+    <string name="kml_remove">KML verwijderen</string>
+    <string name="invalid_kml">Ongeldige KML</string>
 
     <string name="location_details">Locatie-detail</string>
     <string name="label_latitude">Breedtegraad:</string>
@@ -24,7 +29,7 @@
     <string name="poi">POI</string>
 
     <string name="layers">Lagen</string>
-    <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_topo_map_archive">OpenTopoMap (Archief/Vooraf geladen)</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Wandelen</string>
     <string name="lonvia_cycling">Lonvia Fietsen</string>
@@ -37,10 +42,18 @@
     <string name="keep_screen_on">Scherm aan houden</string>
     <string name="map_rotation">Kaartrotatie</string>
     <string name="tap_compass_to_rotate">Tik op het kompas om de kaart te draaien</string>
+    <string name="max_zoom_level">Maximaal zoomniveau</string>
+    <string name="open_topo_map_source">OpenTopoMap-tegelbron</string>
 
     <string name="nearby">In de buurt</string>
 
     <string name="cache_settings">Cache-instellingen</string>
+    <string name="import_offline_tiles_title">Offline tegels importeren</string>
+    <string name="import_offline_tiles_summary">Selecteer een OpenTopoMap ZIP-bestand en importeer de tegels in de offline cache</string>
+    <string name="import_started">Tegelimport gestart…</string>
+    <string name="import_success">%1$d tegels geïmporteerd.</string>
+    <string name="import_failed">Import mislukt: %1$s</string>
+    <string name="import_no_tiles">Geen tegels geïmporteerd. Controleer ZIP-formaat.</string>
     <string name="tile_cache">Tegelcache</string>
     <string name="max_cache_size">Max. cachegrootte (MB)</string>
     <string name="reset">Resetten</string>
@@ -58,6 +71,13 @@
     <string name="about">Over</string>
     <string name="app_version">Versie %1$s</string>
     <string name="app_author">Door &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+    <string name="issue_tracker">Bugrapporten en functionaliteitsverzoeken: &lt;a href="https://github.com/Pygmalion69/OpenTopoMapViewer/issues"&gt;GitHub Issues&lt;/a&gt;</string>
+    <string name="about_open_topo_map">Kaart door &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© OpenStreetMap-bijdragers, SRTM).</string>
+    <string name="about_open_street_map">Kaartgegevens door &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;-bijdragers.</string>
+    <string name="about_open_topo_map_r">Kaart door &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>
+    <string name="about_top_o_map">Kaart door &lt;a href="https://top-o-map.de/"&gt;Top-O-Map&lt;/a&gt;.</string>
+    <string name="about_freemap_sk">Kaart door &lt;a href="https://www.freemap.sk/"&gt;Freemap.sk&lt;/a&gt;.</string>
+    <string name="about_waymarked_trails">Route-overlays door &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; van Lonvia.</string>
 
     <string name="default_marker_name">Markering %1$d</string>
     <string name="edit_marker">Markering bewerken</string>
@@ -73,6 +93,10 @@
     <string name="settings">Instellingen</string>
     <string name="screen_header">Scherm</string>
     <string name="cache_header">Cache</string>
+
+    <string name="kml_header">KML</string>
+    <string name="kml_enable">KML-ondersteuning inschakelen</string>
+    <string name="kml_enable_summary">KML-opties in het menu tonen</string>
 
     <string name="waypoint_added">Routepunt toegevoegd</string>
     <string name="waypoint_removed">Routepunt verwijderd</string>
@@ -105,4 +129,22 @@
     <string name="profile_foot_hiking">Wandelen</string>
     <string name="profile_wheelchair">Rolstoel</string>
 
+    <string name="markers">Markeringen</string>
+    <string name="import_gpx">Importeer GPX</string>
+    <string name="select_all">Alles selecteren</string>
+    <string name="export_selected">Geselecteerde exporteren</string>
+    <string name="delete_selected">Geselecteerde verwijderen</string>
+    <string name="no_markers_available">Geen markeringen beschikbaar.</string>
+    <string name="no_markers_selected">Geen markeringen geselecteerd.</string>
+    <string name="markers_selected_count">%1$d geselecteerd</string>
+    <string name="delete_selected_markers_message">De %1$d geselecteerde markeringen verwijderen?
+
+Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="markers_export_success">Markeringen geëxporteerd.</string>
+    <string name="markers_export_failed">Export mislukt: kon het GPX-bestand niet schrijven.</string>
+    <string name="markers_import_failed">Import mislukt.</string>
+    <string name="import_no_valid_waypoints">Geen geldige GPX-routepunten gevonden.</string>
+    <string name="import_success_count">%1$d markeringen geïmporteerd.</string>
+    <string name="import_success_with_skipped">%1$d markeringen geïmporteerd. %2$d ongeldige routepunten overgeslagen.</string>
+    <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 </resources>

@@ -28,6 +28,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IAxisValueFormatter
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import io.ticofab.androidgpxparser.parser.domain.Track
 import io.ticofab.androidgpxparser.parser.domain.TrackPoint
@@ -46,19 +47,19 @@ import java.util.Locale
 
 class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     WayPointDetailDialogFragment.Callback {
-    private lateinit var mListener: OnFragmentInteractionListener
-    private lateinit var mTrackDistanceLine: MutableList<DistancePoint>
-    private var mDistance = 0.0
-    private var mElevation = false
-    private lateinit var mElevationChart: LineChart
+    private lateinit var fragmentInteractionListener: OnFragmentInteractionListener
+    private lateinit var trackDistancePoints: MutableList<DistancePoint>
+    private var totalDistance = 0.0
+    private var hasElevationData = false
+    private lateinit var elevationChart: LineChart
     private lateinit var tvName: TextView
     private lateinit var tvDescription: TextView
     private lateinit var tvLength: TextView
-    private val mTfRegular: Typeface? = null
-    private val mTfLight: Typeface? = null
-    private var mMinElevation = 0.0
-    private var mMaxElevation = 0.0
-    private var mWayPointListItems: MutableList<WayPointListItem> = ArrayList()
+    private val regularTypeface: Typeface? = null
+    private val lightTypeface: Typeface? = null
+    private var minElevation = 0.0
+    private var maxElevation = 0.0
+    private var wayPointListItems: MutableList<WayPointListItem> = ArrayList()
     private lateinit var mWayPointListAdapter: WayPointListAdapter
     private lateinit var wvDescription: WebView
     private var mSelectedIndex = 0
@@ -67,7 +68,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        mWayPointListAdapter = WayPointListAdapter(mWayPointListItems, this)
+        mWayPointListAdapter = WayPointListAdapter(wayPointListItems, this)
     }
 
     override fun onCreateView(
@@ -81,7 +82,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         wvDescription.setBackgroundColor(Color.TRANSPARENT)
         tvLength = rootView.findViewById(R.id.tvLength)
         chartContainer = rootView.findViewById(R.id.chartContainer)
-        mElevationChart = rootView.findViewById(R.id.elevationChart)
+        elevationChart = rootView.findViewById(R.id.elevationChart)
         val wayPointRecyclerView = rootView.findViewById<RecyclerView>(R.id.way_point_recycler_view)
         wayPointRecyclerView.isNestedScrollingEnabled = false
         wayPointRecyclerView.layoutManager = LinearLayoutManager(activity)
@@ -93,12 +94,17 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mGpxViewModel = ViewModelProvider(requireActivity())[GpxViewModel::class.java]
+        resetTrackDistanceData()
         mGpxViewModel.gpx?.tracks?.forEach {
             buildTrackDistanceLine(it)
         }
+        if (!hasElevationData) {
+            minElevation = 0.0
+            maxElevation = 0.0
+        }
         /* if (getActivity() != null) {
-            mTfRegular = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
-            mTfLight = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf");
+            regularTypeface = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Regular.ttf");
+            lightTypeface = Typeface.createFromAsset(getActivity().getAssets(), "OpenSans-Light.ttf");
         }*/
 
         // For now, use title and description of first track
@@ -130,14 +136,14 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
                 }
             }
         }
-        if (mElevation) {
+        if (hasElevationData) {
             setUpElevationChart()
             setChartData()
         } else {
             chartContainer.visibility = View.GONE
         }
-        if (mDistance > 0) {
-            tvLength.text = String.format(Locale.getDefault(), "%.2f km", mDistance / 1000f)
+        if (totalDistance > 0) {
+            tvLength.text = String.format(Locale.getDefault(), "%.2f km", totalDistance / 1000f)
         } else {
             tvLength.visibility = View.GONE
         }
@@ -148,38 +154,48 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     }
 
     private fun buildTrackDistanceLine(track: Track) {
-        mTrackDistanceLine = ArrayList()
-        mDistance = 0.0
-        mElevation = false
         var prevTrackPoint: TrackPoint? = null
+
         track.trackSegments?.forEach { segment ->
-            segment.trackPoints?.let { points ->
-                mMaxElevation = points.first().elevation ?: 0.0
-                mMinElevation = mMaxElevation
-                points.forEach { trackPoint ->
-                    prevTrackPoint?.let { prevPoint ->
-                        mDistance += DistanceCalculator.distance(prevPoint, trackPoint)
-                    }
-                    val builder = DistancePoint.Builder()
-                    builder.setDistance(mDistance)
-                    trackPoint.elevation?.also { elevation ->
-                        if (elevation < mMinElevation) mMinElevation = elevation
-                        if (elevation > mMaxElevation) mMaxElevation = elevation
-                        builder.setElevation(elevation)
-                        mElevation = true
-                        mTrackDistanceLine.add(builder.build())
-                    }
-                    prevTrackPoint = trackPoint
+            if (trackDistancePoints.isNotEmpty()) {
+                trackDistancePoints.add(DistancePoint.Builder().build())
+            }
+            prevTrackPoint = null
+            segment.trackPoints?.forEach { trackPoint ->
+                prevTrackPoint?.let { prevPoint ->
+                    totalDistance += DistanceCalculator.distance(prevPoint, trackPoint)
                 }
+
+                val builder = DistancePoint.Builder()
+                    .setDistance(totalDistance)
+
+                trackPoint.elevation?.also { elevation ->
+                    if (elevation < minElevation) minElevation = elevation
+                    if (elevation > maxElevation) maxElevation = elevation
+                    builder.setElevation(elevation)
+                    hasElevationData = true
+                }
+
+                trackDistancePoints.add(builder.build())
+                prevTrackPoint = trackPoint
             }
         }
 
     }
 
+    private fun resetTrackDistanceData() {
+        trackDistancePoints = ArrayList()
+        totalDistance = 0.0
+        hasElevationData = false
+        minElevation = Double.MAX_VALUE
+        maxElevation = Double.MIN_VALUE
+    }
+
+
     private fun buildWayPointList() {
         val defaultType = getString(R.string.poi)
         var wayPoints: MutableList<WayPoint?>
-        mWayPointListItems.clear()
+        wayPointListItems.clear()
 
         var waypointTypes: List<String>?
         mGpxViewModel.gpx?.let { gpx ->
@@ -192,10 +208,10 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
                     )
                 )
                 if (wayPoints.isNotEmpty()) {
-                    mWayPointListItems.add(WayPointHeaderItem(type))
+                    wayPointListItems.add(WayPointHeaderItem(type))
                     for (wayPoint in wayPoints) {
                         wayPoint?.let { WayPointItem(it)}
-                            ?.let { mWayPointListItems.add(it) }
+                            ?.let { wayPointListItems.add(it) }
                     }
                 }
             }
@@ -203,16 +219,16 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
     }
 
     private fun setUpElevationChart() {
-        val l = mElevationChart.legend
+        val l = elevationChart.legend
         l.isEnabled = false
-        mElevationChart.description.isEnabled = false
+        elevationChart.description.isEnabled = false
         val mv = ChartValueMarkerView(activity, R.layout.chart_value_marker_view)
-        mv.chartView = mElevationChart
-        mElevationChart.marker = mv
+        mv.chartView = elevationChart
+        elevationChart.marker = mv
         val primaryTextColorInt = context?.let { Utils.resolveColorAttr(it, android.R.attr.textColorPrimary) }
-        val xAxis = mElevationChart.xAxis
+        val xAxis = elevationChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.typeface = mTfLight
+        xAxis.typeface = lightTypeface
         xAxis.textSize = 10f
         xAxis.textColor = Color.WHITE
         xAxis.setDrawAxisLine(true)
@@ -227,71 +243,81 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
             )
         }
         xAxis.axisMinimum = 0f
-        xAxis.axisMaximum = mDistance.toFloat()
-        val yAxis = mElevationChart.axisLeft
+        xAxis.axisMaximum = totalDistance.toFloat()
+        val yAxis = elevationChart.axisLeft
         yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
-        yAxis.typeface = mTfLight
+        yAxis.typeface = lightTypeface
         yAxis.setDrawGridLines(false)
         yAxis.isGranularityEnabled = true
         if (primaryTextColorInt != null) {
             yAxis.textColor = primaryTextColorInt
         }
-        val margin = mMaxElevation.toFloat() * .2f
-        var yMin = mMinElevation.toFloat() - margin
-        val yMax = mMaxElevation.toFloat() + margin
-        if (yMin < 0 && mMinElevation >= 0) yMin = 0f
+        val margin = maxElevation.toFloat() * .2f
+        var yMin = minElevation.toFloat() - margin
+        val yMax = maxElevation.toFloat() + margin
+        if (yMin < 0 && minElevation >= 0) yMin = 0f
         yAxis.axisMinimum = yMin
         yAxis.axisMaximum = yMax
-        mElevationChart.axisRight.setDrawLabels(false)
-        mElevationChart.viewPortHandler.setMaximumScaleX(2f)
-        mElevationChart.viewPortHandler.setMaximumScaleY(2f)
+        elevationChart.axisRight.setDrawLabels(false)
+        elevationChart.viewPortHandler.setMaximumScaleX(2f)
+        elevationChart.viewPortHandler.setMaximumScaleY(2f)
     }
 
     private fun setChartData() {
-        val elevationValues = ArrayList<Entry>()
-        for (point in mTrackDistanceLine) {
-            if (point.distance != null && point.elevation != null) elevationValues.add(
-                Entry(
-                    point.distance.toFloat(),
-                    point.elevation.toFloat()
-                )
-            )
+        val elevationDataSets = ArrayList<ILineDataSet>()
+        var elevationValues = ArrayList<Entry>()
+        for (point in trackDistancePoints) {
+            val distance = point.distance
+            val elevation = point.elevation
+            if (distance != null && elevation != null) {
+                elevationValues.add(Entry(distance.toFloat(), elevation.toFloat()))
+            } else if (elevationValues.isNotEmpty()) {
+                elevationDataSets.add(createElevationDataSet(elevationValues))
+                elevationValues = ArrayList()
+            }
         }
-        val elevationDataSet = LineDataSet(elevationValues, getString(R.string.elevation))
+        if (elevationValues.isNotEmpty()) {
+            elevationDataSets.add(createElevationDataSet(elevationValues))
+        }
+        val elevationData = LineData(elevationDataSets)
+        elevationChart.data = elevationData
+        elevationChart.invalidate()
+    }
+
+    private fun createElevationDataSet(entries: List<Entry>): LineDataSet {
+        val elevationDataSet = LineDataSet(entries, getString(R.string.elevation))
         elevationDataSet.setDrawValues(false)
         elevationDataSet.lineWidth = 2f
         elevationDataSet.mode = LineDataSet.Mode.CUBIC_BEZIER
         elevationDataSet.color = ResourcesCompat.getColor(resources, R.color.colorPrimary, null)
         elevationDataSet.setDrawCircles(false)
         elevationDataSet.axisDependency = YAxis.AxisDependency.LEFT
-        val elevationData = LineData(elevationDataSet)
-        mElevationChart.data = elevationData
-        mElevationChart.invalidate()
+        return elevationDataSet
     }
 
     override fun onItemClick(index: Int) {
         mSelectedIndex = index
-        if (activity != null && !requireActivity().isFinishing) {
+        activity?.takeIf { !it.isFinishing }?.let { fragmentActivity ->
             val wayPointDetailDialogFragment = WayPointDetailDialogFragment()
             wayPointDetailDialogFragment.show(
-                requireActivity().supportFragmentManager,
+                fragmentActivity.supportFragmentManager,
                 BaseMainActivity.WAY_POINT_DETAIL_FRAGMENT_TAG
             )
         }
     }
 
     override fun getSelectedWayPointItem(): WayPointItem {
-        return mWayPointListItems[mSelectedIndex] as WayPointItem
+        return wayPointListItems[mSelectedIndex] as WayPointItem
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        mListener.setUpNavigation(true)
+        fragmentInteractionListener.setUpNavigation(true)
     }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        mListener = if (context is OnFragmentInteractionListener) {
+        fragmentInteractionListener = if (context is OnFragmentInteractionListener) {
             context
         } else {
             throw RuntimeException(

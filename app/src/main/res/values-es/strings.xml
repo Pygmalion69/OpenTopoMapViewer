@@ -10,6 +10,11 @@
     <string name="discard_current_gpx">El GPX actual será descartado.</string>
     <string name="gpx_details">Detalles del GPX</string>
     <string name="gpx_zoom">Zoom al GPX</string>
+    <string name="gpx_remove">Eliminar GPX</string>
+    <string name="kml">KML</string>
+    <string name="kml_zoom">Zoom al KML</string>
+    <string name="kml_remove">Eliminar KML</string>
+    <string name="invalid_kml">KML inválido</string>
 
     <string name="location_details">Detalle de la ubicación</string>
     <string name="label_latitude">Latitud:</string>
@@ -24,7 +29,7 @@
     <string name="poi">POI</string>
 
     <string name="layers">Capas</string>
-    <string name="open_topo_map">OpenTopoMap</string>
+    <string name="open_topo_map_archive">OpenTopoMap (Archivo/Preinstalado)</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Senderismo</string>
     <string name="lonvia_cycling">Lonvia Ciclismo</string>
@@ -37,10 +42,18 @@
     <string name="keep_screen_on">Mantener pantalla encendida</string>
     <string name="map_rotation">Rotación del mapa</string>
     <string name="tap_compass_to_rotate">Toca la brújula para girar el mapa</string>
+    <string name="max_zoom_level">Nivel máximo de zoom</string>
+    <string name="open_topo_map_source">Fuente de teselas de OpenTopoMap</string>
 
     <string name="nearby">Cerca</string>
 
     <string name="cache_settings">Ajustes de caché</string>
+    <string name="import_offline_tiles_title">Importar teselas offline</string>
+    <string name="import_offline_tiles_summary">Selecciona un archivo ZIP de OpenTopoMap e importa sus teselas al caché offline</string>
+    <string name="import_started">Importación de teselas iniciada…</string>
+    <string name="import_success">Se han importado %1$d teselas.</string>
+    <string name="import_failed">Importación fallida: %1$s</string>
+    <string name="import_no_tiles">No se han importado teselas. Comprueba el formato ZIP.</string>
     <string name="tile_cache">Caché de teselas</string>
     <string name="max_cache_size">Tamaño máx. de caché (MB)</string>
     <string name="reset">Restablecer</string>
@@ -58,6 +71,13 @@
     <string name="about">Acerca de</string>
     <string name="app_version">Versión %1$s</string>
     <string name="app_author">Por &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+    <string name="issue_tracker">Informes de errores y solicitudes de funciones: &lt;a href="https://github.com/Pygmalion69/OpenTopoMapViewer/issues"&gt;GitHub Issues&lt;/a&gt;</string>
+    <string name="about_open_topo_map">Mapa de &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© colaboradores de OpenStreetMap, SRTM).</string>
+    <string name="about_open_street_map">Datos del mapa de los colaboradores de &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;.</string>
+    <string name="about_open_topo_map_r">Mapa de &lt;a href="https://openmaps.fr/"&gt;OpenTopoMap-R&lt;/a&gt;.</string>
+    <string name="about_top_o_map">Mapa de &lt;a href="https://top-o-map.de/"&gt;Top-O-Map&lt;/a&gt;.</string>
+    <string name="about_freemap_sk">Mapa de &lt;a href="https://www.freemap.sk/"&gt;Freemap.sk&lt;/a&gt;.</string>
+    <string name="about_waymarked_trails">Capas de rutas de &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; de Lonvia.</string>
 
     <string name="default_marker_name">Marcador %1$d</string>
     <string name="edit_marker">Editar marcador</string>
@@ -73,6 +93,10 @@
     <string name="settings">Configuración</string>
     <string name="screen_header">Pantalla</string>
     <string name="cache_header">Caché</string>
+
+    <string name="kml_header">KML</string>
+    <string name="kml_enable">Activar soporte KML</string>
+    <string name="kml_enable_summary">Mostrar opciones de KML en el menú</string>
 
     <string name="waypoint_added">Punto de ruta añadido</string>
     <string name="waypoint_removed">Punto de ruta eliminado</string>
@@ -105,4 +129,22 @@
     <string name="profile_foot_hiking">Senderismo</string>
     <string name="profile_wheelchair">Silla de ruedas</string>
 
+    <string name="markers">Marcadores</string>
+    <string name="import_gpx">Importar GPX</string>
+    <string name="select_all">Seleccionar todo</string>
+    <string name="export_selected">Exportar seleccionados</string>
+    <string name="delete_selected">Eliminar seleccionados</string>
+    <string name="no_markers_available">No hay marcadores disponibles.</string>
+    <string name="no_markers_selected">No hay marcadores seleccionados.</string>
+    <string name="markers_selected_count">%1$d seleccionados</string>
+    <string name="delete_selected_markers_message">¿Eliminar %1$d marcadores seleccionados?
+
+Esto no se puede deshacer.</string>
+    <string name="markers_export_success">Marcadores exportados.</string>
+    <string name="markers_export_failed">Exportación fallida: no se pudo escribir el archivo GPX.</string>
+    <string name="markers_import_failed">Importación fallida.</string>
+    <string name="import_no_valid_waypoints">No se encontraron waypoints GPX válidos.</string>
+    <string name="import_success_count">%1$d marcadores importados.</string>
+    <string name="import_success_with_skipped">%1$d marcadores importados. %2$d waypoints inválidos omitidos.</string>
+    <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 </resources>

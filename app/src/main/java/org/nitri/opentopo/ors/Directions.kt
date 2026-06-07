@@ -4,21 +4,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.ResponseBody
-import org.nitri.ors.api.OpenRouteServiceApi
-import org.nitri.ors.repository.RouteRepository
-import retrofit2.Response
+import org.nitri.ors.OrsClient
+import org.nitri.ors.helper.RouteHelper
 
-class Directions(val api: OpenRouteServiceApi, private val profile: String) {
+class Directions(val client: OrsClient, private val profile: String) {
 
-    val repository = RouteRepository(api)
+    val routeHelper = RouteHelper()
 
-    fun getRouteGpx(coordinates: List<List<Double>>, language: String, result: RouteGpResult) {
+    fun getRouteGpx(coordinates: List<List<Double>>, language: String, result: RouteGpxResult) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response : Response<ResponseBody> = repository.getRouteGpx(coordinates, language, profile)
+                val gpxXml = with(routeHelper) { client.getRouteGpx(coordinates, language, profile, true) }
                 withContext(Dispatchers.Main) {
-                    val gpxXml = response.body()?.string() ?: ""
                     if (gpxXml.isNotBlank()) {
                         result.onSuccess(gpxXml)
                     } else {
@@ -33,7 +30,7 @@ class Directions(val api: OpenRouteServiceApi, private val profile: String) {
         }
     }
 
-    interface RouteGpResult {
+    interface RouteGpxResult {
         fun onSuccess(gpx: String)
         fun onError(message: String)
     }

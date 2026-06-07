@@ -1,9 +1,6 @@
-plugins {
-    id 'com.android.application'
-    id 'com.google.gms.google-services'
-    id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt'
-}
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'com.google.devtools.ksp'
 
 def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
 
@@ -15,32 +12,33 @@ def myKeyAlias = System.getenv('KEY_ALIAS')
 def myKeyPassword = System.getenv('KEY_PASSWORD')
 
 android {
-    compileSdk 36
+    compileSdk = 36
     defaultConfig {
-        applicationId "org.nitri.opentopo"
+        applicationId = "org.nitri.opentopo"
         minSdkVersion 24
-        targetSdkVersion 35
-        versionCode 54
-        versionName "1.23.1"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        targetSdkVersion 36
+        versionCode = 67
+        versionName = "1.29.1"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
     signingConfigs {
         release {
             if (myStoreFile) {
-                storeFile rootProject.file(myStoreFile)
-                storePassword myStorePassword
-                keyAlias myKeyAlias
-                keyPassword myKeyPassword
+                storeFile = rootProject.file(myStoreFile)
+                storePassword = myStorePassword
+                keyAlias = myKeyAlias
+                keyPassword = myKeyPassword
             }
         }
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig = signingConfigs.debug
             if (myStoreFile && myStorePassword && myKeyAlias && myKeyPassword) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
             }
         }
     }
@@ -49,12 +47,12 @@ android {
 
     productFlavors {
         foss {
-            dimension "distribution"
+            dimension = "distribution"
             // Configuration for FOSS (GitHub, F-Droid)
             // No proprietary services, no ads
         }
         play {
-            dimension "distribution"
+            dimension = "distribution"
             // Configuration for Google Play
             // Google Services, Admob
         }
@@ -87,55 +85,45 @@ android {
         jvmTarget = "17"
     }
 
-    namespace 'org.nitri.opentopo'
+    namespace = 'org.nitri.opentopo'
     lint {
-        abortOnError false
+        abortOnError = false
         disable 'ExpiredTargetSdkVersion', 'ExpiringTargetSdkVersion'
     }
     buildFeatures {
-        buildConfig true
+        buildConfig = true
     }
     configurations.configureEach {
         resolutionStrategy.force 'androidx.appcompat:appcompat:1.6.1'
     }
 }
 
-// Disable Google Services processing for FOSS variants
-plugins.withId('com.google.gms.google-services') {
-    tasks.configureEach { t ->
-        // Tasks look like: processFossDebugGoogleServices, processPlayReleaseGoogleServices
-        if (t.name.endsWith('GoogleServices') && t.name.toLowerCase().contains('foss')) {
-            t.enabled = false
-        }
-    }
-}
-
 dependencies {
-    implementation project(':ors-client')
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
-    implementation 'androidx.core:core-ktx:1.17.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.2"
+    implementation 'androidx.core:core-ktx:1.18.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0"
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'org.osmdroid:osmdroid-android:6.1.20'
+    implementation 'com.github.MKergall:osmbonuspack:6.9.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     implementation 'com.squareup.retrofit2:retrofit:3.0.0'
     implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
-    implementation 'com.google.code.gson:gson:2.13.1'
+    implementation 'com.google.code.gson:gson:2.14.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.room:room-runtime:2.7.2'
+    implementation 'androidx.room:room-runtime:2.8.4'
     implementation 'androidx.test.ext:junit:1.3.0'
-    annotationProcessor 'androidx.room:room-compiler:2.7.2'
-    implementation "androidx.room:room-ktx:2.7.2"
-    kapt "androidx.room:room-compiler:2.7.2"
+    ksp 'androidx.room:room-compiler:2.8.4'
+    implementation "androidx.room:room-ktx:2.8.4"
     implementation "androidx.preference:preference:1.2.1"
-    implementation 'net.danlew:android.joda:2.13.1'
+    implementation 'net.danlew:android.joda:2.14.2'
     implementation 'com.github.k3b:k3b-geoHelper:1.1.5'
     implementation 'com.github.ticofab:android-gpx-parser:2.3.1'
+    implementation 'com.github.Pygmalion69:ors-android-client:0.3.1'
     implementation('com.squareup.picasso:picasso:2.71828') {
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
@@ -145,12 +133,12 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-core-utils'
         exclude group: 'com.android.support', module: 'exifinterface'
     }
-    playImplementation 'com.google.android.gms:play-services-ads:24.5.0'
-    playImplementation 'com.google.android.ump:user-messaging-platform:3.2.0'
-    playImplementation(platform('com.google.firebase:firebase-bom:34.1.0'))
-    playImplementation 'com.google.firebase:firebase-analytics:23.0.0'
+    // OkHttp client and Picasso OkHttp3 downloader for custom headers on image requests
+    implementation 'com.squareup.okhttp3:okhttp:5.3.2'
+    implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
+    playImplementation 'com.google.android.gms:play-services-ads:25.2.0'
+    playImplementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 }
-

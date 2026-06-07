@@ -16,6 +16,22 @@
             app:title="@string/map_rotation"
             app:summary="@string/tap_compass_to_rotate" />
 
+        <ListPreference
+            app:key="max_zoom_level"
+            app:title="@string/max_zoom_level"
+            app:entries="@array/max_zoom_level_entries"
+            app:entryValues="@array/max_zoom_level_values"
+            app:defaultValue="17"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:key="open_topo_map_source"
+            app:title="@string/open_topo_map_source"
+            app:entries="@array/open_topo_map_source_entries"
+            app:entryValues="@array/open_topo_map_source_values"
+            app:defaultValue="opentopomap"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/cache_header">
@@ -24,16 +40,30 @@
             app:key="cache_settings"
             app:title="@string/cache_settings"/>
 
+        <Preference
+            app:key="import_tiles"
+            app:title="@string/import_offline_tiles_title"
+            app:summary="@string/import_offline_tiles_summary"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/kml_header">
+        <SwitchPreferenceCompat
+            app:key="kml_enabled"
+            app:title="@string/kml_enable"
+            app:summary="@string/kml_enable_summary"
+            app:defaultValue="false" />
     </PreferenceCategory>
 
     <PreferenceCategory
         app:key="ors_section"
         app:title="@string/ors">
 
-        <Preference
+        <org.nitri.opentopo.view.OrsKeyPreference
             app:key="ors_set_key"
             app:title="@string/ors"
-            android:summary="@string/ors_key_prompt" />
+            android:summary="@string/ors_key_prompt"
+            app:widgetLayout="@layout/preference_ors_info_widget" />
 
         <Preference
             app:key="ors_erase_key"

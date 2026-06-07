@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Exclude the dedicated SharedPreferences file from cloud backups on Android 12+ -->
+        <exclude domain="sharedpref" path="cache_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <!-- Exclude from device-to-device transfer as well -->
+        <exclude domain="sharedpref" path="cache_prefs.xml" />
+    </device-transfer>
+</data-extraction-rules>
