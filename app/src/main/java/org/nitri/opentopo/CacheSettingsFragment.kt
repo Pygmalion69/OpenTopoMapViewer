@@ -21,6 +21,8 @@ import org.osmdroid.config.Configuration
 import org.nitri.opentopo.util.Utils
 import java.io.File
 import androidx.core.content.edit
+import org.nitri.opentopo.analytics.AnalyticsNames
+import org.nitri.opentopo.analytics.AnalyticsProvider
 
 
 class CacheSettingsFragment : DialogFragment() {
@@ -30,6 +32,10 @@ class CacheSettingsFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val fragmentActivity = activity ?: return super.onCreateDialog(savedInstanceState)
+        AnalyticsProvider.get(fragmentActivity).trackScreen(
+            AnalyticsNames.Screen.CACHE_SETTINGS,
+            CacheSettingsFragment::class.java.simpleName
+        )
         val fragmentContext = context ?: fragmentActivity
         val builder = AlertDialog.Builder(fragmentActivity)
         val inflater = fragmentActivity.layoutInflater

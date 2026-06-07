@@ -24,6 +24,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
+import org.nitri.opentopo.analytics.AnalyticsNames
+import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
 
@@ -32,6 +34,10 @@ class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
+        AnalyticsProvider.get(this).trackScreen(
+            AnalyticsNames.Screen.SETTINGS,
+            SettingsActivity::class.java.simpleName
+        )
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         toolbar.setTitleTextColor(ContextCompat.getColor(this, android.R.color.white))

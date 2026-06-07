@@ -52,6 +52,7 @@ import org.nitri.opentopo.overlay.ClickableCompassOverlay
 import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
+import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
@@ -474,6 +475,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 directions.getRouteGpx(coordinates, language, object : Directions.RouteGpxResult {
                     override fun onSuccess(gpx: String) {
                         Log.d(TAG, "GPX: $gpx")
+                        // Analytics: route calculation succeeded (Play flavor logs to Firebase; FOSS no-ops)
+                        AnalyticsProvider.get(requireContext()).trackRouteCalculated(
+                            profile = it,
+                            waypointCount = coordinates.size
+                        )
                         if (gpxDisplayState == GpxDisplayState.LOADED_FROM_FILE) {
                             showGpxDialog {
                                 listener?.clearGpx()
@@ -1097,10 +1103,34 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
             sharedPreferences.edit { putInt(PREF_BASE_MAP, baseMap) }
             sharedPreferences.edit { putInt(PREF_OVERLAY, overlay) }
+            AnalyticsProvider.get(requireContext()).trackMapLayerSelected(
+                baseMap = baseMapAnalyticsName(baseMap),
+                overlay = overlayAnalyticsName(overlay)
+            )
             setBaseMap()
             setTilesOverlay()
         }
         return true
+    }
+
+
+    private fun baseMapAnalyticsName(baseMap: Int): String {
+        return when (baseMap) {
+            BASE_MAP_OTM -> "open_topo_map"
+            BASE_MAP_OSM -> "open_street_map"
+            BASE_MAP_OHM -> "open_hiking_map"
+            BASE_MAP_FREEMAP_SK -> "freemap_sk"
+            else -> "unknown"
+        }
+    }
+
+    private fun overlayAnalyticsName(overlay: Int): String {
+        return when (overlay) {
+            OverlayHelper.OVERLAY_NONE -> "none"
+            OverlayHelper.OVERLAY_HIKING -> "hiking"
+            OverlayHelper.OVERLAY_CYCLING -> "cycling"
+            else -> "unknown"
+        }
     }
 
     override fun onLocationChanged(location: Location) {
