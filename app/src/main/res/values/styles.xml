@@ -5,6 +5,8 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">@color/colorPrimaryText</item>
         <item name="alertDialogTheme">@style/AlertDialogTheme</item>
         <item name="actionBarStyle">@style/ActionBarStyle</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
@@ -13,9 +15,12 @@
 
     <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="windowNoTitle">true</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">@color/colorPrimaryText</item>
     </style>
 
     <style name="ActionBarStyle" parent="Widget.AppCompat.ActionBar">
