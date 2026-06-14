@@ -349,9 +349,13 @@ object Utils {
         val applicationInfo = context.applicationInfo
         val stringId = applicationInfo.labelRes
         return if (stringId == 0) {
-            applicationInfo.nonLocalizedLabel.toString()
+            applicationInfo.nonLocalizedLabel?.toString() ?: ""
         } else {
-            context.getString(stringId)
+            try {
+                context.getString(stringId)
+            } catch (e: Exception) {
+                applicationInfo.nonLocalizedLabel?.toString() ?: ""
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package org.nitri.opentopo.view
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.res.Configuration
 import android.text.method.LinkMovementMethod
 import android.view.Window
 import android.widget.TextView
@@ -17,8 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
@@ -47,7 +50,7 @@ object AboutDialog {
 
             setContent {
                 OpenTopoTheme(dynamicColor = false) {
-                    AboutDialogContent(context)
+                    AboutDialogContent()
                 }
             }
         }
@@ -96,76 +99,93 @@ object AboutDialog {
         }
         return null
     }
+}
 
-    @Composable
-    private fun AboutDialogContent(context: Context) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp)
-        ) {
-            Text(
-                text = Utils.getAppName(context),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.app_version, Utils.getAppVersion(context)),
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.app_author),
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.app_product_page),
-                modifier = Modifier.padding(top = 16.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.issue_tracker),
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.about_open_topo_map),
-                modifier = Modifier.padding(top = 16.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.about_open_street_map),
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.about_open_topo_map_r),
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.about_top_o_map),
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.about_freemap_sk),
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            HtmlText(
-                html = stringResource(R.string.about_waymarked_trails),
-                modifier = Modifier.padding(top = 16.dp)
-            )
-        }
-    }
-
-    @Composable
-    private fun HtmlText(
-        html: String,
-        modifier: Modifier = Modifier
+@Composable
+fun AboutDialogContent() {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp)
     ) {
-        AndroidView(
-            modifier = modifier,
-            factory = { context ->
-                TextView(context).apply {
-                    movementMethod = LinkMovementMethod.getInstance()
-                }
-            },
-            update = { it.text = Utils.fromHtml(html) }
+        Text(
+            text = Utils.getAppName(context),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
+        HtmlText(
+            html = stringResource(R.string.app_version, Utils.getAppVersion(context)),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.app_author),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.app_product_page),
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.issue_tracker),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.about_open_topo_map),
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.about_open_street_map),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.about_open_topo_map_r),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.about_top_o_map),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.about_freemap_sk),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        HtmlText(
+            html = stringResource(R.string.about_waymarked_trails),
+            modifier = Modifier.padding(top = 16.dp)
+        )
+    }
+}
+
+@Composable
+fun HtmlText(
+    html: String,
+    modifier: Modifier = Modifier
+) {
+    AndroidView(
+        modifier = modifier,
+        factory = { context ->
+            TextView(context).apply {
+                movementMethod = LinkMovementMethod.getInstance()
+            }
+        },
+        update = { it.text = Utils.fromHtml(html) }
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AboutDialogPreview() {
+    OpenTopoTheme(dynamicColor = false) {
+        AboutDialogContent()
+    }
+}
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun AboutDialogDarkPreview() {
+    OpenTopoTheme(dynamicColor = false) {
+        AboutDialogContent()
     }
 }
