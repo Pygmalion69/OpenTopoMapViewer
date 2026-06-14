@@ -2,8 +2,8 @@ package org.nitri.opentopo.view
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.text.method.LinkMovementMethod
-import android.view.View
 import android.view.Window
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -15,9 +15,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -34,50 +34,67 @@ import org.nitri.opentopo.util.Utils
 object AboutDialog {
 
     fun show(context: Context) {
+        val lifecycleOwner = context.findOwner<LifecycleOwner>()
+        val viewModelStoreOwner = context.findOwner<ViewModelStoreOwner>()
+        val savedStateRegistryOwner = context.findOwner<SavedStateRegistryOwner>()
+
         val composeView = ComposeView(context).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            // Set owners directly on the ComposeView
+            setViewTreeLifecycleOwner(lifecycleOwner)
+            setViewTreeViewModelStoreOwner(viewModelStoreOwner)
+            setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+
             setContent {
                 OpenTopoTheme(dynamicColor = false) {
-                    val activity = context as? Activity
-                    val statusBarColor = context.getColor(R.color.colorPrimaryDark)
-                    SideEffect {
-                        activity?.window?.statusBarColor = statusBarColor
-                    }
                     AboutDialogContent(context)
                 }
             }
         }
 
-        // Using androidx.appcompat.app.AlertDialog to avoid MaterialComponents dependency crash
         val dialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)
             .setPositiveButton(R.string.close) { dialog, _ -> dialog.dismiss() }
             .create()
 
-        // Force no title before show
-        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
-        
-        // Remove padding around the custom view
-        dialog.setView(composeView, 0, 0, 0, 0)
-
-        val lifecycleOwner = context as? LifecycleOwner
-        val viewModelStoreOwner = context as? ViewModelStoreOwner
-        val savedStateRegistryOwner = context as? SavedStateRegistryOwner
-
+        // Set owners on the Dialog's window decor view immediately after creation
         dialog.window?.decorView?.let { decorView ->
             decorView.setViewTreeLifecycleOwner(lifecycleOwner)
             decorView.setViewTreeViewModelStoreOwner(viewModelStoreOwner)
             decorView.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
         }
 
-        dialog.show()
+        dialog.supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setView(composeView, 0, 0, 0, 0)
 
-        // Extremely aggressive panel hiding after show()
-        dialog.findViewById<View>(androidx.appcompat.R.id.topPanel)?.visibility = View.GONE
-        dialog.findViewById<View>(androidx.appcompat.R.id.title_template)?.visibility = View.GONE
-        dialog.findViewById<View>(androidx.appcompat.R.id.alertTitle)?.visibility = View.GONE
-        dialog.findViewById<View>(androidx.appcompat.R.id.titleDividerNoCustom)?.visibility = View.GONE
-        
-        // Also hide contentPanel as we use setView which goes into customPanel
-        dialog.findViewById<View>(androidx.appcompat.R.id.contentPanel)?.visibility = View.GONE
+        val activity = context.findOwner<Activity>()
+        val oldStatusBarColor = activity?.window?.statusBarColor
+
+        dialog.setOnShowListener {
+            activity?.window?.statusBarColor = context.getColor(R.color.colorPrimaryDark)
+        }
+
+        dialog.setOnDismissListener {
+            if (oldStatusBarColor != null) {
+                activity?.window?.statusBarColor = oldStatusBarColor
+            }
+        }
+
+        dialog.show()
+    }
+
+    private inline fun <reified T> Context.findOwner(): T? {
+        var curContext = this
+        while (true) {
+            if (curContext is T) {
+                return curContext
+            }
+            if (curContext is ContextWrapper) {
+                curContext = curContext.baseContext
+            } else {
+                break
+            }
+        }
+        return null
     }
 
     @Composable
