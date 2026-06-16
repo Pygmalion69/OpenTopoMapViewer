@@ -565,7 +565,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             (supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment)?.setGpx(validGpx, displayState, shouldZoomToGpx)
             gpxViewModel.gpxUriString = gpxUriString
 
-            // Track GPX loaded event only for files (Play flavor will provide Firebase impl)
+            // Track GPX loaded event only for files (Play flavor provides the reporting implementation)
             if (displayState == MapFragment.GpxDisplayState.LOADED_FROM_FILE) {
                 val fileName = try {
                     gpxUriString?.toUri()?.lastPathSegment
