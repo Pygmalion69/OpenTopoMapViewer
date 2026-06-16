@@ -5,10 +5,6 @@ apply plugin: 'com.google.devtools.ksp'
 def requestedTasks = gradle.startParameter.taskNames.join(" ").toLowerCase()
 def isPlayBuild = requestedTasks.contains("play")
 
-if (isPlayBuild) {
-    apply from: rootProject.file("gradle/play-services.gradle")
-}
-
 def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
 
 def isCi = System.getenv("GITHUB_ACTIONS") == "true" || System.getenv("CI") == "true"
@@ -103,6 +99,10 @@ android {
     configurations.configureEach {
         resolutionStrategy.force 'androidx.appcompat:appcompat:1.6.1'
     }
+}
+
+if (isPlayBuild) {
+    apply from: rootProject.file("gradle/play-services.gradle")
 }
 
 dependencies {
