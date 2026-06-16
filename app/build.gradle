@@ -3,9 +3,11 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'com.google.devtools.ksp'
 
 def requestedTasks = gradle.startParameter.taskNames.join(" ").toLowerCase()
-def isPlayBuild = requestedTasks.contains("play")
+def isPlayBuild = requestedTasks.contains("play") ||
+        requestedTasks.isEmpty() ||
+        ((requestedTasks.contains("assemble") || requestedTasks.contains("bundle") || requestedTasks.contains("install")) && !requestedTasks.contains("foss"))
 
-def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
+def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: true
 
 def isCi = System.getenv("GITHUB_ACTIONS") == "true" || System.getenv("CI") == "true"
 
@@ -20,8 +22,8 @@ android {
         applicationId = "org.nitri.opentopo"
         minSdkVersion 24
         targetSdkVersion 36
-        versionCode = 68
-        versionName = "1.30"
+        versionCode = 69
+        versionName = "1.30.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

@@ -1,22 +1,2 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-
-    dependencies {
-        classpath 'com.google.gms:google-services:4.4.3'
-    }
-}
-
-apply plugin: com.google.gms.googleservices.GoogleServicesPlugin
-
-def agpVersion = extensions.findByName('androidComponents')?.pluginVersion
-def agpMajor = agpVersion?.major ?: 0
-
-if (agpMajor > 0 && agpMajor < 9) {
-    apply from: rootProject.file('gradle/play-crash-reporting.gradle')
-} else {
-    logger.lifecycle("Skipping Play crash reporting Gradle plugin for Android Gradle Plugin ${agpVersion ?: 'unknown'} because the configured plugin release requires the removed AGP Variant API.")
-}
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
