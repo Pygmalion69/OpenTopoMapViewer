@@ -1,8 +1,13 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'com.google.devtools.ksp'
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
+
+def requestedTasks = gradle.startParameter.taskNames.join(" ").toLowerCase()
+def isPlayBuild = requestedTasks.contains("play")
+
+if (isPlayBuild) {
+    apply from: rootProject.file("gradle/play-services.gradle")
+}
 
 def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
 
@@ -146,12 +151,4 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.7.0'
     androidTestImplementation 'androidx.test.ext:junit:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
-}
-
-tasks.matching { it.name.contains("Crashlytics") }.configureEach {
-    onlyIf { it.name.toLowerCase().contains("play") }
-}
-
-tasks.matching { it.name.endsWith("GoogleServices") }.configureEach {
-    onlyIf { it.name.toLowerCase().contains("play") }
 }

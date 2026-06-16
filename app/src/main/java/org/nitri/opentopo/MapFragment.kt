@@ -475,7 +475,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 directions.getRouteGpx(coordinates, language, object : Directions.RouteGpxResult {
                     override fun onSuccess(gpx: String) {
                         Log.d(TAG, "GPX: $gpx")
-                        // Analytics: route calculation succeeded (Play flavor logs to Firebase; FOSS no-ops)
+                        // Analytics: route calculation succeeded (Play flavor reports it; FOSS no-ops)
                         AnalyticsProvider.get(requireContext()).trackRouteCalculated(
                             profile = it,
                             waypointCount = coordinates.size
