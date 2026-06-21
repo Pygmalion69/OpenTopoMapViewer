@@ -7,7 +7,7 @@ def isPlayBuild = requestedTasks.contains("play") ||
         requestedTasks.isEmpty() ||
         ((requestedTasks.contains("assemble") || requestedTasks.contains("bundle") || requestedTasks.contains("install")) && !requestedTasks.contains("foss"))
 
-def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: true
+def enablePlayRelease = System.getenv('ENABLE_PLAY_RELEASE')?.toBoolean() ?: false
 
 def isCi = System.getenv("GITHUB_ACTIONS") == "true" || System.getenv("CI") == "true"
 
