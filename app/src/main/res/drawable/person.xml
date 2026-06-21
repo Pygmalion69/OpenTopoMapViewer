@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    osmdroid's MyLocationNewOverlay loads a drawable named "person" in its
+    constructor before OpenTopoMapViewer replaces it with ic_position.
+    Keep this as a text XML bitmap alias so the default lookup succeeds
+    without adding generated binary assets to the repository.
+-->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/ic_default_marker"
+    android:gravity="center" />
