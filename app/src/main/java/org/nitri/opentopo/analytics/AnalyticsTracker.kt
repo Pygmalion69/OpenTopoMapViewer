@@ -4,7 +4,7 @@ import io.ticofab.androidgpxparser.parser.domain.Gpx
 
 /**
  * AnalyticsTracker abstracts analytics reporting so that FOSS stays clean
- * and Play flavor can provide a Firebase-backed implementation.
+ * and Play flavor can provide its own reporting implementation.
  */
 interface AnalyticsTracker {
     fun trackScreen(screenName: String, screenClass: String)
