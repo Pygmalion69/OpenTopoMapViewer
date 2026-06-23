@@ -1,31 +1,53 @@
 package org.nitri.opentopo
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.Window
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.NavUtils
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.coroutines.launch
 import org.nitri.opentopo.analytics.AnalyticsNames
 import org.nitri.opentopo.analytics.AnalyticsProvider
+import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
 
@@ -178,19 +200,29 @@ class SettingsActivity : AppCompatActivity() {
         private fun showOrsApiKeyDialog() {
             val context = requireContext()
 
-            val inflater = LayoutInflater.from(context)
-            val dialogView = inflater.inflate(R.layout.dialog_ors_api_key, null, false)
-            val input = dialogView.findViewById<EditText>(R.id.input_ors_key)
-            val explanation = dialogView.findViewById<TextView>(R.id.ors_explanation)
+            val lifecycleOwner = context.findOwner<LifecycleOwner>()
+            val viewModelStoreOwner = context.findOwner<ViewModelStoreOwner>()
+            val savedStateRegistryOwner = context.findOwner<SavedStateRegistryOwner>()
 
-            explanation.text = Utils.fromHtml(getString(R.string.ors_explanation_html))
-            explanation.movementMethod = LinkMovementMethod.getInstance()
+            var enteredKey = ""
+
+            val composeView = ComposeView(context).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setViewTreeLifecycleOwner(lifecycleOwner)
+                setViewTreeViewModelStoreOwner(viewModelStoreOwner)
+                setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+
+                setContent {
+                    OpenTopoTheme(dynamicColor = false) {
+                        OrsApiKeyDialogContent(onKeyChange = { enteredKey = it })
+                    }
+                }
+            }
 
             val dialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)
                 .setTitle(R.string.ors_api_key_title)
-                .setView(dialogView)
                 .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                    val key = input.text.toString().trim()
+                    val key = enteredKey.trim()
                     if (key.isNotEmpty()) {
                         PreferenceManager.getDefaultSharedPreferences(context)
                             .edit { putString(PREF_ORS_API_KEY, key) }
@@ -203,6 +235,14 @@ class SettingsActivity : AppCompatActivity() {
                 }
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()
+
+            dialog.setView(composeView, 0, 0, 0, 0)
+
+            dialog.window?.decorView?.let { decorView ->
+                decorView.setViewTreeLifecycleOwner(lifecycleOwner)
+                decorView.setViewTreeViewModelStoreOwner(viewModelStoreOwner)
+                decorView.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+            }
 
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
             dialog.show()
@@ -279,5 +319,63 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_ORS_API_KEY = "ors_api_key"
         const val PREF_ORS_PROFILE = "ors_profile"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
+    }
+}
+
+private inline fun <reified T> Context.findOwner(): T? {
+    var curContext = this
+    while (true) {
+        if (curContext is T) {
+            return curContext
+        }
+        if (curContext is ContextWrapper) {
+            curContext = curContext.baseContext
+        } else {
+            break
+        }
+    }
+    return null
+}
+
+@Composable
+private fun HtmlText(
+    html: String,
+    modifier: Modifier = Modifier
+) {
+    AndroidView(
+        modifier = modifier,
+        factory = { context ->
+            TextView(context).apply {
+                movementMethod = LinkMovementMethod.getInstance()
+            }
+        },
+        update = { it.text = Utils.fromHtml(html) }
+    )
+}
+
+@Composable
+private fun OrsApiKeyDialogContent(onKeyChange: (String) -> Unit) {
+    var key by remember { mutableStateOf("") }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(24.dp)
+    ) {
+        HtmlText(
+            html = stringResource(R.string.ors_explanation_html),
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = key,
+            onValueChange = {
+                key = it
+                onKeyChange(it)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            label = { Text(stringResource(R.string.ors_hint)) },
+            singleLine = true
+        )
     }
 }
