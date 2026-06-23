@@ -1,7 +1,6 @@
 package org.nitri.opentopo
 
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -34,15 +33,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.NavUtils
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
-import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.coroutines.launch
 import org.nitri.opentopo.analytics.AnalyticsNames
@@ -200,9 +196,9 @@ class SettingsActivity : AppCompatActivity() {
         private fun showOrsApiKeyDialog() {
             val context = requireContext()
 
-            val lifecycleOwner = context.findOwner<LifecycleOwner>()
-            val viewModelStoreOwner = context.findOwner<ViewModelStoreOwner>()
-            val savedStateRegistryOwner = context.findOwner<SavedStateRegistryOwner>()
+            val lifecycleOwner = viewLifecycleOwner
+            val viewModelStoreOwner = requireActivity()
+            val savedStateRegistryOwner = requireActivity()
 
             var enteredKey = ""
 
@@ -238,6 +234,9 @@ class SettingsActivity : AppCompatActivity() {
 
             dialog.setView(composeView, 0, 0, 0, 0)
 
+            // Required for Compose inside AppCompat AlertDialog.
+            // Without owners on the dialog decor view, Compose may fail with:
+            // "ViewTreeLifecycleOwner not found from AlertDialogLayout".
             dialog.window?.decorView?.let { decorView ->
                 decorView.setViewTreeLifecycleOwner(lifecycleOwner)
                 decorView.setViewTreeViewModelStoreOwner(viewModelStoreOwner)
@@ -320,21 +319,6 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_ORS_PROFILE = "ors_profile"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
     }
-}
-
-private inline fun <reified T> Context.findOwner(): T? {
-    var curContext = this
-    while (true) {
-        if (curContext is T) {
-            return curContext
-        }
-        if (curContext is ContextWrapper) {
-            curContext = curContext.baseContext
-        } else {
-            break
-        }
-    }
-    return null
 }
 
 @Composable
