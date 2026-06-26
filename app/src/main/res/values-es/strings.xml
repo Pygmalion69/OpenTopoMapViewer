@@ -60,6 +60,7 @@
     <string name="storage_root">Raíz del almacenamiento: %1$s</string>
     <string name="external_storage">Almacenamiento externo</string>
     <string name="invalid_cache_size">Por favor, introduzca un tamaño de caché válido</string>
+    <string name="storage_not_accessible">La ubicación de almacenamiento no es accesible (no se puede leer ni escribir)</string>
 
     <string name="privacy_settings">Ajustes de privacidad</string>
 

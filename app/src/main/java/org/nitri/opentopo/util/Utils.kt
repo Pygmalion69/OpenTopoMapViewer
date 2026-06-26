@@ -8,7 +8,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.VectorDrawable
 import android.os.Build
-import android.os.Environment
 import android.text.Html
 import android.text.Spanned
 import android.text.TextUtils
@@ -299,17 +298,49 @@ object Utils {
 
     fun getOsmdroidBasePath(context: Context, externalStorage: Boolean) : File {
         return if (externalStorage) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                    "osmdroid"
-                )
+            val externalDir = context.getExternalFilesDir(null)
+            if (externalDir != null) {
+                // On Android 10+ (Scoped Storage), public external storage like /Download/osmdroid
+                // is not safe for a live SQLite cache (it might be unreadable after reinstall).
+                // We use app-specific external storage instead.
+                File(externalDir, "osmdroid")
             } else {
-                File(Environment.getExternalStorageDirectory().toString() + "/Download/osmdroid");
+                Log.w("Utils", "External storage not available, falling back to internal")
+                File(context.filesDir, "osmdroid")
             }
         } else {
-            File(context.cacheDir.absolutePath, "osmdroid")
+            File(context.cacheDir, "osmdroid")
         }
+    }
+
+    /**
+     * Validate if the given directory is suitable for osmdroid tile cache.
+     *
+     * @param dir The directory to validate
+     * @return true if the directory is valid and accessible
+     */
+    fun isCacheDirValid(dir: File): Boolean {
+        try {
+            if (!dir.exists() && !dir.mkdirs()) {
+                Log.w("Utils", "Cannot create directory: ${dir.absolutePath}")
+                return false
+            }
+            if (!dir.canRead() || !dir.canWrite()) {
+                Log.w("Utils", "Directory not readable or writable: ${dir.absolutePath}")
+                return false
+            }
+            val dbFile = File(dir, "cache.db")
+            if (dbFile.exists()) {
+                if (!dbFile.canRead() || !dbFile.canWrite()) {
+                    Log.w("Utils", "cache.db exists but is not readable or writable: ${dbFile.absolutePath}")
+                    return false
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Utils", "Error validating cache directory: ${e.message}")
+            return false
+        }
+        return true
     }
 
     /**

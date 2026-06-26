@@ -192,14 +192,25 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         } else {
             sharedPreferences.getBoolean(CacheSettingsFragment.PREF_EXTERNAL_STORAGE, false)
         }
-        val basePath = Utils.getOsmdroidBasePath(appContext, externalStorage)
+        var basePath = Utils.getOsmdroidBasePath(appContext, externalStorage)
+        val tileCacheName = sharedPreferences.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
+            ?: CacheSettingsFragment.DEFAULT_TILE_CACHE
+        var tileCache = File(basePath, tileCacheName)
+
+        // Validate the cache directory and fall back to internal if invalid.
+        // This prevents SQLiteCantOpenDatabaseException on Android 10+ when using public storage.
+        if (!Utils.isCacheDirValid(tileCache)) {
+            Log.w(TAG, "Tile cache directory $tileCache is invalid or inaccessible. Falling back to internal storage.")
+            basePath = Utils.getOsmdroidBasePath(appContext, false)
+            tileCache = File(basePath, tileCacheName)
+            if (!Utils.isCacheDirValid(tileCache)) {
+                // Last resort fallback
+                tileCache = File(appContext.cacheDir, "osmdroid/$tileCacheName")
+                tileCache.mkdirs()
+            }
+        }
+
         configuration.osmdroidBasePath = basePath
-        // Ensure base and tile cache directories exist and follow <cache>/osmdroid/tiles structure
-        if (!basePath.exists()) basePath.mkdirs()
-        val tileCache = File(configuration.osmdroidBasePath.absolutePath,
-            sharedPreferences.getString(CacheSettingsFragment.PREF_TILE_CACHE, CacheSettingsFragment.DEFAULT_TILE_CACHE)
-                ?: CacheSettingsFragment.DEFAULT_TILE_CACHE)
-        if (!tileCache.exists()) tileCache.mkdirs()
         configuration.osmdroidTileCache = tileCache
         val maxCacheSize = sharedPreferences.getInt(CacheSettingsFragment.PREF_CACHE_SIZE, CacheSettingsFragment.DEFAULT_CACHE_SIZE)
         configuration.tileFileSystemCacheMaxBytes =

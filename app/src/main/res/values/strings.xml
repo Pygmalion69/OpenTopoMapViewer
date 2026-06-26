@@ -71,6 +71,7 @@
     <string name="storage_root">Storage root: %1$s</string>
     <string name="external_storage">External storage</string>
     <string name="invalid_cache_size">Please enter a valid cache size</string>
+    <string name="storage_not_accessible">Storage location is not accessible (not readable or writable)</string>
 
     <string name="privacy_settings">Privacy Settings</string>
 

@@ -60,6 +60,7 @@
     <string name="storage_root">Racine du stockage : %1$s</string>
     <string name="external_storage">Stockage externe</string>
     <string name="invalid_cache_size">Veuillez entrer une taille de cache valide</string>
+    <string name="storage_not_accessible">L’emplacement de stockage n’est pas accessible (non lisible ou inscriptible)</string>
 
     <string name="privacy_settings">Paramètres de confidentialité</string>
 

@@ -60,6 +60,7 @@
     <string name="storage_root">Root memoria: %1$s</string>
     <string name="external_storage">Memoria esterna</string>
     <string name="invalid_cache_size">Immetti dimensione della cache valida</string>
+    <string name="storage_not_accessible">La posizione di archiviazione non è accessibile (non leggibile o scrivibile)</string>
 
     <string name="privacy_settings">Impostazioni Privacy</string>
 
