@@ -48,7 +48,6 @@ class CacheSettingsFragment : DialogFragment() {
     private var currentExternalStorage = false
     private var currentTileCache = ""
     private var currentCacheSize = 0
-    private var storageRoot = ""
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val fragmentActivity = activity ?: return super.onCreateDialog(savedInstanceState)
@@ -59,10 +58,6 @@ class CacheSettingsFragment : DialogFragment() {
 
         val defaultPrefs = PreferenceManager.getDefaultSharedPreferences(fragmentActivity.applicationContext)
         val cachePrefs: SharedPreferences = fragmentActivity.getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
-
-        val basePath = Configuration.getInstance().osmdroidBasePath
-        storageRoot = basePath?.absolutePath ?: getString(R.string.unknown_symbol)
-        val storageRootText = getString(R.string.storage_root, storageRoot)
 
         currentExternalStorage = cachePrefs.getBoolean(PREF_EXTERNAL_STORAGE,
             defaultPrefs.getBoolean(PREF_EXTERNAL_STORAGE, false)
@@ -79,6 +74,8 @@ class CacheSettingsFragment : DialogFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 OpenTopoTheme(dynamicColor = false) {
+                    val currentStorageRoot = Utils.getOsmdroidBasePath(fragmentActivity.applicationContext, externalStorageState).absolutePath
+                    val storageRootText = stringResource(id = R.string.storage_root, currentStorageRoot)
                     CacheSettingsContent(
                         storageRootText = storageRootText,
                         externalStorage = externalStorageState,
@@ -195,7 +192,8 @@ class CacheSettingsFragment : DialogFragment() {
 
     private fun applySettings() {
         val fragmentActivity = activity ?: return
-        val defaultPrefs = PreferenceManager.getDefaultSharedPreferences(fragmentActivity.applicationContext)
+        val appContext = fragmentActivity.applicationContext
+        val defaultPrefs = PreferenceManager.getDefaultSharedPreferences(appContext)
         val cachePrefs: SharedPreferences = fragmentActivity.getSharedPreferences("cache_prefs", Context.MODE_PRIVATE)
 
         val newExternalStorage = externalStorageState
@@ -208,26 +206,30 @@ class CacheSettingsFragment : DialogFragment() {
         }
 
         if (newCacheSize > 0) {
+            val newBasePath = Utils.getOsmdroidBasePath(appContext, newExternalStorage)
+            val newCacheDir = File(newBasePath, newTileCache)
+
+            // Validate the cache directory before applying.
+            if (!Utils.isCacheDirValid(newCacheDir)) {
+                Toast.makeText(appContext, R.string.storage_not_accessible, Toast.LENGTH_LONG).show()
+                return
+            }
+
             defaultPrefs.edit().apply {
                 putString(PREF_TILE_CACHE, newTileCache)
                 putInt(PREF_CACHE_SIZE, newCacheSize)
                 apply()
             }
             cachePrefs.edit { putBoolean(PREF_EXTERNAL_STORAGE, newExternalStorage) }
-            // Ensure base path and cache dir exist
-            val baseDir = File(storageRoot)
-            if (!baseDir.exists()) baseDir.mkdirs()
-            val cacheDir = File("$storageRoot/$newTileCache")
-            if (!cacheDir.exists() && cacheDir.mkdirs()) {
-                Log.i(TAG, "Tile cache created: $newTileCache")
-            }
+
             val configuration = Configuration.getInstance()
-            configuration.osmdroidTileCache = cacheDir
+            configuration.osmdroidBasePath = newBasePath
+            configuration.osmdroidTileCache = newCacheDir
             configuration.tileFileSystemCacheMaxBytes =
                 newCacheSize.toLong() * 1024 * 1024
             // Remove any leftover sqlite files to avoid SqlTileWriter using them
-            Utils.clearOsmdroidSqliteCache(fragmentActivity.applicationContext)
-            configuration.save(fragmentActivity.applicationContext, defaultPrefs)
+            Utils.clearOsmdroidSqliteCache(appContext)
+            configuration.save(appContext, defaultPrefs)
             val intent = Intent(ACTION_CACHE_CHANGED)
             val localBroadcastManager = LocalBroadcastManager.getInstance(
                 fragmentActivity
