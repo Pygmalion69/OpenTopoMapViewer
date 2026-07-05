@@ -3,36 +3,49 @@ package org.nitri.opentopo
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.util.Log
-import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.Window
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.app.NavUtils
-import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.core.view.WindowCompat
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
@@ -51,34 +64,24 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.settings_activity)
         AnalyticsProvider.get(this).trackScreen(
             AnalyticsNames.Screen.SETTINGS,
             SettingsActivity::class.java.simpleName
         )
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        toolbar.setTitleTextColor(ContextCompat.getColor(this, android.R.color.white))
-        toolbar.navigationIcon?.setTint(ContextCompat.getColor(this, android.R.color.white))
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white);
-        setSupportActionBar(toolbar)
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        if (savedInstanceState == null) {
-            supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.settings, SettingsFragment())
-                .commit()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        } else {
+            WindowCompat.setDecorFitsSystemWindows(window, true)
         }
 
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> NavUtils.navigateUpFromSameTask(this);
+        setContent {
+            OpenTopoTheme(dynamicColor = false) {
+                SettingsScreen(
+                    onBack = { onBackPressedDispatcher.onBackPressed() }
+                )
+            }
         }
-        return super.onOptionsItemSelected(item)
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
@@ -318,6 +321,55 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_ORS_API_KEY = "ors_api_key"
         const val PREF_ORS_PROFILE = "ors_profile"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsScreen(onBack: () -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.settings)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            painterResource(R.drawable.ic_arrow_back_white),
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                ),
+                modifier = Modifier.statusBarsPadding()
+            )
+        }
+    ) { innerPadding ->
+        AndroidView(
+            factory = { context ->
+                FragmentContainerView(context).apply {
+                    id = View.generateViewId()
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) { view ->
+            val fragmentManager = (view.context as? AppCompatActivity)?.supportFragmentManager
+            if (fragmentManager != null && fragmentManager.findFragmentById(view.id) == null) {
+                fragmentManager.beginTransaction()
+                    .replace(view.id, SettingsActivity.SettingsFragment())
+                    .commit()
+            }
+        }
     }
 }
 
