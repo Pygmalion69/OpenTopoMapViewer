@@ -19,7 +19,9 @@
     <string name="location_details">Détail de la position</string>
     <string name="label_latitude">Latitude :</string>
     <string name="label_longitude">Longitude :</string>
-    <string name="label_elevation">Altitude :</string>
+    <string name="label_elevation_gps_nmea">Altitude (GPS/NMEA)</string>
+    <string name="label_elevation_ors">Altitude (ORS)</string>
+    <string name="loading">Chargement\u2026</string>
     <string name="close">Fermer</string>
     <string name="unknown_symbol">-</string>
 

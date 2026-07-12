@@ -21,7 +21,9 @@
     <string name="location_details">Location detail</string>
     <string name="label_latitude">Latitude:</string>
     <string name="label_longitude">Longitude:</string>
-    <string name="label_elevation">Elevation:</string>
+    <string name="label_elevation_gps_nmea">Elevation (GPS/NMEA)</string>
+    <string name="label_elevation_ors">Elevation (ORS)</string>
+    <string name="loading">Loading\u2026</string>
     <string name="close">Close</string>
     <string name="unknown_symbol">-</string>
 
