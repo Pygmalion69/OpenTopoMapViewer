@@ -19,7 +19,9 @@
     <string name="location_details">Locatie-detail</string>
     <string name="label_latitude">Breedtegraad:</string>
     <string name="label_longitude">Lengtegraad:</string>
-    <string name="label_elevation">Hoogte:</string>
+    <string name="label_elevation_gps_nmea">Hoogte (GPS/NMEA)</string>
+    <string name="label_elevation_ors">Hoogte (ORS)</string>
+    <string name="loading">Laden\u2026</string>
     <string name="close">Sluiten</string>
     <string name="unknown_symbol">-</string>
 

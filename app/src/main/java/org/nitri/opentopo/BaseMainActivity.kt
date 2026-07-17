@@ -195,9 +195,14 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     private fun createOrsClient() {
-        val apiKey = sharedPreferences.getString(PREF_ORS_API_KEY, "")
-        if (apiKey?.isNotEmpty() == true) {
-            orsClient = Ors.create(apiKey, applicationContext)
+        val apiKey = sharedPreferences
+            .getString(PREF_ORS_API_KEY, null)
+            ?.trim()
+
+        orsClient = if (apiKey.isNullOrEmpty()) {
+            null
+        } else {
+            Ors.create(apiKey, applicationContext)
         }
     }
 

@@ -19,7 +19,9 @@
     <string name="location_details">Standortdetails</string>
     <string name="label_latitude">Breitengrad:</string>
     <string name="label_longitude">Längengrad:</string>
-    <string name="label_elevation">Höhe:</string>
+    <string name="label_elevation_gps_nmea">Höhe (GPS/NMEA)</string>
+    <string name="label_elevation_ors">Höhe (ORS)</string>
+    <string name="loading">Wird geladen\u2026</string>
     <string name="close">Schließen</string>
     <string name="unknown_symbol">-</string>
 
