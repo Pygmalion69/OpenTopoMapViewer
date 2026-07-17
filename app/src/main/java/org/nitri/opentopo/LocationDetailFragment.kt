@@ -41,6 +41,7 @@ import org.nitri.opentopo.util.Utils.elevationFromNmea
 import org.nitri.opentopo.viewmodel.LocationViewModel
 import org.nitri.ors.OrsClient
 import java.util.Locale
+import androidx.compose.ui.platform.LocalLocale
 
 class LocationDetailFragment : DialogFragment() {
 
@@ -99,7 +100,7 @@ class LocationDetailFragment : DialogFragment() {
 
         val nmeaElevationValue = nmea?.let { elevationFromNmea(it) }
         val nmeaElevation = if (nmeaElevationValue != null && nmeaElevationValue != Utils.NO_ELEVATION_VALUE.toDouble()) {
-            String.format(Locale.getDefault(), "%.1f m", nmeaElevationValue)
+            String.format(LocalLocale.current.platformLocale, "%.1f m", nmeaElevationValue)
         } else {
             stringResource(R.string.unknown_symbol)
         }
@@ -152,7 +153,7 @@ class LocationDetailFragment : DialogFragment() {
             OrsElevationState.Unavailable -> null
             OrsElevationState.Loading -> stringResource(R.string.loading)
             is OrsElevationState.Success ->
-                String.format(Locale.getDefault(), "%.1f m", state.meters)
+                String.format(LocalLocale.current.platformLocale, "%.1f m", state.meters)
             OrsElevationState.Error -> stringResource(R.string.unknown_symbol)
         }
 

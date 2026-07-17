@@ -49,6 +49,7 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
@@ -227,7 +228,7 @@ class SettingsActivity : AppCompatActivity() {
                             .edit { putString(PREF_ORS_API_KEY, key) }
                         Toast.makeText(context, "Key saved", Toast.LENGTH_SHORT).show()
                         val intent = Intent(ACTION_API_KEY_CHANGED)
-                        context.sendBroadcast(intent)
+                        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
                         recreate()
                     }
                     dialog.dismiss()
@@ -292,7 +293,7 @@ class SettingsActivity : AppCompatActivity() {
                     PreferenceManager.getDefaultSharedPreferences(context)
                         .edit { remove(PREF_ORS_API_KEY) }
                     val intent = Intent(ACTION_API_KEY_CHANGED)
-                    context.sendBroadcast(intent)
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
                     Toast.makeText(context, R.string.key_erased, Toast.LENGTH_SHORT).show()
                     recreate()
                     dialog.dismiss()

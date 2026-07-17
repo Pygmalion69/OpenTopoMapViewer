@@ -18,7 +18,7 @@ def myKeyAlias = System.getenv('KEY_ALIAS')
 def myKeyPassword = System.getenv('KEY_PASSWORD')
 
 android {
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         applicationId = "org.nitri.opentopo"
         minSdkVersion 24
@@ -112,8 +112,8 @@ if (isPlayBuild) {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     //noinspection GradleCompatible
-    implementation 'androidx.core:core-ktx:1.18.0'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0"
+    implementation 'androidx.core:core-ktx:1.19.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0"
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
@@ -133,7 +133,7 @@ dependencies {
     implementation 'net.danlew:android.joda:2.14.2'
     implementation 'com.github.k3b:k3b-geoHelper:1.1.5'
     implementation 'com.github.ticofab:android-gpx-parser:2.3.1'
-    implementation 'com.github.Pygmalion69:ors-android-client:0.3.1'
+    implementation 'com.github.Pygmalion69:ors-android-client:0.3.2'
     implementation('com.squareup.picasso:picasso:2.71828') {
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'appcompat-v7'
@@ -144,10 +144,10 @@ dependencies {
         exclude group: 'com.android.support', module: 'exifinterface'
     }
     // OkHttp client and Picasso OkHttp3 downloader for custom headers on image requests
-    implementation 'com.squareup.okhttp3:okhttp:5.3.2'
+    implementation 'com.squareup.okhttp3:okhttp:5.4.0'
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    playImplementation platform('com.google.firebase:firebase-bom:34.14.1')
-    playImplementation 'com.google.android.gms:play-services-ads:25.3.0'
+    playImplementation platform('com.google.firebase:firebase-bom:34.16.0')
+    playImplementation 'com.google.android.gms:play-services-ads:25.4.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     playImplementation 'com.google.firebase:firebase-analytics'
     playImplementation 'com.google.firebase:firebase-crashlytics'
@@ -157,7 +157,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
 
     // Jetpack Compose
-    def composeBom = platform('androidx.compose:compose-bom:2025.02.00')
+    def composeBom = platform('androidx.compose:compose-bom:2026.06.01')
     implementation composeBom
     androidTestImplementation composeBom
 
@@ -165,8 +165,8 @@ dependencies {
     implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.ui:ui-tooling-preview'
     implementation 'androidx.compose.material3:material3'
-    implementation 'androidx.activity:activity-compose:1.10.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7'
+    implementation 'androidx.activity:activity-compose:1.13.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0'
     implementation 'androidx.compose.runtime:runtime-livedata'
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
