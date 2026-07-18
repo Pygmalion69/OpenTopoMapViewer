@@ -150,4 +150,6 @@ Esto no se puede deshacer.</string>
     <string name="import_success_count">%1$d marcadores importados.</string>
     <string name="import_success_with_skipped">%1$d marcadores importados. %2$d waypoints inválidos omitidos.</string>
     <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
+
+    <string name="more_options">Más opciones</string>
 </resources>

@@ -117,7 +117,7 @@ class CacheSettingsFragment : DialogFragment() {
             // Required for Compose TextFields inside AppCompat AlertDialog.
             // Without this, Compose receives focus but the soft keyboard may not appear.
             dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
         }
 
         return dialog
