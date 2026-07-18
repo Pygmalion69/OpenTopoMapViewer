@@ -2,49 +2,74 @@ package org.nitri.opentopo
 
 import android.net.Uri
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
 import android.view.Window
-import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ActionMode
-import androidx.appcompat.widget.Toolbar
-import androidx.core.view.ViewCompat
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
-import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
-import org.nitri.opentopo.adapter.MarkerListAdapter
 import org.nitri.opentopo.analytics.AnalyticsNames
 import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.model.MarkerModel
+import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.GpxMarkerExporter
 import org.nitri.opentopo.util.GpxMarkerImporter
 import org.nitri.opentopo.view.MarkerEditorDialog
 import org.nitri.opentopo.viewmodel.MarkerViewModel
+import java.util.Locale
 
-class MarkerListActivity : AppCompatActivity() {
+class MarkerListActivity : ComponentActivity() {
     private val markerViewModel: MarkerViewModel by viewModels()
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var emptyView: TextView
-    private lateinit var adapter: MarkerListAdapter
 
-    private var markers: List<MarkerModel> = emptyList()
-    private val selectedMarkerIds = mutableSetOf<Int>()
-    private var actionMode: ActionMode? = null
+    private var idsToExport: Set<Int> = emptySet()
 
     private val exportLauncher =
         registerForActivityResult(ActivityResultContracts.CreateDocument("application/gpx+xml")) { uri ->
-            uri?.let { exportSelectedMarkers(it) }
+            uri?.let { exportSelectedMarkers(it, idsToExport) }
         }
 
     private val importLauncher =
@@ -55,155 +80,29 @@ class MarkerListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        setContentView(R.layout.activity_marker_list)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = getString(R.string.markers)
         AnalyticsProvider.get(this).trackScreen(
             AnalyticsNames.Screen.MARKERS,
             MarkerListActivity::class.java.simpleName
         )
 
-        recyclerView = findViewById(R.id.markerRecyclerView)
-        emptyView = findViewById(R.id.emptyView)
-        applyEdgeToEdgeInsets(toolbar)
-
-        adapter = MarkerListAdapter(
-            onClick = { marker ->
-                if (actionMode != null) {
-                    toggleSelection(marker.id)
-                } else {
-                    openMarkerEditor(marker)
-                }
-            },
-            onLongClick = { marker ->
-                if (actionMode == null) {
-                    actionMode = startSupportActionMode(selectionActionModeCallback)
-                }
-                toggleSelection(marker.id)
-            }
-        )
-
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.adapter = adapter
-
-        markerViewModel.markers.observe(this) { markerItems ->
-            markers = markerItems.sortedBy { it.seq }
-            adapter.submitList(markers)
-            emptyView.visibility = if (markers.isEmpty()) View.VISIBLE else View.GONE
-
-            selectedMarkerIds.retainAll(markers.map { it.id }.toSet())
-            if (actionMode != null && selectedMarkerIds.isEmpty()) {
-                actionMode?.finish()
-            } else {
-                updateSelectionUi()
-            }
-        }
-    }
-
-    private fun applyEdgeToEdgeInsets(toolbar: Toolbar) {
-        val root = findViewById<View>(R.id.markerListRoot)
-        val initialToolbarHeight = toolbar.layoutParams.height
-        val initialToolbarPaddingTop = toolbar.paddingTop
-        val initialRecyclerPaddingBottom = recyclerView.paddingBottom
-
-        ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
-            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-            toolbar.updatePadding(top = initialToolbarPaddingTop + systemBarsInsets.top)
-            toolbar.updateLayoutParams<ViewGroup.LayoutParams> {
-                height = initialToolbarHeight + systemBarsInsets.top
-            }
-            recyclerView.updatePadding(bottom = initialRecyclerPaddingBottom + systemBarsInsets.bottom)
-
-            insets
-        }
-        ViewCompat.requestApplyInsets(root)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_marker_list, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                finish()
-                true
-            }
-            R.id.action_import_markers -> {
-                importLauncher.launch(arrayOf("*/*"))
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    private val selectionActionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-            mode.menuInflater.inflate(R.menu.menu_marker_selection, menu)
-            updateSelectionUi()
-            return true
-        }
-
-        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
-
-        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-            when (item.itemId) {
-                R.id.action_select_all_markers -> {
-                    selectedMarkerIds.clear()
-                    selectedMarkerIds.addAll(markers.map { it.id })
-                    updateSelectionUi()
-                    return true
-                }
-                R.id.action_export_selected_markers -> {
-                    if (selectedMarkerIds.isEmpty()) {
-                        Toast.makeText(this@MarkerListActivity, R.string.no_markers_selected, Toast.LENGTH_SHORT).show()
-                    } else {
+        setContent {
+            OpenTopoTheme(dynamicColor = false) {
+                MarkerListScreen(
+                    markerViewModel = markerViewModel,
+                    onBack = { finish() },
+                    onImport = { importLauncher.launch(arrayOf("*/*")) },
+                    onExport = { selectedIds ->
+                        idsToExport = selectedIds
                         exportLauncher.launch(DEFAULT_EXPORT_FILENAME)
-                    }
-                    return true
-                }
-                R.id.action_delete_selected_markers -> {
-                    if (selectedMarkerIds.isEmpty()) {
-                        Toast.makeText(this@MarkerListActivity, R.string.no_markers_selected, Toast.LENGTH_SHORT).show()
-                    } else {
-                        showDeleteSelectedConfirmation()
-                    }
-                    return true
-                }
-                else -> return false
+                    },
+                    onDeleteSelected = { selectedIds ->
+                        showDeleteSelectedConfirmation(selectedIds)
+                    },
+                    onOpenEditor = { marker -> openMarkerEditor(marker) }
+                )
             }
         }
-
-        override fun onDestroyActionMode(mode: ActionMode) {
-            selectedMarkerIds.clear()
-            actionMode = null
-            updateSelectionUi()
-        }
-    }
-
-    private fun toggleSelection(markerId: Int) {
-        if (selectedMarkerIds.contains(markerId)) {
-            selectedMarkerIds.remove(markerId)
-        } else {
-            selectedMarkerIds.add(markerId)
-        }
-
-        if (selectedMarkerIds.isEmpty()) {
-            actionMode?.finish()
-        } else {
-            updateSelectionUi()
-        }
-    }
-
-    private fun updateSelectionUi() {
-        val selectedCount = selectedMarkerIds.size
-        actionMode?.title = getString(R.string.markers_selected_count, selectedCount)
-        adapter.setSelection(actionMode != null, selectedMarkerIds)
     }
 
     private fun openMarkerEditor(marker: MarkerModel) {
@@ -218,15 +117,14 @@ class MarkerListActivity : AppCompatActivity() {
         )
     }
 
-    private fun showDeleteSelectedConfirmation() {
+    private fun showDeleteSelectedConfirmation(selectedIds: Set<Int>) {
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle(getString(R.string.confirm_delete))
-            .setMessage(getString(R.string.delete_selected_markers_message, selectedMarkerIds.size))
+            .setMessage(getString(R.string.delete_selected_markers_message, selectedIds.size))
             .setPositiveButton(R.string.delete) { _, _ ->
-                val deletedCount = selectedMarkerIds.size
-                markerViewModel.removeMarkers(selectedMarkerIds.toList())
+                val deletedCount = selectedIds.size
+                markerViewModel.removeMarkers(selectedIds.toList())
                 AnalyticsProvider.get(this@MarkerListActivity).trackMarkersDeleted(deletedCount)
-                actionMode?.finish()
             }
             .setNegativeButton(R.string.cancel, null)
             .create()
@@ -236,14 +134,15 @@ class MarkerListActivity : AppCompatActivity() {
             }
     }
 
-    private fun exportSelectedMarkers(uri: Uri) {
-        val markersToExport = markers.filter { selectedMarkerIds.contains(it.id) }
-        if (markersToExport.isEmpty()) {
-            Toast.makeText(this, R.string.no_markers_selected, Toast.LENGTH_SHORT).show()
-            return
-        }
-
+    private fun exportSelectedMarkers(uri: Uri, selectedIds: Set<Int>) {
         lifecycleScope.launch {
+            val allMarkers = markerViewModel.markers.value ?: emptyList()
+            val markersToExport = allMarkers.filter { selectedIds.contains(it.id) }
+            if (markersToExport.isEmpty()) {
+                Toast.makeText(this@MarkerListActivity, R.string.no_markers_selected, Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
             runCatching {
                 contentResolver.openOutputStream(uri)?.use { outputStream ->
                     GpxMarkerExporter().export(markersToExport, outputStream)
@@ -261,7 +160,8 @@ class MarkerListActivity : AppCompatActivity() {
         lifecycleScope.launch {
             runCatching {
                 contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val currentMaxSeq = markers.maxOfOrNull { it.seq } ?: 0
+                    val allMarkers = markerViewModel.markers.value ?: emptyList()
+                    val currentMaxSeq = allMarkers.maxOfOrNull { it.seq } ?: 0
                     GpxMarkerImporter().import(inputStream, currentMaxSeq)
                 } ?: error("Input stream unavailable")
             }.onSuccess { result ->
@@ -300,5 +200,246 @@ class MarkerListActivity : AppCompatActivity() {
 
     companion object {
         private const val DEFAULT_EXPORT_FILENAME = "opentopomap-markers.gpx"
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MarkerListScreen(
+    markerViewModel: MarkerViewModel,
+    onBack: () -> Unit,
+    onImport: () -> Unit,
+    onExport: (Set<Int>) -> Unit,
+    onDeleteSelected: (Set<Int>) -> Unit,
+    onOpenEditor: (MarkerModel) -> Unit
+) {
+    val markerItems by markerViewModel.markers.observeAsState(emptyList())
+    val markers = remember(markerItems) { markerItems.sortedBy { it.seq } }
+
+    // Using remember instead of rememberSaveable for Set<Int> to avoid potential serialization issues.
+    // Selection state is not critical enough to require persistence across process death in this case.
+    var selectedIds by remember { mutableStateOf(emptySet<Int>()) }
+
+    // Selection mode is derived from selectedIds.
+    // Clearing the final selected marker automatically exits selection mode.
+    val selectionMode = selectedIds.isNotEmpty()
+
+    LaunchedEffect(markers) {
+        val validIds = markers.mapTo(mutableSetOf()) { it.id }
+        selectedIds = selectedIds.intersect(validIds)
+    }
+
+    BackHandler(enabled = selectionMode) {
+        selectedIds = emptySet()
+    }
+
+    Scaffold(
+        topBar = {
+            if (selectionMode) {
+                SelectionTopAppBar(
+                    selectedCount = selectedIds.size,
+                    totalCount = markers.size,
+                    onCloseSelection = { selectedIds = emptySet() },
+                    onExport = { onExport(selectedIds) },
+                    onDelete = { onDeleteSelected(selectedIds) },
+                    onSelectAll = { selectedIds = markers.map { it.id }.toSet() }
+                )
+            } else {
+                NormalTopAppBar(
+                    onBack = onBack,
+                    onImport = onImport
+                )
+            }
+        }
+    ) { innerPadding ->
+        if (markers.isEmpty()) {
+            EmptyState(modifier = Modifier.padding(innerPadding))
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = innerPadding
+            ) {
+                items(
+                    items = markers,
+                    key = { it.id }
+                ) { marker ->
+                    MarkerRow(
+                        marker = marker,
+                        selectionMode = selectionMode,
+                        selected = selectedIds.contains(marker.id),
+                        onClick = {
+                            if (selectionMode) {
+                                selectedIds = if (selectedIds.contains(marker.id)) {
+                                    selectedIds - marker.id
+                                } else {
+                                    selectedIds + marker.id
+                                }
+                            } else {
+                                onOpenEditor(marker)
+                            }
+                        },
+                        onLongClick = {
+                            if (selectionMode) {
+                                // Toggle selection on long press when already in selection mode
+                                selectedIds = if (selectedIds.contains(marker.id)) {
+                                    selectedIds - marker.id
+                                } else {
+                                    selectedIds + marker.id
+                                }
+                            } else {
+                                selectedIds = setOf(marker.id)
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NormalTopAppBar(onBack: () -> Unit, onImport: () -> Unit) {
+    TopAppBar(
+        title = { Text(stringResource(R.string.markers)) },
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.close))
+            }
+        },
+        actions = {
+            IconButton(onClick = onImport) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_action_gpx),
+                    contentDescription = stringResource(R.string.import_gpx)
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+            actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SelectionTopAppBar(
+    selectedCount: Int,
+    totalCount: Int,
+    onCloseSelection: () -> Unit,
+    onExport: () -> Unit,
+    onDelete: () -> Unit,
+    onSelectAll: () -> Unit
+) {
+    TopAppBar(
+        title = { Text(stringResource(R.string.markers_selected_count, selectedCount)) },
+        navigationIcon = {
+            IconButton(onClick = onCloseSelection) {
+                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
+            }
+        },
+        actions = {
+            IconButton(onClick = onExport) {
+                Icon(Icons.Default.Share, contentDescription = stringResource(R.string.export_selected))
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_selected))
+            }
+            var showMenu by remember { mutableStateOf(false) }
+            IconButton(onClick = { showMenu = true }) {
+                Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
+            }
+            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                if (selectedCount < totalCount) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.select_all)) },
+                        onClick = {
+                            onSelectAll()
+                            showMenu = false
+                        }
+                    )
+                }
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            actionIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun MarkerRow(
+    marker: MarkerModel,
+    selectionMode: Boolean,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    val displayName = marker.name.ifBlank {
+        stringResource(
+            R.string.marker_fallback_coordinates,
+            marker.latitude,
+            marker.longitude
+        )
+    }
+    val coordinates = String.format(
+        Locale.US,
+        "%.5f, %.5f",
+        marker.latitude,
+        marker.longitude
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (selectionMode) {
+            Checkbox(
+                checked = selected,
+                onCheckedChange = null,
+                modifier = Modifier.padding(end = 16.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = displayName,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = coordinates,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun EmptyState(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = stringResource(R.string.no_markers_available),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
