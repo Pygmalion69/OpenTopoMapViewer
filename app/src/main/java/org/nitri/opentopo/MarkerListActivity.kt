@@ -4,11 +4,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.Window
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -62,7 +62,7 @@ import org.nitri.opentopo.view.MarkerEditorDialog
 import org.nitri.opentopo.viewmodel.MarkerViewModel
 import java.util.Locale
 
-class MarkerListActivity : ComponentActivity() {
+class MarkerListActivity : AppCompatActivity() {
     private val markerViewModel: MarkerViewModel by viewModels()
 
     private var idsToExport: Set<Int> = emptySet()
@@ -86,6 +86,30 @@ class MarkerListActivity : ComponentActivity() {
             MarkerListActivity::class.java.simpleName
         )
 
+        supportFragmentManager.setFragmentResultListener(
+            MarkerEditorDialog.RESULT_REQUEST_KEY,
+            this
+        ) { _, result ->
+            val markerId = result.getInt(MarkerEditorDialog.RESULT_MARKER_ID)
+            when (result.getString(MarkerEditorDialog.RESULT_ACTION)) {
+                MarkerEditorDialog.RESULT_ACTION_UPDATE -> {
+                    val currentMarker = markerViewModel.markers.value
+                        ?.firstOrNull { it.id == markerId }
+                        ?: return@setFragmentResultListener
+
+                    val updated = currentMarker.copy(
+                        name = result.getString(MarkerEditorDialog.RESULT_NAME).orEmpty(),
+                        description = result.getString(MarkerEditorDialog.RESULT_DESCRIPTION).orEmpty()
+                    )
+                    markerViewModel.updateMarker(updated)
+                }
+                MarkerEditorDialog.RESULT_ACTION_DELETE -> {
+                    markerViewModel.removeMarker(markerId)
+                    AnalyticsProvider.get(this).trackMarkersDeleted(1)
+                }
+            }
+        }
+
         setContent {
             OpenTopoTheme(dynamicColor = false) {
                 MarkerListScreen(
@@ -106,15 +130,11 @@ class MarkerListActivity : ComponentActivity() {
     }
 
     private fun openMarkerEditor(marker: MarkerModel) {
-        MarkerEditorDialog.show(
-            context = this,
-            markerModel = marker.copy(),
-            onUpdate = { updated -> markerViewModel.updateMarker(updated) },
-            onDelete = { toDelete ->
-                markerViewModel.removeMarker(toDelete.id)
-                AnalyticsProvider.get(this).trackMarkersDeleted(1)
-            }
-        )
+        if (supportFragmentManager.findFragmentByTag(MarkerEditorDialog.TAG) != null) {
+            return
+        }
+        MarkerEditorDialog.newInstance(marker.id, marker.name, marker.description)
+            .show(supportFragmentManager, MarkerEditorDialog.TAG)
     }
 
     private fun showDeleteSelectedConfirmation(selectedIds: Set<Int>) {

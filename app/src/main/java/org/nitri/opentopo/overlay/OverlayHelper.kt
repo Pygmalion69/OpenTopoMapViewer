@@ -6,6 +6,7 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
+import androidx.fragment.app.FragmentManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.R
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
@@ -13,7 +14,6 @@ import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.osmdroid.tileprovider.MapTileProviderBasic
-import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.view.MarkerEditorDialog
 import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.XYTileSource
@@ -28,13 +28,16 @@ import org.osmdroid.views.overlay.TilesOverlay
 import org.osmdroid.views.overlay.FolderOverlay
 import org.osmdroid.bonuspack.kml.KmlDocument
 
-class OverlayHelper(private val mContext: Context, private val mMapView: MapView?) {
+class OverlayHelper(
+    private val mContext: Context,
+    private val mMapView: MapView?,
+    private val fragmentManager: FragmentManager? = null
+) {
     private var wayPointOverlay: ItemizedIconInfoOverlay? = null
     private var nearbyItemOverlay: ItemizedIconInfoOverlay? = null
     private var overlayType = OVERLAY_NONE
     private var overlayTileProvider: MapTileProviderBasic? = null
     private var tilesOverlay: TilesOverlay? = null
-    private var gpxViewModel: GpxViewModel? = null
     private val tileOverlayAlphaMatrix = ColorMatrix(
         floatArrayOf(
             1f, 0f, 0f, 0f, 0f,
@@ -113,17 +116,16 @@ class OverlayHelper(private val mContext: Context, private val mMapView: MapView
     private val onMarkerInfoEditClickListener : MarkerInfoWindow.OnMarkerInfoEditClickListener =
         object : MarkerInfoWindow.OnMarkerInfoEditClickListener {
             override fun onMarkerInfoEditClick(markerModel: MarkerModel) {
-                MarkerEditorDialog.show(
-                    context = mContext,
-                    markerModel = markerModel,
-                    onUpdate = { markerInteractionListener.onMarkerUpdate(it) },
-                    onDelete = {
-                        if (it.routeWaypoint) {
-                            removeWaypoint(it)
-                        }
-                        markerInteractionListener.onMarkerDelete(it)
+                fragmentManager?.let { fm ->
+                    if (fm.findFragmentByTag(MarkerEditorDialog.TAG) != null) {
+                        return
                     }
-                )
+                    MarkerEditorDialog.newInstance(
+                        markerModel.id,
+                        markerModel.name,
+                        markerModel.description
+                    ).show(fm, MarkerEditorDialog.TAG)
+                }
             }
         }
 

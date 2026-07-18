@@ -1,7 +1,7 @@
 package org.nitri.opentopo.view
 
-import android.content.Context
-import android.content.ContextWrapper
+import android.app.Dialog
+import android.os.Bundle
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
@@ -23,41 +23,48 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
-import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import org.nitri.opentopo.R
-import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 
-object MarkerEditorDialog {
-    fun show(
-        context: Context,
-        markerModel: MarkerModel,
-        onUpdate: (MarkerModel) -> Unit,
-        onDelete: ((MarkerModel) -> Unit)? = null
-    ) {
-        val lifecycleOwner = context.findOwner<LifecycleOwner>()
-        val viewModelStoreOwner = context.findOwner<ViewModelStoreOwner>()
-        val savedStateRegistryOwner = context.findOwner<SavedStateRegistryOwner>()
+class MarkerEditorDialog : DialogFragment() {
 
-        var editedName by mutableStateOf(markerModel.name)
-        var editedDescription by mutableStateOf(markerModel.description)
+    private var editedName: String = ""
+    private var editedDescription: String = ""
 
-        val composeView = ComposeView(context).apply {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val initialName = arguments?.getString(ARG_NAME).orEmpty()
+        val initialDescription = arguments?.getString(ARG_DESCRIPTION).orEmpty()
+
+        editedName = savedInstanceState?.getString(STATE_EDITED_NAME) ?: initialName
+        editedDescription = savedInstanceState?.getString(STATE_EDITED_DESCRIPTION) ?: initialDescription
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_EDITED_NAME, editedName)
+        outState.putString(STATE_EDITED_DESCRIPTION, editedDescription)
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val markerId = arguments?.getInt(ARG_ID) ?: -1
+
+        val composeView = ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setViewTreeLifecycleOwner(lifecycleOwner)
-            setViewTreeViewModelStoreOwner(viewModelStoreOwner)
-            setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+            setViewTreeLifecycleOwner(this@MarkerEditorDialog)
+            setViewTreeViewModelStoreOwner(this@MarkerEditorDialog)
+            setViewTreeSavedStateRegistryOwner(this@MarkerEditorDialog)
 
             setContent {
                 OpenTopoTheme(dynamicColor = false) {
                     MarkerEditorContent(
-                        initialName = markerModel.name,
-                        initialDescription = markerModel.description,
+                        initialName = editedName,
+                        initialDescription = editedDescription,
                         onNameChange = { editedName = it },
                         onDescriptionChange = { editedDescription = it }
                     )
@@ -65,77 +72,97 @@ object MarkerEditorDialog {
             }
         }
 
-        val dialogBuilder = AlertDialog.Builder(context)
-            .setTitle(context.getString(R.string.edit_marker))
+        val builder = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.edit_marker)
             .setView(composeView)
-            .setPositiveButton(context.getString(R.string.ok)) { _, _ ->
-                val updated = markerModel.copy(
-                    name = editedName,
-                    description = editedDescription
+            .setPositiveButton(R.string.ok) { _, _ ->
+                setFragmentResult(
+                    RESULT_REQUEST_KEY,
+                    Bundle().apply {
+                        putString(RESULT_ACTION, RESULT_ACTION_UPDATE)
+                        putInt(RESULT_MARKER_ID, markerId)
+                        putString(RESULT_NAME, editedName)
+                        putString(RESULT_DESCRIPTION, editedDescription)
+                    }
                 )
-                onUpdate(updated)
             }
-            .setNegativeButton(context.getString(R.string.cancel)) { dialog, _ ->
-                dialog.dismiss()
+            .setNegativeButton(R.string.cancel, null)
+            .setNeutralButton(R.string.delete) { _, _ ->
+                showDeleteConfirmation(markerId)
             }
 
-        if (onDelete != null) {
-            dialogBuilder.setNeutralButton(context.getString(R.string.delete)) { _, _ ->
-                AlertDialog.Builder(context)
-                    .setTitle(context.getString(R.string.confirm_delete))
-                    .setMessage(context.getString(R.string.prompt_confirm_delete))
-                    .setPositiveButton(context.getString(R.string.delete)) { _, _ ->
-                        onDelete(markerModel)
-                    }
-                    .setNegativeButton(context.getString(R.string.cancel), null)
-                    .create()
-                    .also {
-                        it.requestWindowFeature(Window.FEATURE_NO_TITLE)
-                        it.show()
-                    }
-            }
-        }
-
-        val dialog = dialogBuilder.create()
+        val dialog = builder.create()
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
 
+        // Standard pattern for AppCompat + Compose dialog interoperability
+        // Set owners on the Dialog's window decor view immediately after creation
+        // to prevent "ViewTreeLifecycleOwner not found from AlertDialogLayout"
         dialog.window?.decorView?.let { decorView ->
-            // Standard pattern for AppCompat + Compose dialog interoperability
-            // Set owners on the Dialog's window decor view immediately after creation
-            // to prevent "ViewTreeLifecycleOwner not found from AlertDialogLayout"
-            decorView.setViewTreeLifecycleOwner(lifecycleOwner)
-            decorView.setViewTreeViewModelStoreOwner(viewModelStoreOwner)
-            decorView.setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+            decorView.setViewTreeLifecycleOwner(this)
+            decorView.setViewTreeViewModelStoreOwner(this)
+            decorView.setViewTreeSavedStateRegistryOwner(this)
         }
 
         dialog.setOnShowListener {
-
             // Keyboard/IME handling workaround for Compose in Dialog
             // Must run after AlertDialog has configured its window.
-            dialog.window?.clearFlags(
-                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-            )
-            dialog.window?.setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
-            )
+            // Using SOFT_INPUT_ADJUST_NOTHING for stability in portrait and landscape.
+            dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
         }
 
-        dialog.show()
+        return dialog
     }
 
-    private inline fun <reified T> Context.findOwner(): T? {
-        var curContext = this
-        while (true) {
-            if (curContext is T) {
-                return curContext
+    private fun showDeleteConfirmation(markerId: Int) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.confirm_delete)
+            .setMessage(R.string.prompt_confirm_delete)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                setFragmentResult(
+                    RESULT_REQUEST_KEY,
+                    Bundle().apply {
+                        putString(RESULT_ACTION, RESULT_ACTION_DELETE)
+                        putInt(RESULT_MARKER_ID, markerId)
+                    }
+                )
+                dismiss()
             }
-            if (curContext is ContextWrapper) {
-                curContext = curContext.baseContext
-            } else {
-                break
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+            .also {
+                it.requestWindowFeature(Window.FEATURE_NO_TITLE)
+                it.show()
+            }
+    }
+
+    companion object {
+        const val TAG = "MarkerEditorDialog"
+
+        private const val ARG_ID = "arg_id"
+        private const val ARG_NAME = "arg_name"
+        private const val ARG_DESCRIPTION = "arg_description"
+
+        private const val STATE_EDITED_NAME = "state_edited_name"
+        private const val STATE_EDITED_DESCRIPTION = "state_edited_description"
+
+        const val RESULT_REQUEST_KEY = "marker_editor_result"
+        const val RESULT_ACTION = "action"
+        const val RESULT_ACTION_UPDATE = "update"
+        const val RESULT_ACTION_DELETE = "delete"
+        const val RESULT_MARKER_ID = "marker_id"
+        const val RESULT_NAME = "name"
+        const val RESULT_DESCRIPTION = "description"
+
+        fun newInstance(id: Int, name: String, description: String): MarkerEditorDialog {
+            return MarkerEditorDialog().apply {
+                arguments = Bundle().apply {
+                    putInt(ARG_ID, id)
+                    putString(ARG_NAME, name)
+                    putString(ARG_DESCRIPTION, description)
+                }
             }
         }
-        return null
     }
 }
 

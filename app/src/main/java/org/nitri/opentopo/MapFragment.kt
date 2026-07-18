@@ -57,6 +57,7 @@ import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.view.AboutDialog
+import org.nitri.opentopo.view.MarkerEditorDialog
 import org.nitri.opentopo.viewmodel.LocationViewModel
 import org.nitri.opentopo.viewmodel.MarkerViewModel
 import org.nitri.ors.OrsClient
@@ -319,7 +320,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         locationOverlay?.isOptionsMenuEnabled = true
         compassOverlay?.enableCompass()
         mapView.visibility = View.VISIBLE
-        overlayHelper = OverlayHelper(hostActivity, mapView)
+        overlayHelper = OverlayHelper(hostActivity, mapView, parentFragmentManager)
         setTilesOverlay()
     }
 
@@ -327,6 +328,30 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        parentFragmentManager.setFragmentResultListener(
+            MarkerEditorDialog.RESULT_REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, result ->
+            val markerId = result.getInt(MarkerEditorDialog.RESULT_MARKER_ID)
+            when (result.getString(MarkerEditorDialog.RESULT_ACTION)) {
+                MarkerEditorDialog.RESULT_ACTION_UPDATE -> {
+                    val currentMarker = markerViewModel.markers.value
+                        ?.firstOrNull { it.id == markerId }
+                        ?: return@setFragmentResultListener
+
+                    val updated = currentMarker.copy(
+                        name = result.getString(MarkerEditorDialog.RESULT_NAME).orEmpty(),
+                        description = result.getString(MarkerEditorDialog.RESULT_DESCRIPTION).orEmpty()
+                    )
+                    markerViewModel.updateMarker(updated)
+                }
+
+                MarkerEditorDialog.RESULT_ACTION_DELETE -> {
+                    markerViewModel.removeMarker(markerId)
+                }
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             if (!mapViewInitialized) {
