@@ -29,8 +29,6 @@ val APP_COLOR_PALETTE: List<Int> = listOf(
     DEFAULT_MARKER_COLOR // Legacy Red
 )
 
-val OPAQUE_APP_COLOR_PALETTE: List<Int> = APP_COLOR_PALETTE.filter { (it ushr 24) == 0xFF }
-
 /**
  * Returns a contrast color (Black or White) for a given background color.
  */

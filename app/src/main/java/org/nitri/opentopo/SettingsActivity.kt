@@ -62,7 +62,6 @@ import org.nitri.opentopo.ui.color.ColorPickerGrid
 import org.nitri.opentopo.ui.color.ColorPreference
 import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 import org.nitri.opentopo.ui.color.DEFAULT_GPX_TRACK_COLOR
-import org.nitri.opentopo.ui.color.OPAQUE_APP_COLOR_PALETTE
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
@@ -165,7 +164,7 @@ class SettingsActivity : AppCompatActivity() {
                         prefKey = PREF_GPX_TRACK_COLOR,
                         titleResId = R.string.pref_gpx_track_color_title,
                         defaultColor = DEFAULT_GPX_TRACK_COLOR,
-                        colors = OPAQUE_APP_COLOR_PALETTE
+                        colors = APP_COLOR_PALETTE
                     )
                     true
                 }
