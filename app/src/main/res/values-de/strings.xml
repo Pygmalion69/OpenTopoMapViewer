@@ -133,6 +133,11 @@
     <string name="profile_wheelchair">Rollstuhl</string>
 
     <string name="markers">Markierungen</string>
+    <string name="pref_markers_header">Markierungen</string>
+    <string name="pref_default_marker_color_title">Standard-Markerfarbe</string>
+    <string name="marker_color">Farbe</string>
+    <string name="select_color">Farbe wählen</string>
+    <string name="marker_color_description">Markerfarbe</string>
     <string name="import_gpx">GPX importieren</string>
     <string name="select_all">Alle auswählen</string>
     <string name="export_selected">Ausgewählte exportieren</string>

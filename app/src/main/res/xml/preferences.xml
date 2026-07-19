@@ -77,5 +77,10 @@
             android:visible="false" />
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/pref_markers_header">
+        <org.nitri.opentopo.ui.color.ColorPreference
+            app:key="default_marker_color"
+            app:title="@string/pref_default_marker_color_title" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

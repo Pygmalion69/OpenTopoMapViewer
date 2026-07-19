@@ -133,6 +133,11 @@
     <string name="profile_wheelchair">Fauteuil roulant</string>
 
     <string name="markers">Marqueurs</string>
+    <string name="pref_markers_header">Marqueurs</string>
+    <string name="pref_default_marker_color_title">Couleur de marqueur par défaut</string>
+    <string name="marker_color">Couleur</string>
+    <string name="select_color">Sélectionner une couleur</string>
+    <string name="marker_color_description">Couleur du marqueur</string>
     <string name="import_gpx">Importer GPX</string>
     <string name="select_all">Tout sélectionner</string>
     <string name="export_selected">Exporter la sélection</string>

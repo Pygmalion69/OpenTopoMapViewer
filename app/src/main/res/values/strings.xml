@@ -145,6 +145,11 @@
 
 
     <string name="markers">Markers</string>
+    <string name="pref_markers_header">Markers</string>
+    <string name="pref_default_marker_color_title">Default marker color</string>
+    <string name="marker_color">Color</string>
+    <string name="select_color">Select a color</string>
+    <string name="marker_color_description">Marker color</string>
     <string name="import_gpx">Import GPX</string>
     <string name="select_all">Select all</string>
     <string name="export_selected">Export selected</string>

@@ -4,7 +4,9 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
+import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.preference.PreferenceManager
 import androidx.fragment.app.FragmentManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
@@ -123,7 +125,8 @@ class OverlayHelper(
                     MarkerEditorDialog.newInstance(
                         markerModel.id,
                         markerModel.name,
-                        markerModel.description
+                        markerModel.description,
+                        markerModel.color
                     ).show(fm, MarkerEditorDialog.TAG)
                 }
             }
@@ -272,7 +275,7 @@ class OverlayHelper(
                 mapMarker.id = it.toString()
                 mapMarker.relatedObject = it
                 mapMarker.isDraggable = true
-                mapMarker.icon = ContextCompat.getDrawable(mContext, R.drawable.map_marker)
+                mapMarker.icon = getTintedMarkerDrawable(mContext, it.color)
                 mapMarker.setOnMarkerDragListener(onMarkerDragListener)
                 mapMarker.onCustomMarkerClickListener = onMarkerClickListener
                 mapMarker.onMarkerInfoEditClickListener = onMarkerInfoEditClickListener
@@ -280,6 +283,15 @@ class OverlayHelper(
                 mapMarkers.add(mapMarker)
                 mMapView.overlays?.add(mapMarker)
             }
+        }
+    }
+
+    private fun getTintedMarkerDrawable(context: Context, color: Int): Drawable? {
+        val drawable = ContextCompat.getDrawable(context, R.drawable.map_marker_mask)
+        return drawable?.mutate()?.let {
+            val wrappedDrawable = DrawableCompat.wrap(it)
+            DrawableCompat.setTint(wrappedDrawable, color)
+            wrappedDrawable
         }
     }
 

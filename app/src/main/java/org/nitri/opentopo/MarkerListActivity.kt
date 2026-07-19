@@ -99,7 +99,8 @@ class MarkerListActivity : AppCompatActivity() {
 
                     val updated = currentMarker.copy(
                         name = result.getString(MarkerEditorDialog.RESULT_NAME).orEmpty(),
-                        description = result.getString(MarkerEditorDialog.RESULT_DESCRIPTION).orEmpty()
+                        description = result.getString(MarkerEditorDialog.RESULT_DESCRIPTION).orEmpty(),
+                        color = result.getInt(MarkerEditorDialog.RESULT_COLOR, currentMarker.color)
                     )
                     markerViewModel.updateMarker(updated)
                 }
@@ -133,7 +134,7 @@ class MarkerListActivity : AppCompatActivity() {
         if (supportFragmentManager.findFragmentByTag(MarkerEditorDialog.TAG) != null) {
             return
         }
-        MarkerEditorDialog.newInstance(marker.id, marker.name, marker.description)
+        MarkerEditorDialog.newInstance(marker.id, marker.name, marker.description, marker.color)
             .show(supportFragmentManager, MarkerEditorDialog.TAG)
     }
 
@@ -182,7 +183,7 @@ class MarkerListActivity : AppCompatActivity() {
                 contentResolver.openInputStream(uri)?.use { inputStream ->
                     val allMarkers = markerViewModel.markers.value ?: emptyList()
                     val currentMaxSeq = allMarkers.maxOfOrNull { it.seq } ?: 0
-                    GpxMarkerImporter().import(inputStream, currentMaxSeq)
+                    GpxMarkerImporter().import(inputStream, currentMaxSeq, defaultMarkerColor())
                 } ?: error("Input stream unavailable")
             }.onSuccess { result ->
                 if (result.markers.isEmpty()) {
