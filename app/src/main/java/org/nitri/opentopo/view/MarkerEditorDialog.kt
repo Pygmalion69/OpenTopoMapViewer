@@ -115,18 +115,21 @@ class MarkerEditorDialog : DialogFragment() {
     }
 
     private fun showDeleteConfirmation(markerId: Int) {
+        // Selecting the editor's neutral button dismisses its AlertDialog, which can detach this
+        // DialogFragment before the confirmation dialog's button callback runs.
+        val fragmentManager = parentFragmentManager
+
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.confirm_delete)
             .setMessage(R.string.prompt_confirm_delete)
             .setPositiveButton(R.string.delete) { _, _ ->
-                setFragmentResult(
+                fragmentManager.setFragmentResult(
                     RESULT_REQUEST_KEY,
                     Bundle().apply {
                         putString(RESULT_ACTION, RESULT_ACTION_DELETE)
                         putInt(RESULT_MARKER_ID, markerId)
                     }
                 )
-                dismiss()
             }
             .setNegativeButton(R.string.cancel, null)
             .create()
