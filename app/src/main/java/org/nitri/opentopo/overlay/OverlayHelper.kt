@@ -167,6 +167,7 @@ class OverlayHelper(
     private var markerInfoWindow: MarkerInfoWindow? = null
 
     private val trackOverlays = mutableListOf<TrackOverlay>()
+    private val routePointItems = mutableListOf<OverlayItem>()
     private var kmlOverlay: FolderOverlay? = null
     private val mapMarkers = ArrayList<Marker>()
 
@@ -208,10 +209,11 @@ class OverlayHelper(
                 route.routePoints?.forEach { rtePt ->
                     val gp = GeoPoint(rtePt.latitude, rtePt.longitude)
                     val item = OverlayItem(rtePt.name, rtePt.desc, gp).apply {
-                        setMarker(ContextCompat.getDrawable(mContext, R.drawable.route_point_marker))
+                        setMarker(getTintedRoutePointDrawable(mContext, trackColor))
                         markerHotspot = HotspotPlace.CENTER
                     }
                     wayPointItems.add(item)
+                    routePointItems.add(item)
                 }
             }
         }
@@ -237,6 +239,7 @@ class OverlayHelper(
                 mapView.overlays.remove(it)
             }
             trackOverlays.clear()
+            routePointItems.clear()
             wayPointOverlay?.also {
                 mapView.overlays.remove(it)
                 wayPointOverlay = null
@@ -299,6 +302,15 @@ class OverlayHelper(
         }
     }
 
+    private fun getTintedRoutePointDrawable(context: Context, color: Int): Drawable? {
+        val drawable = ContextCompat.getDrawable(context, R.drawable.route_point_marker)
+        return drawable?.mutate()?.let {
+            val wrappedDrawable = DrawableCompat.wrap(it)
+            DrawableCompat.setTint(wrappedDrawable, color)
+            wrappedDrawable
+        }
+    }
+
     /**
      * Remove user markers
      */
@@ -346,6 +358,7 @@ class OverlayHelper(
 
     fun updateGpxTrackColor(color: Int) {
         trackOverlays.forEach { it.updateTrackColor(color) }
+        routePointItems.forEach { it.setMarker(getTintedRoutePointDrawable(mContext, color)) }
         mMapView?.invalidate()
     }
 
