@@ -96,6 +96,8 @@
     <string name="settings">Paramètres</string>
     <string name="screen_header">Écran</string>
     <string name="cache_header">Cache</string>
+    <string name="gpx_header">GPX</string>
+    <string name="colors_header">Couleurs</string>
 
     <string name="kml_header">KML</string>
     <string name="kml_enable">Activer le support KML</string>
@@ -138,6 +140,7 @@
     <string name="marker_color">Couleur</string>
     <string name="select_color">Sélectionner une couleur</string>
     <string name="marker_color_description">Couleur du marqueur</string>
+    <string name="pref_gpx_track_color_title">Couleur de trace GPX</string>
     <string name="import_gpx">Importer GPX</string>
     <string name="select_all">Tout sélectionner</string>
     <string name="export_selected">Exporter la sélection</string>

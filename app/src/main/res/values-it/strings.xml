@@ -95,6 +95,7 @@
 
     <string name="settings">Impostazioni</string>
     <string name="screen_header">Schermo</string>
+    <string name="colors_header">Colori</string>
     <string name="cache_header">Cache</string>
 
     <string name="kml_header">KML</string>

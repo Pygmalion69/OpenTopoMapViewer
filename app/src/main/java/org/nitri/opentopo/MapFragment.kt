@@ -725,6 +725,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             setBaseMap()
         }
         syncMapRotationPreference()
+        overlayHelper?.updateGpxTrackColor(requireContext().defaultGpxTrackColor())
         if (!sharedPreferences.getBoolean(PREF_KML_ENABLED, true)) {
             clearKml()
             listener?.clearKml()
