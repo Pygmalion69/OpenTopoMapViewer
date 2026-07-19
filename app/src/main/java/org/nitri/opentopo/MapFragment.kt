@@ -273,7 +273,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     latitude = p.latitude,
                     longitude = p.longitude,
                     name = getString(R.string.default_marker_name, seq),
-                    description = "")
+                    description = "",
+                    color = requireContext().defaultMarkerColor())
                 markerViewModel.addMarker(marker)
                 return true
             }
@@ -342,7 +343,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
                     val updated = currentMarker.copy(
                         name = result.getString(MarkerEditorDialog.RESULT_NAME).orEmpty(),
-                        description = result.getString(MarkerEditorDialog.RESULT_DESCRIPTION).orEmpty()
+                        description = result.getString(MarkerEditorDialog.RESULT_DESCRIPTION).orEmpty(),
+                        color = result.getInt(MarkerEditorDialog.RESULT_COLOR, currentMarker.color)
                     )
                     markerViewModel.updateMarker(updated)
                 }
@@ -911,7 +913,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 longitude = nearbyPlace.lon,
                 name = nearbyPlace.title ?: "Marker $seq",
                 description = nearbyPlace.description ?: "",
-                nearbyId = nearbyPlace.id
+                nearbyId = nearbyPlace.id,
+                color = requireContext().defaultMarkerColor()
             )
             markerViewModel.addMarker(marker)
         }

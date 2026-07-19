@@ -31,7 +31,7 @@ class GpxMarkerImporter {
         }
     }
 
-    fun import(inputStream: InputStream, baseSeq: Int): ImportResult {
+    fun import(inputStream: InputStream, baseSeq: Int, defaultColor: Int): ImportResult {
         val documentBuilderFactory = createSecureDocumentBuilderFactory()
         val documentBuilder = documentBuilderFactory.newDocumentBuilder().apply {
             setErrorHandler(RethrowingErrorHandler)
@@ -75,7 +75,8 @@ class GpxMarkerImporter {
                     latitude = latitude,
                     longitude = longitude,
                     name = name,
-                    description = description
+                    description = description,
+                    color = defaultColor
                 )
             )
         }

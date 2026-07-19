@@ -2,6 +2,7 @@ package org.nitri.opentopo.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 
 @Entity
 data class MarkerModel(
@@ -12,5 +13,6 @@ data class MarkerModel(
     var name: String,
     var description: String,
     var nearbyId: Int = 0,
-    var routeWaypoint: Boolean = false
+    var routeWaypoint: Boolean = false,
+    var color: Int = DEFAULT_MARKER_COLOR
 )

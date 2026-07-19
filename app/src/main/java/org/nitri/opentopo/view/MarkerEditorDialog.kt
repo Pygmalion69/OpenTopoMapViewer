@@ -5,18 +5,32 @@ import android.os.Bundle
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
@@ -29,26 +43,33 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import org.nitri.opentopo.R
+import org.nitri.opentopo.ui.color.APP_COLOR_PALETTE
+import org.nitri.opentopo.ui.color.ColorPickerGrid
+import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 
 class MarkerEditorDialog : DialogFragment() {
 
     private var editedName: String = ""
     private var editedDescription: String = ""
+    private var editedColor: Int = DEFAULT_MARKER_COLOR
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val initialName = arguments?.getString(ARG_NAME).orEmpty()
         val initialDescription = arguments?.getString(ARG_DESCRIPTION).orEmpty()
+        val initialColor = arguments?.getInt(ARG_COLOR, DEFAULT_MARKER_COLOR) ?: DEFAULT_MARKER_COLOR
 
         editedName = savedInstanceState?.getString(STATE_EDITED_NAME) ?: initialName
         editedDescription = savedInstanceState?.getString(STATE_EDITED_DESCRIPTION) ?: initialDescription
+        editedColor = savedInstanceState?.getInt(STATE_EDITED_COLOR) ?: initialColor
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(STATE_EDITED_NAME, editedName)
         outState.putString(STATE_EDITED_DESCRIPTION, editedDescription)
+        outState.putInt(STATE_EDITED_COLOR, editedColor)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -65,8 +86,10 @@ class MarkerEditorDialog : DialogFragment() {
                     MarkerEditorContent(
                         initialName = editedName,
                         initialDescription = editedDescription,
+                        initialColor = editedColor,
                         onNameChange = { editedName = it },
-                        onDescriptionChange = { editedDescription = it }
+                        onDescriptionChange = { editedDescription = it },
+                        onColorChange = { editedColor = it }
                     )
                 }
             }
@@ -83,6 +106,7 @@ class MarkerEditorDialog : DialogFragment() {
                         putInt(RESULT_MARKER_ID, markerId)
                         putString(RESULT_NAME, editedName)
                         putString(RESULT_DESCRIPTION, editedDescription)
+                        putInt(RESULT_COLOR, editedColor)
                     }
                 )
             }
@@ -145,9 +169,11 @@ class MarkerEditorDialog : DialogFragment() {
         private const val ARG_ID = "arg_id"
         private const val ARG_NAME = "arg_name"
         private const val ARG_DESCRIPTION = "arg_description"
+        private const val ARG_COLOR = "arg_color"
 
         private const val STATE_EDITED_NAME = "state_edited_name"
         private const val STATE_EDITED_DESCRIPTION = "state_edited_description"
+        private const val STATE_EDITED_COLOR = "state_edited_color"
 
         const val RESULT_REQUEST_KEY = "marker_editor_result"
         const val RESULT_ACTION = "action"
@@ -156,13 +182,15 @@ class MarkerEditorDialog : DialogFragment() {
         const val RESULT_MARKER_ID = "marker_id"
         const val RESULT_NAME = "name"
         const val RESULT_DESCRIPTION = "description"
+        const val RESULT_COLOR = "color"
 
-        fun newInstance(id: Int, name: String, description: String): MarkerEditorDialog {
+        fun newInstance(id: Int, name: String, description: String, color: Int): MarkerEditorDialog {
             return MarkerEditorDialog().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_ID, id)
                     putString(ARG_NAME, name)
                     putString(ARG_DESCRIPTION, description)
+                    putInt(ARG_COLOR, color)
                 }
             }
         }
@@ -173,46 +201,102 @@ class MarkerEditorDialog : DialogFragment() {
 private fun MarkerEditorContent(
     initialName: String,
     initialDescription: String,
+    initialColor: Int,
     onNameChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit
+    onDescriptionChange: (String) -> Unit,
+    onColorChange: (Int) -> Unit
 ) {
     var name by remember { mutableStateOf(initialName) }
     var description by remember { mutableStateOf(initialDescription) }
+    var color by remember { mutableIntStateOf(initialColor) }
+    var showColorPicker by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        OutlinedTextField(
-            value = name,
-            onValueChange = {
-                name = it
-                onNameChange(it)
-            },
-            label = { Text(stringResource(R.string.name)) },
+    if (showColorPicker) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences
+                .padding(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.select_color),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-        )
-        OutlinedTextField(
-            value = description,
-            onValueChange = {
-                description = it
-                onDescriptionChange(it)
-            },
-            label = { Text(stringResource(R.string.description)) },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 4,
-            maxLines = 6,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences,
-                keyboardType = KeyboardType.Text
+            ColorPickerGrid(
+                colors = APP_COLOR_PALETTE,
+                selectedColor = color,
+                onColorSelected = {
+                    color = it
+                    onColorChange(it)
+                    showColorPicker = false
+                }
             )
-        )
+            TextButton(
+                onClick = { showColorPicker = false },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            OutlinedTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    onNameChange(it)
+                },
+                label = { Text(stringResource(R.string.name)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences
+                )
+            )
+            OutlinedTextField(
+                value = description,
+                onValueChange = {
+                    description = it
+                    onDescriptionChange(it)
+                },
+                label = { Text(stringResource(R.string.description)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                minLines = 4,
+                maxLines = 6,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    keyboardType = KeyboardType.Text
+                )
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showColorPicker = true }
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.marker_color),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color(color))
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                )
+            }
+        }
     }
 }

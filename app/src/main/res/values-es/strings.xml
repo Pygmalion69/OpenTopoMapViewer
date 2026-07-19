@@ -133,6 +133,11 @@
     <string name="profile_wheelchair">Silla de ruedas</string>
 
     <string name="markers">Marcadores</string>
+    <string name="pref_markers_header">Marcadores</string>
+    <string name="pref_default_marker_color_title">Color de marcador predeterminado</string>
+    <string name="marker_color">Color</string>
+    <string name="select_color">Seleccionar un color</string>
+    <string name="marker_color_description">Color del marcador</string>
     <string name="import_gpx">Importar GPX</string>
     <string name="select_all">Seleccionar todo</string>
     <string name="export_selected">Exportar seleccionados</string>

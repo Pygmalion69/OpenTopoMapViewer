@@ -39,13 +39,16 @@ class GpxMarkerImportExportTest {
             </gpx>
         """.trimIndent()
 
-        val result = GpxMarkerImporter().import(ByteArrayInputStream(gpx.toByteArray()), 10)
+        val defaultColor = 0xFF123456.toInt()
+        val result = GpxMarkerImporter().import(ByteArrayInputStream(gpx.toByteArray()), 10, defaultColor)
 
         assertEquals(2, result.markers.size)
         assertEquals(1, result.skippedCount)
         assertEquals("Point 1", result.markers[0].name)
         assertEquals("Desc 1", result.markers[0].description)
+        assertEquals(defaultColor, result.markers[0].color)
         assertEquals("Marker 12", result.markers[1].name)
+        assertEquals(defaultColor, result.markers[1].color)
     }
 
     @Test
@@ -66,7 +69,7 @@ class GpxMarkerImportExportTest {
 
         try {
             assertThrows(org.xml.sax.SAXParseException::class.java) {
-                GpxMarkerImporter().import(ByteArrayInputStream(gpx.toByteArray()), 0)
+                GpxMarkerImporter().import(ByteArrayInputStream(gpx.toByteArray()), 0, 0)
             }
         } finally {
             System.setErr(originalErr)

@@ -57,6 +57,10 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.coroutines.launch
 import org.nitri.opentopo.analytics.AnalyticsNames
 import org.nitri.opentopo.analytics.AnalyticsProvider
+import org.nitri.opentopo.ui.color.APP_COLOR_PALETTE
+import org.nitri.opentopo.ui.color.ColorPickerGrid
+import org.nitri.opentopo.ui.color.ColorPreference
+import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
@@ -134,6 +138,16 @@ class SettingsActivity : AppCompatActivity() {
             val profilePref = findPreference<Preference>("ors_select_profile")
             val tapCompassToRotatePref = findPreference<Preference>(PREF_TAP_COMPASS_TO_ROTATE)
             val importTilesPref = findPreference<Preference>("import_tiles")
+            val defaultMarkerColorPref = findPreference<ColorPreference>(PREF_DEFAULT_MARKER_COLOR)
+
+            defaultMarkerColorPref?.let { pref ->
+                val currentColor = prefs.getInt(PREF_DEFAULT_MARKER_COLOR, DEFAULT_MARKER_COLOR)
+                pref.setColor(currentColor)
+                pref.setOnPreferenceClickListener {
+                    showColorPickerDialog(PREF_DEFAULT_MARKER_COLOR, R.string.pref_default_marker_color_title)
+                    true
+                }
+            }
 
             importTilesPref?.setOnPreferenceClickListener {
                 openZipLauncher.launch(arrayOf("application/zip", "application/octet-stream", "application/x-zip-compressed"))
@@ -304,6 +318,47 @@ class SettingsActivity : AppCompatActivity() {
             dialog.show()
         }
 
+        private fun showColorPickerDialog(prefKey: String, titleResId: Int) {
+            val context = requireContext()
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            val currentColor = prefs.getInt(prefKey, DEFAULT_MARKER_COLOR)
+
+            val dialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)
+                .setTitle(titleResId)
+                .setNegativeButton(R.string.cancel, null)
+                .create()
+
+            val composeView = ComposeView(context).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setViewTreeLifecycleOwner(viewLifecycleOwner)
+                setViewTreeViewModelStoreOwner(requireActivity())
+                setViewTreeSavedStateRegistryOwner(requireActivity())
+
+                setContent {
+                    OpenTopoTheme(dynamicColor = false) {
+                        ColorPickerGrid(
+                            colors = APP_COLOR_PALETTE,
+                            selectedColor = currentColor,
+                            onColorSelected = { selectedColor ->
+                                prefs.edit { putInt(prefKey, selectedColor) }
+                                findPreference<ColorPreference>(prefKey)?.setColor(selectedColor)
+                                dialog.dismiss()
+                            }
+                        )
+                    }
+                }
+            }
+
+            dialog.setView(composeView)
+            dialog.window?.decorView?.let { decorView ->
+                decorView.setViewTreeLifecycleOwner(viewLifecycleOwner)
+                decorView.setViewTreeViewModelStoreOwner(requireActivity())
+                decorView.setViewTreeSavedStateRegistryOwner(requireActivity())
+            }
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+            dialog.show()
+        }
+
         private fun recreate() {
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(id, SettingsFragment())
@@ -321,8 +376,14 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_KML_ENABLED = "kml_enabled"
         const val PREF_ORS_API_KEY = "ors_api_key"
         const val PREF_ORS_PROFILE = "ors_profile"
+        const val PREF_DEFAULT_MARKER_COLOR = "default_marker_color"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
     }
+}
+
+fun Context.defaultMarkerColor(): Int {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    return prefs.getInt(SettingsActivity.PREF_DEFAULT_MARKER_COLOR, DEFAULT_MARKER_COLOR)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
