@@ -97,6 +97,7 @@
     <string name="screen_header">Bildschirm</string>
     <string name="cache_header">Cache</string>
     <string name="gpx_header">GPX</string>
+    <string name="colors_header">Farben</string>
 
     <string name="kml_header">KML</string>
     <string name="kml_enable">KML-Unterstützung aktivieren</string>

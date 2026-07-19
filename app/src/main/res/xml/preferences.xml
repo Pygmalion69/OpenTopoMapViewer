@@ -34,6 +34,15 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/colors_header">
+        <org.nitri.opentopo.ui.color.ColorPreference
+            app:key="default_marker_color"
+            app:title="@string/pref_default_marker_color_title" />
+        <org.nitri.opentopo.ui.color.ColorPreference
+            app:key="gpx_track_color"
+            app:title="@string/pref_gpx_track_color_title" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/cache_header">
 
         <Preference
@@ -75,18 +84,6 @@
             app:title="@string/ors_profile"
             android:summary="driving-car"
             android:visible="false" />
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/pref_markers_header">
-        <org.nitri.opentopo.ui.color.ColorPreference
-            app:key="default_marker_color"
-            app:title="@string/pref_default_marker_color_title" />
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/gpx_header">
-        <org.nitri.opentopo.ui.color.ColorPreference
-            app:key="gpx_track_color"
-            app:title="@string/pref_gpx_track_color_title" />
     </PreferenceCategory>
 
 </PreferenceScreen>
