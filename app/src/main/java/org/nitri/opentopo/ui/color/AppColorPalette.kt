@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 
 const val DEFAULT_MARKER_COLOR: Int = 0xCCCC3F34.toInt()
+const val DEFAULT_GPX_TRACK_COLOR: Int = 0xFFF44336.toInt()
 
 val APP_COLOR_PALETTE: List<Int> = listOf(
     0xFFF44336.toInt(), // Red
@@ -27,6 +28,8 @@ val APP_COLOR_PALETTE: List<Int> = listOf(
     0xFF607D8B.toInt(), // Blue Grey
     DEFAULT_MARKER_COLOR // Legacy Red
 )
+
+val OPAQUE_APP_COLOR_PALETTE: List<Int> = APP_COLOR_PALETTE.filter { (it ushr 24) == 0xFF }
 
 /**
  * Returns a contrast color (Black or White) for a given background color.

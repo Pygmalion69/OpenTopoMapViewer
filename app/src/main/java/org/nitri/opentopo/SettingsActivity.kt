@@ -61,6 +61,8 @@ import org.nitri.opentopo.ui.color.APP_COLOR_PALETTE
 import org.nitri.opentopo.ui.color.ColorPickerGrid
 import org.nitri.opentopo.ui.color.ColorPreference
 import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
+import org.nitri.opentopo.ui.color.DEFAULT_GPX_TRACK_COLOR
+import org.nitri.opentopo.ui.color.OPAQUE_APP_COLOR_PALETTE
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
@@ -139,12 +141,32 @@ class SettingsActivity : AppCompatActivity() {
             val tapCompassToRotatePref = findPreference<Preference>(PREF_TAP_COMPASS_TO_ROTATE)
             val importTilesPref = findPreference<Preference>("import_tiles")
             val defaultMarkerColorPref = findPreference<ColorPreference>(PREF_DEFAULT_MARKER_COLOR)
+            val gpxTrackColorPref = findPreference<ColorPreference>(PREF_GPX_TRACK_COLOR)
 
             defaultMarkerColorPref?.let { pref ->
                 val currentColor = prefs.getInt(PREF_DEFAULT_MARKER_COLOR, DEFAULT_MARKER_COLOR)
                 pref.setColor(currentColor)
                 pref.setOnPreferenceClickListener {
-                    showColorPickerDialog(PREF_DEFAULT_MARKER_COLOR, R.string.pref_default_marker_color_title)
+                    showColorPickerDialog(
+                        prefKey = PREF_DEFAULT_MARKER_COLOR,
+                        titleResId = R.string.pref_default_marker_color_title,
+                        defaultColor = DEFAULT_MARKER_COLOR,
+                        colors = APP_COLOR_PALETTE
+                    )
+                    true
+                }
+            }
+
+            gpxTrackColorPref?.let { pref ->
+                val currentColor = prefs.getInt(PREF_GPX_TRACK_COLOR, DEFAULT_GPX_TRACK_COLOR)
+                pref.setColor(currentColor)
+                pref.setOnPreferenceClickListener {
+                    showColorPickerDialog(
+                        prefKey = PREF_GPX_TRACK_COLOR,
+                        titleResId = R.string.pref_gpx_track_color_title,
+                        defaultColor = DEFAULT_GPX_TRACK_COLOR,
+                        colors = OPAQUE_APP_COLOR_PALETTE
+                    )
                     true
                 }
             }
@@ -318,10 +340,15 @@ class SettingsActivity : AppCompatActivity() {
             dialog.show()
         }
 
-        private fun showColorPickerDialog(prefKey: String, titleResId: Int) {
+        private fun showColorPickerDialog(
+            prefKey: String,
+            titleResId: Int,
+            defaultColor: Int,
+            colors: List<Int>
+        ) {
             val context = requireContext()
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-            val currentColor = prefs.getInt(prefKey, DEFAULT_MARKER_COLOR)
+            val currentColor = prefs.getInt(prefKey, defaultColor)
 
             val dialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)
                 .setTitle(titleResId)
@@ -337,7 +364,7 @@ class SettingsActivity : AppCompatActivity() {
                 setContent {
                     OpenTopoTheme(dynamicColor = false) {
                         ColorPickerGrid(
-                            colors = APP_COLOR_PALETTE,
+                            colors = colors,
                             selectedColor = currentColor,
                             onColorSelected = { selectedColor ->
                                 prefs.edit { putInt(prefKey, selectedColor) }
@@ -377,6 +404,7 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_ORS_API_KEY = "ors_api_key"
         const val PREF_ORS_PROFILE = "ors_profile"
         const val PREF_DEFAULT_MARKER_COLOR = "default_marker_color"
+        const val PREF_GPX_TRACK_COLOR = "gpx_track_color"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
     }
 }
@@ -384,6 +412,11 @@ class SettingsActivity : AppCompatActivity() {
 fun Context.defaultMarkerColor(): Int {
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     return prefs.getInt(SettingsActivity.PREF_DEFAULT_MARKER_COLOR, DEFAULT_MARKER_COLOR)
+}
+
+fun Context.defaultGpxTrackColor(): Int {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    return prefs.getInt(SettingsActivity.PREF_GPX_TRACK_COLOR, org.nitri.opentopo.ui.color.DEFAULT_GPX_TRACK_COLOR)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,15 +1,12 @@
 package org.nitri.opentopo.overlay
 
-import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Point
 import android.util.Log
-import androidx.core.content.ContextCompat
 import io.ticofab.androidgpxparser.parser.domain.Track
 import io.ticofab.androidgpxparser.parser.domain.TrackSegment
-import org.nitri.opentopo.R
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Overlay
@@ -19,21 +16,26 @@ import kotlin.math.sqrt
 /**
  * Layer to display a track
  *
- * @param context
  * @param track
+ * @param trackColor
  * @see Track
  */
 class TrackOverlay(
-    private val context: Context,
-    private val track: Track
+    private val track: Track,
+    private var trackColor: Int
 ) : Overlay() {
 
     private val mPointsSegments: MutableList<List<Point>> = ArrayList()
+
+    fun updateTrackColor(color: Int) {
+        trackColor = color
+    }
+
     override fun draw(canvas: Canvas, osmv: MapView, shadow: Boolean) {
 
         //Log.d(TAG, "Zoom: " + osmv.getZoomLevelDouble());
         val routePaint = Paint()
-        routePaint.color = ContextCompat.getColor(context, R.color.colorTrack)
+        routePaint.color = trackColor
         routePaint.isAntiAlias = true
         routePaint.alpha = 204
         routePaint.style = Paint.Style.STROKE

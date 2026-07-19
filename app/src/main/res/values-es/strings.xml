@@ -96,6 +96,7 @@
     <string name="settings">Configuración</string>
     <string name="screen_header">Pantalla</string>
     <string name="cache_header">Caché</string>
+    <string name="gpx_header">GPX</string>
 
     <string name="kml_header">KML</string>
     <string name="kml_enable">Activar soporte KML</string>
@@ -138,6 +139,7 @@
     <string name="marker_color">Color</string>
     <string name="select_color">Seleccionar un color</string>
     <string name="marker_color_description">Color del marcador</string>
+    <string name="pref_gpx_track_color_title">Color de track GPX</string>
     <string name="import_gpx">Importar GPX</string>
     <string name="select_all">Seleccionar todo</string>
     <string name="export_selected">Exportar seleccionados</string>

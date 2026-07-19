@@ -17,6 +17,7 @@ import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.osmdroid.tileprovider.MapTileProviderBasic
 import org.nitri.opentopo.view.MarkerEditorDialog
+import org.nitri.opentopo.defaultGpxTrackColor
 import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
@@ -165,7 +166,7 @@ class OverlayHelper(
 
     private var markerInfoWindow: MarkerInfoWindow? = null
 
-    private var trackOverlay: TrackOverlay? = null
+    private val trackOverlays = mutableListOf<TrackOverlay>()
     private var kmlOverlay: FolderOverlay? = null
     private val mapMarkers = ArrayList<Marker>()
 
@@ -181,9 +182,12 @@ class OverlayHelper(
         val tracks = gpx.tracks
         val routes = gpx.routes
 
+        val trackColor = mContext.defaultGpxTrackColor()
+
         if (!tracks.isNullOrEmpty()) {
             tracks.forEach { track ->
-                trackOverlay = TrackOverlay(mContext, track)
+                val trackOverlay = TrackOverlay(track, trackColor)
+                trackOverlays.add(trackOverlay)
                 mMapView?.overlays?.add(0, trackOverlay)
             }
         }
@@ -229,10 +233,10 @@ class OverlayHelper(
      */
     fun clearGpx() {
         mMapView?.let { mapView ->
-            trackOverlay?.also {
+            trackOverlays.forEach {
                 mapView.overlays.remove(it)
-                trackOverlay = null
             }
+            trackOverlays.clear()
             wayPointOverlay?.also {
                 mapView.overlays.remove(it)
                 wayPointOverlay = null
@@ -337,7 +341,12 @@ class OverlayHelper(
      * @return GPX layer present
      */
     fun hasGpx(): Boolean {
-        return trackOverlay != null || wayPointOverlay != null
+        return trackOverlays.isNotEmpty() || wayPointOverlay != null
+    }
+
+    fun updateGpxTrackColor(color: Int) {
+        trackOverlays.forEach { it.updateTrackColor(color) }
+        mMapView?.invalidate()
     }
 
     fun setTilesOverlay(overlay: Int) {
