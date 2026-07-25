@@ -41,6 +41,11 @@
         <org.nitri.opentopo.ui.color.ColorPreference
             app:key="gpx_track_color"
             app:title="@string/pref_gpx_track_color_title" />
+        <SwitchPreferenceCompat
+            app:key="show_marker_labels"
+            app:title="@string/show_marker_labels"
+            app:summary="@string/show_marker_labels_summary"
+            app:defaultValue="false" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/cache_header">

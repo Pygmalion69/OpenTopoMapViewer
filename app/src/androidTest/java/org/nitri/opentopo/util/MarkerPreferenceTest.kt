@@ -35,4 +35,10 @@ class MarkerPreferenceTest {
         
         assertEquals(customColor, context.defaultMarkerColor())
     }
+
+    @Test
+    fun showMarkerLabels_defaultsToFalse() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        assertEquals(false, prefs.getBoolean(SettingsActivity.PREF_SHOW_MARKER_LABELS, false))
+    }
 }

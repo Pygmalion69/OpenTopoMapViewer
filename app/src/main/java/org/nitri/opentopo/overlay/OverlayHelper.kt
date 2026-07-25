@@ -12,6 +12,7 @@ import androidx.fragment.app.FragmentManager
 import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.R
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_SHOW_MARKER_LABELS
 import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
@@ -169,7 +170,7 @@ class OverlayHelper(
     private val trackOverlays = mutableListOf<TrackOverlay>()
     private val routePointItems = mutableListOf<OverlayItem>()
     private var kmlOverlay: FolderOverlay? = null
-    private val mapMarkers = ArrayList<Marker>()
+    private val mapMarkers = ArrayList<CustomMarker>()
 
     /**
      * Add GPX as an overlay
@@ -274,11 +275,15 @@ class OverlayHelper(
         clearMarkers()
         mMapView?.let { mapView ->
             markerInteractionListener = listener
+            val prefs = PreferenceManager.getDefaultSharedPreferences(mContext)
+            val showLabels = prefs.getBoolean(PREF_SHOW_MARKER_LABELS, false)
             markers.forEach {
                 val mapMarker = CustomMarker(mapView)
                 mapMarker.position = GeoPoint(it.latitude, it.longitude)
                 mapMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                 mapMarker.title = it.name
+                mapMarker.labelText = it.name
+                mapMarker.labelVisible = showLabels
                 mapMarker.id = it.toString()
                 mapMarker.relatedObject = it
                 mapMarker.isDraggable = true
@@ -319,6 +324,20 @@ class OverlayHelper(
             mapMarkers.forEach {
                 mapView.overlays.remove(it)
             }
+        }
+        mapMarkers.clear()
+    }
+
+    fun updateMarkerLabelVisibility(visible: Boolean) {
+        var changed = false
+        mapMarkers.forEach {
+            if (it.labelVisible != visible) {
+                it.labelVisible = visible
+                changed = true
+            }
+        }
+        if (changed) {
+            mMapView?.invalidate()
         }
     }
 
