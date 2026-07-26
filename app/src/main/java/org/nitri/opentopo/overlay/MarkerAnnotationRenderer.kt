@@ -6,9 +6,11 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.RectF
+import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.TextUtils
 import android.util.TypedValue
+import androidx.core.graphics.ColorUtils
 import org.osmdroid.views.Projection
 
 internal class MarkerAnnotationRenderer(context: Context) {
@@ -19,15 +21,20 @@ internal class MarkerAnnotationRenderer(context: Context) {
         val screenBounds: RectF
     )
 
-    private val labelTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val fillTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, context.resources.displayMetrics)
-        color = Color.BLACK
         textAlign = Paint.Align.CENTER
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
-    private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        alpha = 220
+    private val haloTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, context.resources.displayMetrics)
+        textAlign = Paint.Align.CENTER
+        style = Paint.Style.STROKE
+        strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.5f, context.resources.displayMetrics)
+        strokeJoin = Paint.Join.ROUND
+        strokeCap = Paint.Cap.ROUND
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
     private val backgroundRect = RectF()
@@ -40,12 +47,13 @@ internal class MarkerAnnotationRenderer(context: Context) {
     private val paddingHPx = 4f * density
     private val paddingVPx = 2f * density
     private val gapPx = 2f * density
-    private val cornerRadiusPx = 3f * density
+    private val haloStrokeWidth = haloTextPaint.strokeWidth
 
     private val futureIconSlotWidth = 0f
     private val iconTextGap = 4f * density
 
     private var cachedLabelText: String? = null
+    private var cachedMarkerColor: Int? = null
     private var cachedDisplayText = ""
     private var cachedTextWidth = 0f
     private var cachedTextHeight = 0f
@@ -71,9 +79,9 @@ internal class MarkerAnnotationRenderer(context: Context) {
         if (text == cachedLabelText) return
         
         cachedLabelText = text
-        cachedDisplayText = TextUtils.ellipsize(text, labelTextPaint, maxLabelWidthPx, TextUtils.TruncateAt.END).toString()
-        cachedTextWidth = labelTextPaint.measureText(cachedDisplayText)
-        labelTextPaint.getFontMetrics(cachedFontMetrics)
+        cachedDisplayText = TextUtils.ellipsize(text, fillTextPaint, maxLabelWidthPx, TextUtils.TruncateAt.END).toString()
+        cachedTextWidth = fillTextPaint.measureText(cachedDisplayText)
+        fillTextPaint.getFontMetrics(cachedFontMetrics)
         cachedTextHeight = cachedFontMetrics.descent - cachedFontMetrics.ascent
 
         cachedContentWidth = if (cachedTextWidth > 0 && futureIconSlotWidth > 0) {
@@ -86,8 +94,24 @@ internal class MarkerAnnotationRenderer(context: Context) {
         cachedAnnotationHeight = cachedTextHeight + paddingVPx * 2
     }
 
-    fun draw(canvas: Canvas, pj: Projection, x: Float, y: Float, text: String, iconHeight: Int, anchorV: Float, viewWidth: Int, viewHeight: Int) {
+    private fun updateColors(markerColor: Int) {
+        if (markerColor == cachedMarkerColor) return
+        cachedMarkerColor = markerColor
+        fillTextPaint.color = markerColor
+        haloTextPaint.color = haloColorFor(markerColor)
+    }
+
+    internal fun haloColorFor(markerColor: Int): Int {
+        return if (ColorUtils.calculateLuminance(markerColor) > 0.65) {
+            Color.argb(210, 32, 32, 32)
+        } else {
+            Color.argb(230, 255, 255, 255)
+        }
+    }
+
+    fun draw(canvas: Canvas, pj: Projection, x: Float, y: Float, text: String, textColor: Int, iconHeight: Int, anchorV: Float, viewWidth: Int, viewHeight: Int) {
         updateCache(text)
+        updateColors(textColor)
         
         val annotationBottomY = y - iconHeight * anchorV - gapPx
         val annotationLeft = x - cachedAnnotationWidth / 2
@@ -98,11 +122,12 @@ internal class MarkerAnnotationRenderer(context: Context) {
         // Rotation matrix
         annotationMatrix.setRotate(-pj.orientation, x, y)
         
-        // Calculate transformed bounds for clamping
-        cornerPoints[0] = backgroundRect.left; cornerPoints[1] = backgroundRect.top
-        cornerPoints[2] = backgroundRect.right; cornerPoints[3] = backgroundRect.top
-        cornerPoints[4] = backgroundRect.right; cornerPoints[5] = backgroundRect.bottom
-        cornerPoints[6] = backgroundRect.left; cornerPoints[7] = backgroundRect.bottom
+        // Calculate transformed bounds for clamping, including halo stroke
+        val haloAllowance = haloStrokeWidth / 2f
+        cornerPoints[0] = backgroundRect.left - haloAllowance; cornerPoints[1] = backgroundRect.top - haloAllowance
+        cornerPoints[2] = backgroundRect.right + haloAllowance; cornerPoints[3] = backgroundRect.top - haloAllowance
+        cornerPoints[4] = backgroundRect.right + haloAllowance; cornerPoints[5] = backgroundRect.bottom + haloAllowance
+        cornerPoints[6] = backgroundRect.left - haloAllowance; cornerPoints[7] = backgroundRect.bottom + haloAllowance
         
         annotationMatrix.mapPoints(transformedPoints, cornerPoints)
         
@@ -140,12 +165,14 @@ internal class MarkerAnnotationRenderer(context: Context) {
         canvas.save()
         canvas.concat(annotationMatrix)
 
-        canvas.drawRoundRect(backgroundRect, cornerRadiusPx, cornerRadiusPx, backgroundPaint)
+        // canvas.drawRoundRect(backgroundRect, cornerRadiusPx, cornerRadiusPx, backgroundPaint) // Removed bubble
 
         val textStartX = annotationLeft + paddingHPx + futureIconSlotWidth + (if (futureIconSlotWidth > 0 && cachedTextWidth > 0) iconTextGap else 0f)
         val textX = textStartX + cachedTextWidth / 2
         val textY = annotationTop + paddingVPx - cachedFontMetrics.ascent
-        canvas.drawText(cachedDisplayText, textX, textY, labelTextPaint)
+
+        canvas.drawText(cachedDisplayText, textX, textY, haloTextPaint)
+        canvas.drawText(cachedDisplayText, textX, textY, fillTextPaint)
 
         canvas.restore()
         isDrawn = true

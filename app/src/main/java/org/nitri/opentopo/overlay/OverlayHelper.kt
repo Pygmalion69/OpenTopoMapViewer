@@ -284,6 +284,7 @@ class OverlayHelper(
                 mapMarker.title = it.name
                 mapMarker.labelText = it.name
                 mapMarker.labelVisible = showLabels
+                mapMarker.markerColor = it.color
                 mapMarker.id = it.toString()
                 mapMarker.relatedObject = it
                 mapMarker.isDraggable = true

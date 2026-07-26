@@ -10,6 +10,7 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
     var labelText: String = ""
     var labelVisible: Boolean = false
     var minimumLabelZoom: Double = 14.0
+    var markerColor: Int = org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 
     private val annotationRenderer = MarkerAnnotationRenderer(mapView.context)
 
@@ -28,7 +29,7 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
         val x = mPositionPixels.x.toFloat()
         val y = mPositionPixels.y.toFloat()
 
-        annotationRenderer.draw(canvas, pj, x, y, labelText, mIcon.intrinsicHeight, mAnchorV, mapView.width, mapView.height)
+        annotationRenderer.draw(canvas, pj, x, y, labelText, markerColor, mIcon.intrinsicHeight, mAnchorV, mapView.width, mapView.height)
     }
 
     internal fun shouldDrawLabel(zoom: Double, markerDisplayed: Boolean): Boolean {

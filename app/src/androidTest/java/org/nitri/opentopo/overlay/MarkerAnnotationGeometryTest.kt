@@ -1,6 +1,7 @@
 package org.nitri.opentopo.overlay
 
 import android.graphics.Canvas
+import android.graphics.Color
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.*
@@ -33,7 +34,7 @@ class MarkerAnnotationGeometryTest {
         val projection = mock(Projection::class.java)
         `when`(projection.orientation).thenReturn(0f)
         
-        renderer.draw(canvas, projection, 500f, 500f, "Test", 50, 1.0f, 1000, 1000)
+        renderer.draw(canvas, projection, 500f, 500f, "Test", Color.RED, 50, 1.0f, 1000, 1000)
         assertNotNull(renderer.getLastGeometry())
         
         renderer.clear()
@@ -50,7 +51,7 @@ class MarkerAnnotationGeometryTest {
         
         for (orientation in orientations) {
             `when`(projection.orientation).thenReturn(orientation)
-            renderer.draw(canvas, projection, 500f, 500f, "Label", 50, 1.0f, 1000, 1000)
+            renderer.draw(canvas, projection, 500f, 500f, "Label", Color.RED, 50, 1.0f, 1000, 1000)
             
             val geometry = renderer.getLastGeometry()!!
             
@@ -90,7 +91,7 @@ class MarkerAnnotationGeometryTest {
         for (orientation in orientations) {
             for ((x, y) in corners) {
                 `when`(projection.orientation).thenReturn(orientation)
-                renderer.draw(canvas, projection, x, y, "Long Label Content", 50, 1.0f, viewWidth, viewHeight)
+                renderer.draw(canvas, projection, x, y, "Long Label Content", Color.RED, 50, 1.0f, viewWidth, viewHeight)
                 
                 val geometry = renderer.getLastGeometry()!!
                 
@@ -110,7 +111,7 @@ class MarkerAnnotationGeometryTest {
         `when`(projection.orientation).thenReturn(0f)
         
         val longText = "This is a very long marker name that should definitely be ellipsized to stay within the 120dp limit."
-        renderer.draw(canvas, projection, 500f, 500f, longText, 50, 1.0f, 1000, 1000)
+        renderer.draw(canvas, projection, 500f, 500f, longText, Color.RED, 50, 1.0f, 1000, 1000)
         
         val geometry = renderer.getLastGeometry()!!
         
@@ -121,5 +122,18 @@ class MarkerAnnotationGeometryTest {
         // geometry.localBounds.width() should be contentWidth + padding
         assertTrue("Label width ${geometry.localBounds.width()} should be constrained near ${maxAllowedContentWidth + horizontalPadding}", 
             geometry.localBounds.width() <= maxAllowedContentWidth + horizontalPadding + EPSILON)
+    }
+
+    @Test
+    fun haloColor_adaptiveSelection() {
+        // Red is dark (luminance ~0.21) -> should have light halo
+        val darkColor = Color.RED
+        val haloForDark = renderer.haloColorFor(darkColor)
+        assertEquals(255, Color.red(haloForDark)) // White/near-white
+        
+        // Yellow is light (luminance ~0.92) -> should have dark halo
+        val lightColor = Color.YELLOW
+        val haloForLight = renderer.haloColorFor(lightColor)
+        assertEquals(32, Color.red(haloForLight)) // Dark charcoal
     }
 }
