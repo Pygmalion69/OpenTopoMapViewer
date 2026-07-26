@@ -40,13 +40,16 @@ internal class MarkerAnnotationRenderer(context: Context) {
     private val iconTextGap = 4f * density
 
     private var cachedLabelText: String? = null
-    private var cachedEllipsizedText: CharSequence? = null
+    private var cachedDisplayText = ""
     private var cachedTextWidth = 0f
     private var cachedTextHeight = 0f
     private var cachedFontMetrics = Paint.FontMetrics()
     private var cachedContentWidth = 0f
     private var cachedAnnotationWidth = 0f
     private var cachedAnnotationHeight = 0f
+
+    private val cornerPoints = FloatArray(8)
+    private val transformedPoints = FloatArray(8)
 
     private var isDrawn = false
 
@@ -58,8 +61,8 @@ internal class MarkerAnnotationRenderer(context: Context) {
         if (text == cachedLabelText) return
         
         cachedLabelText = text
-        cachedEllipsizedText = TextUtils.ellipsize(text, labelTextPaint, maxLabelWidthPx, TextUtils.TruncateAt.END)
-        cachedTextWidth = labelTextPaint.measureText(cachedEllipsizedText.toString())
+        cachedDisplayText = TextUtils.ellipsize(text, labelTextPaint, maxLabelWidthPx, TextUtils.TruncateAt.END).toString()
+        cachedTextWidth = labelTextPaint.measureText(cachedDisplayText)
         labelTextPaint.getFontMetrics(cachedFontMetrics)
         cachedTextHeight = cachedFontMetrics.descent - cachedFontMetrics.ascent
 
@@ -77,39 +80,54 @@ internal class MarkerAnnotationRenderer(context: Context) {
         updateCache(text)
         
         val annotationBottomY = y - iconHeight * anchorV - gapPx
-
-        var annotationLeft = x - cachedAnnotationWidth / 2
-        var annotationTop = annotationBottomY - cachedAnnotationHeight
-
-        // Horizontal clamping
-        if (annotationLeft < 0) {
-            annotationLeft = 0f
-        } else if (annotationLeft + cachedAnnotationWidth > viewWidth) {
-            annotationLeft = viewWidth - cachedAnnotationWidth
-        }
-
-        // Vertical clamping
-        if (annotationTop < 0) {
-            annotationTop = 0f
-        } else if (annotationTop + cachedAnnotationHeight > viewHeight) {
-            annotationTop = viewHeight - cachedAnnotationHeight
-        }
-
+        val annotationLeft = x - cachedAnnotationWidth / 2
+        val annotationTop = annotationBottomY - cachedAnnotationHeight
+        
         backgroundRect.set(annotationLeft, annotationTop, annotationLeft + cachedAnnotationWidth, annotationTop + cachedAnnotationHeight)
 
-        canvas.save()
-        // Stay horizontal: counteract map orientation
-        canvas.rotate(-pj.orientation, x, y)
-        
-        // Rebuild matrix for hit testing
+        // Rotation matrix
         annotationMatrix.setRotate(-pj.orientation, x, y)
+        
+        // Calculate transformed bounds for clamping
+        cornerPoints[0] = backgroundRect.left; cornerPoints[1] = backgroundRect.top
+        cornerPoints[2] = backgroundRect.right; cornerPoints[3] = backgroundRect.top
+        cornerPoints[4] = backgroundRect.right; cornerPoints[5] = backgroundRect.bottom
+        cornerPoints[6] = backgroundRect.left; cornerPoints[7] = backgroundRect.bottom
+        
+        annotationMatrix.mapPoints(transformedPoints, cornerPoints)
+        
+        var minX = transformedPoints[0]; var maxX = transformedPoints[0]
+        var minY = transformedPoints[1]; var maxY = transformedPoints[1]
+        for (i in 2..7 step 2) {
+            if (transformedPoints[i] < minX) minX = transformedPoints[i]
+            if (transformedPoints[i] > maxX) maxX = transformedPoints[i]
+            if (transformedPoints[i+1] < minY) minY = transformedPoints[i+1]
+            if (transformedPoints[i+1] > maxY) maxY = transformedPoints[i+1]
+        }
+        
+        var dx = 0f
+        var dy = 0f
+        
+        if (minX < 0) dx = -minX
+        else if (maxX > viewWidth) dx = viewWidth - maxX
+        
+        if (minY < 0) dy = -minY
+        else if (maxY > viewHeight) dy = viewHeight - maxY
+        
+        // Final matrix: Translate then Rotate
+        if (dx != 0f || dy != 0f) {
+            annotationMatrix.postTranslate(dx, dy)
+        }
+
+        canvas.save()
+        canvas.concat(annotationMatrix)
 
         canvas.drawRoundRect(backgroundRect, cornerRadiusPx, cornerRadiusPx, backgroundPaint)
 
         val textStartX = annotationLeft + paddingHPx + futureIconSlotWidth + (if (futureIconSlotWidth > 0 && cachedTextWidth > 0) iconTextGap else 0f)
         val textX = textStartX + cachedTextWidth / 2
         val textY = annotationTop + paddingVPx - cachedFontMetrics.ascent
-        canvas.drawText(cachedEllipsizedText.toString(), textX, textY, labelTextPaint)
+        canvas.drawText(cachedDisplayText, textX, textY, labelTextPaint)
 
         canvas.restore()
         isDrawn = true

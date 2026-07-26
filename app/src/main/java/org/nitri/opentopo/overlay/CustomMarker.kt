@@ -1,13 +1,5 @@
 package org.nitri.opentopo.overlay
 
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Matrix
-import android.graphics.Paint
-import android.graphics.RectF
-import android.text.TextPaint
-import android.text.TextUtils
-import android.util.TypedValue
 import android.view.MotionEvent
 import org.osmdroid.views.MapView
 import org.osmdroid.views.Projection
@@ -25,10 +17,10 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
     var onMarkerWaypointClickListener: MarkerInfoWindow.OnMarkerWaypointClickListener? = null
     var onCustomMarkerClickListener: OnCustomMarkerClickListener? = null
 
-    override fun draw(canvas: Canvas, pj: Projection) {
+    override fun draw(canvas: android.graphics.Canvas, pj: Projection) {
         super.draw(canvas, pj)
 
-        if (!labelVisible || labelText.isBlank() || (pj.zoomLevel < minimumLabelZoom) || !isDisplayed) {
+        if (!shouldDrawLabel(pj.zoomLevel)) {
             annotationRenderer.clear()
             return
         }
@@ -37,6 +29,10 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
         val y = mPositionPixels.y.toFloat()
 
         annotationRenderer.draw(canvas, pj, x, y, labelText, mIcon.intrinsicHeight, mAnchorV, mapView.width, mapView.height)
+    }
+
+    internal fun shouldDrawLabel(zoom: Double): Boolean {
+        return labelVisible && labelText.isNotBlank() && (zoom >= minimumLabelZoom) && isDisplayed
     }
 
     override fun hitTest(event: MotionEvent, mapView: MapView): Boolean {
