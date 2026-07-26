@@ -135,6 +135,8 @@
     <string name="profile_wheelchair">Rollstuhl</string>
 
     <string name="markers">Markierungen</string>
+    <string name="show_marker_labels">Marker-Beschriftungen anzeigen</string>
+    <string name="show_marker_labels_summary">Markernamen auf der Karte anzeigen</string>
     <string name="pref_markers_header">Markierungen</string>
     <string name="pref_default_marker_color_title">Standard-Markerfarbe</string>
     <string name="marker_color">Farbe</string>
