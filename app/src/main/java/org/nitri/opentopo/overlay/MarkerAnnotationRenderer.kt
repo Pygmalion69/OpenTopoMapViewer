@@ -13,6 +13,12 @@ import org.osmdroid.views.Projection
 
 internal class MarkerAnnotationRenderer(context: Context) {
 
+    internal data class MarkerAnnotationGeometry(
+        val localBounds: RectF,
+        val localToScreen: Matrix,
+        val screenBounds: RectF
+    )
+
     private val labelTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, context.resources.displayMetrics)
         color = Color.BLACK
@@ -52,10 +58,14 @@ internal class MarkerAnnotationRenderer(context: Context) {
     private val transformedPoints = FloatArray(8)
 
     private var isDrawn = false
+    private var lastGeometry: MarkerAnnotationGeometry? = null
 
     fun clear() {
         isDrawn = false
+        lastGeometry = null
     }
+
+    internal fun getLastGeometry(): MarkerAnnotationGeometry? = lastGeometry
 
     private fun updateCache(text: String) {
         if (text == cachedLabelText) return
@@ -118,6 +128,14 @@ internal class MarkerAnnotationRenderer(context: Context) {
         if (dx != 0f || dy != 0f) {
             annotationMatrix.postTranslate(dx, dy)
         }
+
+        // Store geometry for testing
+        val screenBounds = RectF(minX + dx, minY + dy, maxX + dx, maxY + dy)
+        lastGeometry = MarkerAnnotationGeometry(
+            localBounds = RectF(backgroundRect),
+            localToScreen = Matrix(annotationMatrix),
+            screenBounds = screenBounds
+        )
 
         canvas.save()
         canvas.concat(annotationMatrix)

@@ -20,7 +20,7 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
     override fun draw(canvas: android.graphics.Canvas, pj: Projection) {
         super.draw(canvas, pj)
 
-        if (!shouldDrawLabel(pj.zoomLevel)) {
+        if (!shouldDrawLabel(pj.zoomLevel, isDisplayed)) {
             annotationRenderer.clear()
             return
         }
@@ -31,8 +31,8 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
         annotationRenderer.draw(canvas, pj, x, y, labelText, mIcon.intrinsicHeight, mAnchorV, mapView.width, mapView.height)
     }
 
-    internal fun shouldDrawLabel(zoom: Double): Boolean {
-        return labelVisible && labelText.isNotBlank() && (zoom >= minimumLabelZoom) && isDisplayed
+    internal fun shouldDrawLabel(zoom: Double, markerDisplayed: Boolean): Boolean {
+        return shouldDrawMarkerLabel(labelVisible, labelText, zoom, minimumLabelZoom, markerDisplayed)
     }
 
     override fun hitTest(event: MotionEvent, mapView: MapView): Boolean {
@@ -60,4 +60,14 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
     interface OnCustomMarkerClickListener{
         fun onMarkerClick(marker: CustomMarker?): Boolean
     }
+}
+
+internal fun shouldDrawMarkerLabel(
+    labelVisible: Boolean,
+    labelText: String,
+    zoom: Double,
+    minimumLabelZoom: Double,
+    isDisplayed: Boolean
+): Boolean {
+    return labelVisible && labelText.isNotBlank() && (zoom >= minimumLabelZoom) && isDisplayed
 }

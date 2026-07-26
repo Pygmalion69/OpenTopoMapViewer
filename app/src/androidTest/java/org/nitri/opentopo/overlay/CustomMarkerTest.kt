@@ -10,53 +10,63 @@ import org.osmdroid.views.MapView
 @RunWith(AndroidJUnit4::class)
 class CustomMarkerTest {
 
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
+
     @Test
     fun customMarker_initialState() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val mapView = MapView(context)
-        val marker = CustomMarker(mapView)
+        // We only need to check initial property values, which don't require superclass methods
+        // But we still need to instantiate it. Let's use a real MapView on the UI thread.
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        var marker: CustomMarker? = null
+        instrumentation.runOnMainSync {
+            val mapView = MapView(context)
+            marker = CustomMarker(mapView)
+        }
         
-        assertEquals("", marker.labelText)
-        assertFalse(marker.labelVisible)
-        assertEquals(14.0, marker.minimumLabelZoom, 0.0)
+        marker?.let {
+            assertEquals("", it.labelText)
+            assertFalse(it.labelVisible)
+            assertEquals(14.0, it.minimumLabelZoom, 0.0)
+        } ?: fail("Marker was not created")
     }
 
     @Test
-    fun shouldDrawLabel_respectsAllConditions() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val mapView = MapView(context)
-        val marker = CustomMarker(mapView)
+    fun shouldDrawMarkerLabel_respectsAllConditions() {
+        // Pure function test - no MapView or reflection needed
         
-        marker.labelText = "Test"
-        marker.labelVisible = true
-        marker.minimumLabelZoom = 14.0
-        
-        // Mock isDisplayed via reflection since it's determined during draw
-        val field = CustomMarker::class.java.superclass.getDeclaredField("mDisplayed")
-        field.isAccessible = true
-        field.set(marker, true)
-
         // All good
-        assertTrue(marker.shouldDrawLabel(15.0))
+        assertTrue(shouldDrawMarkerLabel(
+            labelVisible = true, labelText = "Test", zoom = 15.0, minimumLabelZoom = 14.0, isDisplayed = true
+        ))
         
         // Disabled setting
-        marker.labelVisible = false
-        assertFalse(marker.shouldDrawLabel(15.0))
-        marker.labelVisible = true
+        assertFalse(shouldDrawMarkerLabel(
+            labelVisible = false, labelText = "Test", zoom = 15.0, minimumLabelZoom = 14.0, isDisplayed = true
+        ))
         
         // Blank text
-        marker.labelText = ""
-        assertFalse(marker.shouldDrawLabel(15.0))
-        marker.labelText = "Test"
+        assertFalse(shouldDrawMarkerLabel(
+            labelVisible = true, labelText = "", zoom = 15.0, minimumLabelZoom = 14.0, isDisplayed = true
+        ))
+        
+        // Whitespace text
+        assertFalse(shouldDrawMarkerLabel(
+            labelVisible = true, labelText = "  ", zoom = 15.0, minimumLabelZoom = 14.0, isDisplayed = true
+        ))
         
         // Below zoom
-        assertFalse(marker.shouldDrawLabel(13.9))
+        assertFalse(shouldDrawMarkerLabel(
+            labelVisible = true, labelText = "Test", zoom = 13.9, minimumLabelZoom = 14.0, isDisplayed = true
+        ))
         
         // Exactly at zoom
-        assertTrue(marker.shouldDrawLabel(14.0))
+        assertTrue(shouldDrawMarkerLabel(
+            labelVisible = true, labelText = "Test", zoom = 14.0, minimumLabelZoom = 14.0, isDisplayed = true
+        ))
         
         // Not displayed (off-screen)
-        field.set(marker, false)
-        assertFalse(marker.shouldDrawLabel(15.0))
+        assertFalse(shouldDrawMarkerLabel(
+            labelVisible = true, labelText = "Test", zoom = 15.0, minimumLabelZoom = 14.0, isDisplayed = false
+        ))
     }
 }
