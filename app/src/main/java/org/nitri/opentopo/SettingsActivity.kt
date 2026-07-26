@@ -404,6 +404,7 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_ORS_PROFILE = "ors_profile"
         const val PREF_DEFAULT_MARKER_COLOR = "default_marker_color"
         const val PREF_GPX_TRACK_COLOR = "gpx_track_color"
+        const val PREF_SHOW_MARKER_LABELS = "show_marker_labels"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
     }
 }
