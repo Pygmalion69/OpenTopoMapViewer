@@ -53,8 +53,8 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
             val original = chain.request()
             val request = original.newBuilder()
                 .header(
-                    "User-Agent", getString(R.string.app_name) + " "
-                            + BuildConfig.VERSION_NAME
+                    "User-Agent",
+                    WikiRequestHeaders.userAgent(BuildConfig.VERSION_NAME)
                 )
                 .method(original.method, original.body)
                 .build()

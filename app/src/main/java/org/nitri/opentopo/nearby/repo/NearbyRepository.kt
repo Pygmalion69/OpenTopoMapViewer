@@ -6,7 +6,6 @@ import androidx.annotation.WorkerThread
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiApi
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiResponse
 import org.nitri.opentopo.nearby.da.NearbyDao
@@ -41,18 +40,35 @@ class NearbyRepository(
                     call: Call<MediaWikiResponse?>,
                     response: Response<MediaWikiResponse?>
                 ) {
-                    Log.d(TAG, response.toString())
-                    if (response.body() != null) {
-                        viewModelScope.launch {
-                            withContext(Dispatchers.IO) {
-                                insertNearby(response.body())
-                            }
+                    if (!response.isSuccessful) {
+                        val errorBody = try {
+                            response.errorBody()?.string()
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to read Wikimedia error body", e)
+                            null
                         }
+
+                        Log.e(
+                            TAG,
+                            "Wikimedia request failed: HTTP ${response.code()}" +
+                                    if (errorBody.isNullOrBlank()) "" else ", body=$errorBody"
+                        )
+                        return
+                    }
+
+                    val body = response.body()
+                    if (body == null) {
+                        Log.e(TAG, "Wikimedia request succeeded but returned an empty body")
+                        return
+                    }
+
+                    viewModelScope.launch(Dispatchers.IO) {
+                        insertNearby(body)
                     }
                 }
 
                 override fun onFailure(call: Call<MediaWikiResponse?>, t: Throwable) {
-                    Log.e(TAG, "refresh failed", t)
+                    Log.e(TAG, "Wikimedia Nearby request failed", t)
                 }
             })
 
