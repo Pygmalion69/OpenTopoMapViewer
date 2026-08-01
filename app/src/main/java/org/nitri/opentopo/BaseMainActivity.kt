@@ -171,7 +171,9 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         windowInsetsController?.let {
             it.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            it.isAppearanceLightStatusBars = false
         }
+        window.statusBarColor = ContextCompat.getColor(this, R.color.colorPrimary)
         actionBar = supportActionBar
 
         isFullscreen = sharedPreferences.getBoolean(PREF_FULLSCREEN, false)
