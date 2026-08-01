@@ -131,6 +131,9 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         }
 
         mapContainer = findViewById(R.id.map_container)
+        mapContainer.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            topMargin = 0
+        }
         val mainContainer = findViewById<ViewGroup>(R.id.main_container)
         val statusBarBackground = findViewById<View>(R.id.status_bar_background)
 
@@ -260,31 +263,11 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             insetsController.hide(WindowInsetsCompat.Type.systemBars())
             actionBar?.hide()
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-                mapContainer.apply {
-                    layoutParams = (layoutParams as ViewGroup.MarginLayoutParams).apply {
-                        topMargin = 0
-                    }
-                }
-            }
-
             handler.postDelayed({ mapFragment?.showZoomControls(false) }, 3000)
         } else {
             insetsController.show(WindowInsetsCompat.Type.systemBars())
             insetsController.isAppearanceLightStatusBars = false
             actionBar?.show()
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-                actionBar?.height?.let { actionBarHeight ->
-                    if (actionBarHeight > 0) {
-                        mapContainer.apply {
-                            layoutParams = (layoutParams as ViewGroup.MarginLayoutParams).apply {
-                                topMargin = actionBarHeight
-                            }
-                        }
-                    }
-                }
-            }
 
             if (mapFragment?.isAdded == true) {
                 mapFragment?.showZoomControls(true)
