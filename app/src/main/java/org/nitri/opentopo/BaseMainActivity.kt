@@ -16,6 +16,7 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.MenuItem
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +31,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -113,6 +115,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_main)
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -129,11 +132,20 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
         mapContainer = findViewById(R.id.map_container)
         val mainContainer = findViewById<ViewGroup>(R.id.main_container)
+        val statusBarBackground = findViewById<View>(R.id.status_bar_background)
 
-        ViewCompat.setOnApplyWindowInsetsListener(mainContainer) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(mainContainer) { _, insets ->
             val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(
-                top = systemBarsInsets.top,
+            val topInset = systemBarsInsets.top
+            if (topInset > 0) {
+                statusBarBackground.visibility = View.VISIBLE
+                statusBarBackground.updateLayoutParams {
+                    height = topInset
+                }
+            } else {
+                statusBarBackground.visibility = View.GONE
+            }
+            mainContainer.updatePadding(
                 bottom = systemBarsInsets.bottom
             )
             WindowInsetsCompat.CONSUMED
@@ -259,6 +271,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             handler.postDelayed({ mapFragment?.showZoomControls(false) }, 3000)
         } else {
             insetsController.show(WindowInsetsCompat.Type.systemBars())
+            insetsController.isAppearanceLightStatusBars = false
             actionBar?.show()
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
@@ -276,6 +289,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             if (mapFragment?.isAdded == true) {
                 mapFragment?.showZoomControls(true)
             }
+            ViewCompat.requestApplyInsets(window.decorView)
         }
 
         // Persist the fullscreen state preference
