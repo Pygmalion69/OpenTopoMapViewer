@@ -439,8 +439,7 @@ private fun SettingsScreen(onBack: () -> Unit) {
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White
-                ),
-                modifier = Modifier.statusBarsPadding()
+                )
             )
         }
     ) { innerPadding ->
