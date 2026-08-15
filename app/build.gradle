@@ -23,8 +23,8 @@ android {
         applicationId = "org.nitri.opentopo"
         minSdkVersion 24
         targetSdkVersion 36
-        versionCode = 76
-        versionName = "1.33.3"
+        versionCode = 77
+        versionName = "1.33.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
@@ -117,8 +117,8 @@ dependencies {
     //noinspection GradleCompatible
     implementation 'androidx.core:core-ktx:1.19.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0"
-    implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'com.google.android.material:material:1.14.0'
     implementation 'org.osmdroid:osmdroid-android:6.1.20'
@@ -133,7 +133,7 @@ dependencies {
     ksp 'androidx.room:room-compiler:2.8.4'
     implementation "androidx.room:room-ktx:2.8.4"
     implementation "androidx.preference:preference:1.2.1"
-    implementation 'net.danlew:android.joda:2.14.2'
+    implementation 'net.danlew:android.joda:2.14.2.1'
     implementation 'com.github.k3b:k3b-geoHelper:1.1.5'
     implementation 'com.github.ticofab:android-gpx-parser:2.3.1'
     implementation 'com.github.Pygmalion69:ors-android-client:0.3.2'
@@ -149,7 +149,7 @@ dependencies {
     // OkHttp client and Picasso OkHttp3 downloader for custom headers on image requests
     implementation 'com.squareup.okhttp3:okhttp:5.4.0'
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    playImplementation platform('com.google.firebase:firebase-bom:34.16.0')
+    playImplementation platform('com.google.firebase:firebase-bom:34.17.0')
     playImplementation 'com.google.android.gms:play-services-ads:25.4.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     playImplementation 'com.google.firebase:firebase-analytics'
@@ -159,10 +159,10 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
     androidTestImplementation "androidx.room:room-testing:2.8.4"
-    androidTestImplementation "org.mockito:mockito-android:5.11.0"
+    androidTestImplementation "org.mockito:mockito-android:5.23.0"
 
     // Jetpack Compose
-    def composeBom = platform('androidx.compose:compose-bom:2026.06.01')
+    def composeBom = platform('androidx.compose:compose-bom:2026.08.00')
     implementation composeBom
     androidTestImplementation composeBom
 
