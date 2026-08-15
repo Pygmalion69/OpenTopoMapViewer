@@ -68,12 +68,12 @@ android {
     }
 
     // 🔒 Disable unwanted variants with the modern API (AGP 8+)
-    // 1) On CI: disable *all* Play variants (debug+release)
+    // 1) On CI: disable *all* Play variants unless the dedicated release job opts in
     // 2) Locally: disable Play *release* unless ENABLE_PLAY_RELEASE=true
     androidComponents {
-        // CI: kill every "play" variant
+        // Normal CI does not configure Play; the dedicated Play release job explicitly opts in.
         beforeVariants(selector().withFlavor("distribution", "play")) { v ->
-            if (isCi) {
+            if (isCi && !enablePlayRelease) {
                 v.enabled = false
             }
         }
