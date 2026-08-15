@@ -22,16 +22,16 @@ internal class MarkerAnnotationRenderer(context: Context) {
     )
 
     private val fillTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, context.resources.displayMetrics)
+        textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 13f, context.resources.displayMetrics)
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
 
     private val haloTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12f, context.resources.displayMetrics)
+        textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 13f, context.resources.displayMetrics)
         textAlign = Paint.Align.CENTER
         style = Paint.Style.STROKE
-        strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.5f, context.resources.displayMetrics)
+        strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1.2f, context.resources.displayMetrics)
         strokeJoin = Paint.Join.ROUND
         strokeCap = Paint.Cap.ROUND
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
@@ -43,7 +43,7 @@ internal class MarkerAnnotationRenderer(context: Context) {
     private val touchPoint = floatArrayOf(0f, 0f)
 
     private val density = context.resources.displayMetrics.density
-    private val maxLabelWidthPx = 120f * density
+    private val maxLabelWidthPx = 200f * density
     private val paddingHPx = 4f * density
     private val paddingVPx = 2f * density
     private val gapPx = 2f * density
