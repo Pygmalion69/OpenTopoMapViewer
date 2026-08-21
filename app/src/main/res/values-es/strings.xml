@@ -137,6 +137,7 @@
     <string name="markers">Marcadores</string>
     <string name="show_marker_labels">Mostrar etiquetas de marcadores</string>
     <string name="show_marker_labels_summary">Mostrar los nombres de los marcadores en el mapa</string>
+    <string name="marker_label_min_zoom">Mostrar etiquetas de marcadores desde el nivel de zoom</string>
     <string name="pref_markers_header">Marcadores</string>
     <string name="pref_default_marker_color_title">Color de marcador predeterminado</string>
     <string name="marker_color">Color</string>

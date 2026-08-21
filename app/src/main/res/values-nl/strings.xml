@@ -82,8 +82,8 @@
     <string name="about_freemap_sk">Kaart door &lt;a href="https://www.freemap.sk/"&gt;Freemap.sk&lt;/a&gt;.</string>
     <string name="about_waymarked_trails">Route-overlays door &lt;a href="https://waymarkedtrails.org/"&gt;Waymarked Trails&lt;/a&gt; van Lonvia.</string>
 
-    <string name="default_marker_name">Markering %1$d</string>
-    <string name="edit_marker">Markering bewerken</string>
+    <string name="default_marker_name">Marker %1$d</string>
+    <string name="edit_marker">Marker bewerken</string>
     <string name="name">Naam</string>
     <string name="description">Beschrijving</string>
 
@@ -134,14 +134,15 @@
     <string name="profile_foot_hiking">Wandelen</string>
     <string name="profile_wheelchair">Rolstoel</string>
 
-    <string name="markers">Markeringen</string>
-    <string name="show_marker_labels">Markering labels tonen</string>
-    <string name="show_marker_labels_summary">Markering namen op de kaart tonen</string>
-    <string name="pref_markers_header">Markeringen</string>
+    <string name="markers">Markers</string>
+    <string name="show_marker_labels">Markerlabels tonen</string>
+    <string name="show_marker_labels_summary">Markernamen op de kaart tonen</string>
+    <string name="marker_label_min_zoom">Markerlabels tonen vanaf zoomniveau</string>
+    <string name="pref_markers_header">Markers</string>
     <string name="pref_default_marker_color_title">Standaard marker kleur</string>
     <string name="marker_color">Kleur</string>
     <string name="select_color">Selecteer een kleur</string>
-    <string name="marker_color_description">Markering kleur</string>
+    <string name="marker_color_description">Markerkleur</string>
     <string name="pref_gpx_track_color_title">GPX-trackkleur</string>
     <string name="import_gpx">Importeer GPX</string>
     <string name="select_all">Alles selecteren</string>
@@ -153,12 +154,12 @@
     <string name="delete_selected_markers_message">De %1$d geselecteerde markeringen verwijderen?
 
 Dit kan niet ongedaan worden gemaakt.</string>
-    <string name="markers_export_success">Markeringen geëxporteerd.</string>
+    <string name="markers_export_success">Markers geëxporteerd.</string>
     <string name="markers_export_failed">Export mislukt: kon het GPX-bestand niet schrijven.</string>
     <string name="markers_import_failed">Import mislukt.</string>
     <string name="import_no_valid_waypoints">Geen geldige GPX-routepunten gevonden.</string>
-    <string name="import_success_count">%1$d markeringen geïmporteerd.</string>
-    <string name="import_success_with_skipped">%1$d markeringen geïmporteerd. %2$d ongeldige routepunten overgeslagen.</string>
+    <string name="import_success_count">%1$d markers geïmporteerd.</string>
+    <string name="import_success_with_skipped">%1$d markers geïmporteerd. %2$d ongeldige routepunten overgeslagen.</string>
     <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 
     <string name="more_options">Meer opties</string>

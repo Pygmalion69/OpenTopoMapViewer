@@ -736,6 +736,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         syncMapRotationPreference()
         overlayHelper?.updateMarkerLabelVisibility(sharedPreferences.getBoolean(SettingsActivity.PREF_SHOW_MARKER_LABELS, false))
+        overlayHelper?.updateMarkerMinimumLabelZoom(requireContext().markerLabelMinimumZoom())
         overlayHelper?.updateGpxTrackColor(requireContext().defaultGpxTrackColor())
         if (!sharedPreferences.getBoolean(PREF_KML_ENABLED, true)) {
             clearKml()

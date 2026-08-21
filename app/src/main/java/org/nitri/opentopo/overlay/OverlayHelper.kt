@@ -13,6 +13,7 @@ import io.ticofab.androidgpxparser.parser.domain.Gpx
 import org.nitri.opentopo.R
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_SHOW_MARKER_LABELS
+import org.nitri.opentopo.markerLabelMinimumZoom
 import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
@@ -277,6 +278,7 @@ class OverlayHelper(
             markerInteractionListener = listener
             val prefs = PreferenceManager.getDefaultSharedPreferences(mContext)
             val showLabels = prefs.getBoolean(PREF_SHOW_MARKER_LABELS, false)
+            val minimumLabelZoom = mContext.markerLabelMinimumZoom()
             markers.forEach {
                 val mapMarker = CustomMarker(mapView)
                 mapMarker.position = GeoPoint(it.latitude, it.longitude)
@@ -284,6 +286,7 @@ class OverlayHelper(
                 mapMarker.title = it.name
                 mapMarker.labelText = it.name
                 mapMarker.labelVisible = showLabels
+                mapMarker.minimumLabelZoom = minimumLabelZoom
                 mapMarker.markerColor = it.color
                 mapMarker.id = it.toString()
                 mapMarker.relatedObject = it
@@ -334,6 +337,19 @@ class OverlayHelper(
         mapMarkers.forEach {
             if (it.labelVisible != visible) {
                 it.labelVisible = visible
+                changed = true
+            }
+        }
+        if (changed) {
+            mMapView?.invalidate()
+        }
+    }
+
+    fun updateMarkerMinimumLabelZoom(minimumZoom: Double) {
+        var changed = false
+        mapMarkers.forEach {
+            if (it.minimumLabelZoom != minimumZoom) {
+                it.minimumLabelZoom = minimumZoom
                 changed = true
             }
         }

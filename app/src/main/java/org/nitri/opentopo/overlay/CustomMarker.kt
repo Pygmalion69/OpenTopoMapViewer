@@ -1,6 +1,7 @@
 package org.nitri.opentopo.overlay
 
 import android.view.MotionEvent
+import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 import org.osmdroid.views.MapView
 import org.osmdroid.views.Projection
 import org.osmdroid.views.overlay.Marker
@@ -9,8 +10,8 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
 
     var labelText: String = ""
     var labelVisible: Boolean = false
-    var minimumLabelZoom: Double = 14.0
-    var markerColor: Int = org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
+    var minimumLabelZoom: Double = DEFAULT_MARKER_LABEL_MIN_ZOOM
+    var markerColor: Int = DEFAULT_MARKER_COLOR
 
     private val annotationRenderer = MarkerAnnotationRenderer(mapView.context)
 
@@ -62,6 +63,8 @@ class CustomMarker(private val mapView: MapView) : Marker(mapView) {
         fun onMarkerClick(marker: CustomMarker?): Boolean
     }
 }
+
+const val DEFAULT_MARKER_LABEL_MIN_ZOOM = 14.0
 
 internal fun shouldDrawMarkerLabel(
     labelVisible: Boolean,

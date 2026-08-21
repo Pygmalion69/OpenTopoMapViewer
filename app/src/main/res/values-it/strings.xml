@@ -136,6 +136,7 @@
     <string name="markers">Segnaposti</string>
     <string name="show_marker_labels">Mostra etichette segnaposto</string>
     <string name="show_marker_labels_summary">Mostra i nomi dei segnaposto sulla mappa</string>
+    <string name="marker_label_min_zoom">Mostra le etichette dei marcatori dal livello di zoom</string>
     <string name="pref_markers_header">Segnaposti</string>
     <string name="pref_default_marker_color_title">Colore marcatore predefinito</string>
     <string name="marker_color">Colore</string>

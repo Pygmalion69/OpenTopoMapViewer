@@ -149,6 +149,7 @@
     <string name="markers">Markers</string>
     <string name="show_marker_labels">Show marker labels</string>
     <string name="show_marker_labels_summary">Show marker names on the map</string>
+    <string name="marker_label_min_zoom">Show marker labels from zoom level</string>
     <string name="pref_markers_header">Markers</string>
     <string name="pref_default_marker_color_title">Default marker color</string>
     <string name="marker_color">Color</string>
