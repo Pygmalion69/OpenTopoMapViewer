@@ -114,8 +114,19 @@ if (isPlayBuild) {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //noinspection GradleCompatible
-    implementation 'androidx.core:core-ktx:1.19.0'
+    // Core 1.19.0 dispatches WindowInsets.Type.systemOverlays() from its API 34
+    // implementation, although that platform method is unavailable on Android 14.
+    // Keep both artifacts pinned so a transitive dependency cannot reintroduce the
+    // crash while Compose initializes Scaffold's default window insets.
+    implementation('androidx.core:core-ktx:1.18.0') {
+        version { strictly '1.18.0' }
+    }
+    constraints {
+        implementation('androidx.core:core:1.18.0') {
+            version { strictly '1.18.0' }
+            because 'core 1.19.0 crashes on Android 14 when resolving system overlay insets'
+        }
+    }
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0"
     implementation 'androidx.appcompat:appcompat:1.8.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
