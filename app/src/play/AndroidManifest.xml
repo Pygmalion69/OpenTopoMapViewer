@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
 
     <application>
+
+        <!--
+            play-services-ads includes this activity through the HSDP library. HSDP 2.0.1
+            crashes when another app starts it without its private target-package extra, so
+            do not expose the implementation detail outside this application.
+        -->
+        <activity
+            android:name="com.google.android.play.core.hsdp.service.HsdpShimActivity"
+            android:exported="false"
+            tools:replace="android:exported" />
 
         <!-- Sample AdMob app ID: ca-app-pub-3940256099942544~3347511713 -->
         <meta-data
