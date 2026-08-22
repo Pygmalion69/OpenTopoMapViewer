@@ -89,6 +89,7 @@
 
     <string name="ok">OK</string>
     <string name="cancel">Annuler</string>
+    <string name="clear">Effacer</string>
     <string name="delete">Supprimer</string>
     <string name="confirm_delete">Confirmer la suppression</string>
     <string name="prompt_confirm_delete">Êtes-vous sûr de vouloir supprimer cet élément ?</string>
