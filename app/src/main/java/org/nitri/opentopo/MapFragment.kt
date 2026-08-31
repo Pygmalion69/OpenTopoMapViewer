@@ -29,6 +29,8 @@ import android.view.WindowManager
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
@@ -252,7 +254,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
         if (mapViewInitialized || !::mapView.isInitialized) return
 
-        val dm = this.resources.displayMetrics
         val hostActivity = activity ?: return
 
         mapViewInitialized = true
@@ -304,9 +305,32 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val bmMapBearing =
             Utils.getBitmapFromDrawable(hostActivity, R.drawable.ic_direction, 204)
         locationOverlay?.setDirectionArrow(bmMapLocation, bmMapBearing)
-        scaleBarOverlay = ScaleBarOverlay(mapView)
-        scaleBarOverlay?.setCentred(true)
-        scaleBarOverlay?.setScaleBarOffset(dm.widthPixels / 2, 10)
+
+        val scaleBarMargin = (16 * resources.displayMetrics.density).toInt()
+
+        scaleBarOverlay = ScaleBarOverlay(mapView).apply {
+            setAlignRight(true)
+            setAlignBottom(false)
+            setScaleBarOffset(scaleBarMargin, scaleBarMargin)
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(mapView) { _, insets ->
+            val safeInsets = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                        WindowInsetsCompat.Type.displayCutout()
+            )
+
+            scaleBarOverlay?.setScaleBarOffset(
+                safeInsets.right + scaleBarMargin,
+                safeInsets.top + scaleBarMargin
+            )
+
+            mapView.invalidate()
+            insets
+        }
+
+        ViewCompat.requestApplyInsets(mapView)
+
         rotationGestureOverlay = RotationGestureOverlay(mapView)
         rotationGestureOverlay?.isEnabled = true
         gestureOverlay = GestureOverlay(this)
