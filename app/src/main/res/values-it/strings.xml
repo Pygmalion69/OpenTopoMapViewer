@@ -69,7 +69,7 @@
     <string name="invalid_gpx">GPX non valido</string>
     <string name="location_unknown">Posizione sconosciuta</string>
 
-    <string name="wiki_base_url">https://en.wikipedia.org/</string>
+    <string name="wiki_base_url">https://it.wikipedia.org/</string>
 
     <string name="about">Info</string>
     <string name="app_version">Versione %1$s</string>
