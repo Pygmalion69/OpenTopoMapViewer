@@ -135,6 +135,8 @@
     <string name="profile_wheelchair">Sedia a rotelle</string>
 
     <string name="markers">Segnaposti</string>
+    <string name="long_press_to_add_marker">Pressione lunga per aggiungere un marcatore</string>
+    <string name="long_press_to_add_marker_summary">Aggiungi un marcatore premendo a lungo sulla mappa</string>
     <string name="show_marker_labels">Mostra etichette segnaposto</string>
     <string name="show_marker_labels_summary">Mostra i nomi dei segnaposto sulla mappa</string>
     <string name="marker_label_min_zoom">Mostra le etichette dei marcatori dal livello di zoom</string>

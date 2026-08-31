@@ -148,6 +148,8 @@
 
 
     <string name="markers">Markers</string>
+    <string name="long_press_to_add_marker">Long press to add marker</string>
+    <string name="long_press_to_add_marker_summary">Add a marker by pressing and holding the map</string>
     <string name="show_marker_labels">Show marker labels</string>
     <string name="show_marker_labels_summary">Show marker names on the map</string>
     <string name="marker_label_min_zoom">Show marker labels from zoom level</string>

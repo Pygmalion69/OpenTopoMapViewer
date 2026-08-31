@@ -136,6 +136,8 @@
     <string name="profile_wheelchair">Silla de ruedas</string>
 
     <string name="markers">Marcadores</string>
+    <string name="long_press_to_add_marker">Pulsación larga para añadir marcador</string>
+    <string name="long_press_to_add_marker_summary">Añadir un marcador manteniendo presionando el mapa</string>
     <string name="show_marker_labels">Mostrar etiquetas de marcadores</string>
     <string name="show_marker_labels_summary">Mostrar los nombres de los marcadores en el mapa</string>
     <string name="marker_label_min_zoom">Mostrar etiquetas de marcadores desde el nivel de zoom</string>

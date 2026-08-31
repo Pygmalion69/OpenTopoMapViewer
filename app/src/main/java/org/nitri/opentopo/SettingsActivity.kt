@@ -406,6 +406,7 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_GPX_TRACK_COLOR = "gpx_track_color"
         const val PREF_SHOW_MARKER_LABELS = "show_marker_labels"
         const val PREF_MARKER_LABEL_MIN_ZOOM = "marker_label_min_zoom"
+        const val PREF_LONG_PRESS_TO_ADD_MARKER = "long_press_to_add_marker"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
     }
 }

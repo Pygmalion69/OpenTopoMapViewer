@@ -136,6 +136,8 @@
     <string name="profile_wheelchair">Rollstuhl</string>
 
     <string name="markers">Markierungen</string>
+    <string name="long_press_to_add_marker">Marker durch langes Drücken hinzufügen</string>
+    <string name="long_press_to_add_marker_summary">Marker durch langes Drücken auf die Karte hinzufügen</string>
     <string name="show_marker_labels">Marker-Beschriftungen anzeigen</string>
     <string name="show_marker_labels_summary">Markernamen auf der Karte anzeigen</string>
     <string name="marker_label_min_zoom">Marker-Beschriftungen ab Zoomstufe anzeigen</string>

@@ -136,6 +136,8 @@
     <string name="profile_wheelchair">Fauteuil roulant</string>
 
     <string name="markers">Marqueurs</string>
+    <string name="long_press_to_add_marker">Appui long pour ajouter un marqueur</string>
+    <string name="long_press_to_add_marker_summary">Ajouter un marqueur en appuyant longuement sur la carte</string>
     <string name="show_marker_labels">Afficher les étiquettes des marqueurs</string>
     <string name="show_marker_labels_summary">Afficher les noms des marqueurs sur la carte</string>
     <string name="marker_label_min_zoom">Afficher les étiquettes de marqueurs à partir du niveau de zoom</string>

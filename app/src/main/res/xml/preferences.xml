@@ -39,6 +39,11 @@
             app:key="default_marker_color"
             app:title="@string/pref_default_marker_color_title" />
         <SwitchPreferenceCompat
+            app:key="long_press_to_add_marker"
+            app:title="@string/long_press_to_add_marker"
+            app:summary="@string/long_press_to_add_marker_summary"
+            app:defaultValue="true" />
+        <SwitchPreferenceCompat
             app:key="show_marker_labels"
             app:title="@string/show_marker_labels"
             app:summary="@string/show_marker_labels_summary"

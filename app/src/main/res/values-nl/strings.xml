@@ -136,6 +136,8 @@
     <string name="profile_wheelchair">Rolstoel</string>
 
     <string name="markers">Markers</string>
+    <string name="long_press_to_add_marker">Lang drukken om marker toe te voegen</string>
+    <string name="long_press_to_add_marker_summary">Voeg een marker toe door de kaart lang ingedrukt te houden</string>
     <string name="show_marker_labels">Markerlabels tonen</string>
     <string name="show_marker_labels_summary">Markernamen op de kaart tonen</string>
     <string name="marker_label_min_zoom">Markerlabels tonen vanaf zoomniveau</string>

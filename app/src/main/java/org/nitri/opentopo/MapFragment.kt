@@ -265,16 +265,23 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
             override fun longPressHelper(p: GeoPoint): Boolean {
                 listener?.onMapLongPress()
-                val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
-                val seq = highestSeq + 1
-                val marker = MarkerModel(
-                    seq = seq,
-                    latitude = p.latitude,
-                    longitude = p.longitude,
-                    name = getString(R.string.default_marker_name, seq),
-                    description = "",
-                    color = requireContext().defaultMarkerColor())
-                markerViewModel.addMarker(marker)
+                if (sharedPreferences.getBoolean(
+                        SettingsActivity.PREF_LONG_PRESS_TO_ADD_MARKER,
+                        true
+                    )
+                ) {
+                    val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
+                    val seq = highestSeq + 1
+                    val marker = MarkerModel(
+                        seq = seq,
+                        latitude = p.latitude,
+                        longitude = p.longitude,
+                        name = getString(R.string.default_marker_name, seq),
+                        description = "",
+                        color = requireContext().defaultMarkerColor()
+                    )
+                    markerViewModel.addMarker(marker)
+                }
                 return true
             }
         }))
