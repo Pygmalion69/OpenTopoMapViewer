@@ -405,6 +405,8 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_DEFAULT_MARKER_COLOR = "default_marker_color"
         const val PREF_GPX_TRACK_COLOR = "gpx_track_color"
         const val PREF_SHOW_MARKER_LABELS = "show_marker_labels"
+        const val PREF_MARKER_LABEL_MIN_ZOOM = "marker_label_min_zoom"
+        const val PREF_LONG_PRESS_TO_ADD_MARKER = "long_press_to_add_marker"
         const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
     }
 }
@@ -417,6 +419,14 @@ fun Context.defaultMarkerColor(): Int {
 fun Context.defaultGpxTrackColor(): Int {
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     return prefs.getInt(SettingsActivity.PREF_GPX_TRACK_COLOR, org.nitri.opentopo.ui.color.DEFAULT_GPX_TRACK_COLOR)
+}
+
+fun Context.markerLabelMinimumZoom(): Double {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    return prefs.getString(
+        SettingsActivity.PREF_MARKER_LABEL_MIN_ZOOM,
+        org.nitri.opentopo.overlay.DEFAULT_MARKER_LABEL_MIN_ZOOM.toInt().toString()
+    )?.toDoubleOrNull() ?: org.nitri.opentopo.overlay.DEFAULT_MARKER_LABEL_MIN_ZOOM
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

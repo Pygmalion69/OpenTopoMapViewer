@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="admob_app_id">ca-app-pub-3903124712412234~9690619070</string>
+    <!-- Test
+    <string name="ad_unit_id">ca-app-pub-3940256099942544/9214589741</string>
+    -->
+    <string name="ad_unit_id">ca-app-pub-3903124712412234/4179519510</string>
+    <string name="test_device_hashed_id">832E4817E2CE3E1D270471E7F758787A</string>
+</resources>

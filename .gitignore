@@ -8,3 +8,7 @@
 .externalNativeBuild
 /ors-client/build
 .aider*
+./app/src/play/google-services.json.b64
+./app/src/play/google-services.json
+/app/google-services.json
+/keystore.jks

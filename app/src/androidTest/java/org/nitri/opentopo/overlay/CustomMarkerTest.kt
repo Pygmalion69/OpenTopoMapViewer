@@ -26,7 +26,7 @@ class CustomMarkerTest {
         marker?.let {
             assertEquals("", it.labelText)
             assertFalse(it.labelVisible)
-            assertEquals(14.0, it.minimumLabelZoom, 0.0)
+            assertEquals(DEFAULT_MARKER_LABEL_MIN_ZOOM, it.minimumLabelZoom, 0.0)
         } ?: fail("Marker was not created")
     }
 

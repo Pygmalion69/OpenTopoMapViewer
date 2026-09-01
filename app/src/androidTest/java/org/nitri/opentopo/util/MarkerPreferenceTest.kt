@@ -8,7 +8,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.nitri.opentopo.defaultMarkerColor
+import org.nitri.opentopo.markerLabelMinimumZoom
 import org.nitri.opentopo.SettingsActivity
+import org.nitri.opentopo.overlay.DEFAULT_MARKER_LABEL_MIN_ZOOM
 import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 
 @RunWith(AndroidJUnit4::class)
@@ -40,5 +42,26 @@ class MarkerPreferenceTest {
     fun showMarkerLabels_defaultsToFalse() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         assertEquals(false, prefs.getBoolean(SettingsActivity.PREF_SHOW_MARKER_LABELS, false))
+    }
+
+    @Test
+    fun markerLabelMinimumZoom_defaultsTo14() {
+        assertEquals(DEFAULT_MARKER_LABEL_MIN_ZOOM, context.markerLabelMinimumZoom(), 0.0)
+    }
+
+    @Test
+    fun markerLabelMinimumZoom_returnsStoredValue() {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+            .putString(SettingsActivity.PREF_MARKER_LABEL_MIN_ZOOM, "11")
+            .commit()
+        assertEquals(11.0, context.markerLabelMinimumZoom(), 0.0)
+    }
+
+    @Test
+    fun markerLabelMinimumZoom_handlesInvalidValue() {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+            .putString(SettingsActivity.PREF_MARKER_LABEL_MIN_ZOOM, "invalid")
+            .commit()
+        assertEquals(DEFAULT_MARKER_LABEL_MIN_ZOOM, context.markerLabelMinimumZoom(), 0.0)
     }
 }

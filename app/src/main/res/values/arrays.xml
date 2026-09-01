@@ -13,6 +13,26 @@
         <item>16</item>
         <item>17</item>
     </string-array>
+    <string-array name="marker_label_zoom_entries">
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+    </string-array>
+    <string-array name="marker_label_zoom_values">
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+    </string-array>
     <string-array name="open_topo_map_source_entries">
         <item>@string/open_topo_map_archive</item>
         <item>@string/open_topo_map_r</item>

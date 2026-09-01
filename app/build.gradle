@@ -23,8 +23,8 @@ android {
         applicationId = "org.nitri.opentopo"
         minSdkVersion 24
         targetSdkVersion 36
-        versionCode = 76
-        versionName = "1.33.3"
+        versionCode = 79
+        versionName = "1.35"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
@@ -46,7 +46,6 @@ android {
         release {
             minifyEnabled = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig = signingConfigs.debug
             if (myStoreFile && myStorePassword && myKeyAlias && myKeyPassword) {
                 signingConfig = signingConfigs.release
             }
@@ -69,12 +68,12 @@ android {
     }
 
     // 🔒 Disable unwanted variants with the modern API (AGP 8+)
-    // 1) On CI: disable *all* Play variants (debug+release)
+    // 1) On CI: disable *all* Play variants unless the dedicated release job opts in
     // 2) Locally: disable Play *release* unless ENABLE_PLAY_RELEASE=true
     androidComponents {
-        // CI: kill every "play" variant
+        // Normal CI does not configure Play; the dedicated Play release job explicitly opts in.
         beforeVariants(selector().withFlavor("distribution", "play")) { v ->
-            if (isCi) {
+            if (isCi && !enablePlayRelease) {
                 v.enabled = false
             }
         }
@@ -115,26 +114,36 @@ if (isPlayBuild) {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //noinspection GradleCompatible
-    implementation 'androidx.core:core-ktx:1.19.0'
+    // Core 1.19.0 dispatches WindowInsets.Type.systemOverlays() from its API 34
+    // implementation, although that platform method is unavailable on Android 14.
+    // Keep both artifacts pinned so a transitive dependency cannot reintroduce the
+    // crash while Compose initializes Scaffold's default window insets.
+    implementation('androidx.core:core-ktx:1.18.0') {
+        version { strictly '1.18.0' }
+    }
+    constraints {
+        implementation('androidx.core:core:1.18.0') {
+            version { strictly '1.18.0' }
+            because 'core 1.19.0 crashes on Android 14 when resolving system overlay insets'
+        }
+    }
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0"
-    implementation 'androidx.appcompat:appcompat:1.7.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'com.google.android.material:material:1.14.0'
     implementation 'org.osmdroid:osmdroid-android:6.1.20'
     implementation 'com.github.MKergall:osmbonuspack:6.9.0'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     implementation 'com.squareup.retrofit2:retrofit:3.0.0'
     implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
     implementation 'com.google.code.gson:gson:2.14.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'androidx.room:room-runtime:2.8.4'
     ksp 'androidx.room:room-compiler:2.8.4'
     implementation "androidx.room:room-ktx:2.8.4"
     implementation "androidx.preference:preference:1.2.1"
-    implementation 'net.danlew:android.joda:2.14.2'
+    implementation 'net.danlew:android.joda:2.14.2.1'
     implementation 'com.github.k3b:k3b-geoHelper:1.1.5'
     implementation 'com.github.ticofab:android-gpx-parser:2.3.1'
     implementation 'com.github.Pygmalion69:ors-android-client:0.3.2'
@@ -148,9 +157,9 @@ dependencies {
         exclude group: 'com.android.support', module: 'exifinterface'
     }
     // OkHttp client and Picasso OkHttp3 downloader for custom headers on image requests
-    implementation 'com.squareup.okhttp3:okhttp:5.4.0'
+    implementation 'com.squareup.okhttp3:okhttp:5.5.0'
     implementation 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
-    playImplementation platform('com.google.firebase:firebase-bom:34.16.0')
+    playImplementation platform('com.google.firebase:firebase-bom:34.18.0')
     playImplementation 'com.google.android.gms:play-services-ads:25.4.0'
     playImplementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     playImplementation 'com.google.firebase:firebase-analytics'
@@ -160,10 +169,10 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
     androidTestImplementation "androidx.room:room-testing:2.8.4"
-    androidTestImplementation "org.mockito:mockito-android:5.11.0"
+    androidTestImplementation "org.mockito:mockito-android:5.23.0"
 
     // Jetpack Compose
-    def composeBom = platform('androidx.compose:compose-bom:2026.06.01')
+    def composeBom = platform('androidx.compose:compose-bom:2026.08.00')
     implementation composeBom
     androidTestImplementation composeBom
 
@@ -178,7 +187,6 @@ dependencies {
     implementation 'androidx.compose.material:material-icons-extended'
 
     debugImplementation 'androidx.compose.ui:ui-tooling'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }
 
 tasks.matching { it.name.contains("Crashlytics") }.configureEach {

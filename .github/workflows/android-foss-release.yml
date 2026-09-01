@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ENABLE_PLAY_RELEASE: "false"
-      STORE_FILE: keystore
+      STORE_FILE: keystore.jks
       STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
@@ -32,8 +32,41 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
+      - name: Validate signing secrets
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo "::error::ANDROID_KEYSTORE_BASE64 is missing"; exit 1; }
+          test -n "$STORE_PASSWORD" || { echo "::error::STORE_PASSWORD is missing"; exit 1; }
+          test -n "$KEY_ALIAS" || { echo "::error::KEY_ALIAS is missing"; exit 1; }
+          test -n "$KEY_PASSWORD" || { echo "::error::KEY_PASSWORD is missing"; exit 1; }
+
       - name: Restore signing key from secret
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$STORE_FILE"
+          test -s "$STORE_FILE" || { echo "::error::Restored keystore is empty"; exit 1; }
+
+      - name: Validate signing key
+        run: |
+          KEYSTORE_DETAILS="$(LC_ALL=C keytool -list -v \
+            -keystore "$STORE_FILE" \
+            -storepass:env STORE_PASSWORD \
+            -alias "$KEY_ALIAS")" || {
+              echo "::error::Unable to open the keystore or find KEY_ALIAS"
+              exit 1
+            }
+          EXPECTED_SIGNER_SHA256="$(printf '%s\n' "$KEYSTORE_DETAILS" \
+            | awk -F': ' '/SHA256:/{print $2; exit}' \
+            | tr -d ':[:space:]' \
+            | tr '[:lower:]' '[:upper:]')"
+          test -n "$EXPECTED_SIGNER_SHA256" || {
+            echo "::error::Unable to determine the signing certificate SHA-256 digest"
+            exit 1
+          }
+          echo "Expected signer SHA-256: $EXPECTED_SIGNER_SHA256"
+          echo "EXPECTED_SIGNER_SHA256=$EXPECTED_SIGNER_SHA256" >> "$GITHUB_ENV"
 
       # Build signed release (your build.gradle wires signing from env vars)
       - name: Build FOSS release (APK + AAB)
@@ -45,6 +78,41 @@ jobs:
             :app:assembleFossRelease \
             :app:bundleFossRelease \
             --warning-mode all --stacktrace
+
+      - name: Verify FOSS release APK signature
+        run: |
+          APK="app/build/outputs/apk/foss/release/app-foss-release.apk"
+          test -s "$APK" || { echo "::error::Release APK was not produced"; exit 1; }
+
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner -print \
+            | sort -V | tail -n 1)"
+          test -x "$APKSIGNER" || { echo "::error::Android SDK apksigner was not found"; exit 1; }
+
+          SIGNER_DETAILS="$("$APKSIGNER" verify --print-certs "$APK")" || {
+            echo "::error::APK signature verification failed"
+            exit 1
+          }
+          printf '%s\n' "$SIGNER_DETAILS"
+
+          if printf '%s\n' "$SIGNER_DETAILS" | grep -Eiq \
+            'CN[[:space:]]*=[[:space:]]*Android Debug|c07faa269db3e4c58abe2d869b48bc723f99cbd1'; then
+            echo "::error::The release APK is signed with the standard Android debug certificate"
+            exit 1
+          fi
+
+          ACTUAL_SIGNER_SHA256="$(printf '%s\n' "$SIGNER_DETAILS" \
+            | awk -F': ' '/certificate SHA-256 digest:/{print $NF; exit}' \
+            | tr -d ':[:space:]' \
+            | tr '[:lower:]' '[:upper:]')"
+          test -n "$ACTUAL_SIGNER_SHA256" || {
+            echo "::error::apksigner did not report a signer SHA-256 digest"
+            exit 1
+          }
+          test "$ACTUAL_SIGNER_SHA256" = "$EXPECTED_SIGNER_SHA256" || {
+            echo "::error::APK signer does not match the configured release key"
+            exit 1
+          }
+          echo "Verified APK signer SHA-256: $ACTUAL_SIGNER_SHA256"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

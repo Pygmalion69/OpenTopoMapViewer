@@ -89,6 +89,7 @@
 
     <string name="ok">OK</string>
     <string name="cancel">Cancelar</string>
+    <string name="clear">Borrar</string>
     <string name="delete">Eliminar</string>
     <string name="confirm_delete">Confirmar eliminación</string>
     <string name="prompt_confirm_delete">¿Está seguro de que desea eliminar este elemento?</string>
@@ -135,8 +136,11 @@
     <string name="profile_wheelchair">Silla de ruedas</string>
 
     <string name="markers">Marcadores</string>
+    <string name="long_press_to_add_marker">Pulsación larga para añadir marcador</string>
+    <string name="long_press_to_add_marker_summary">Añadir un marcador manteniendo presionando el mapa</string>
     <string name="show_marker_labels">Mostrar etiquetas de marcadores</string>
     <string name="show_marker_labels_summary">Mostrar los nombres de los marcadores en el mapa</string>
+    <string name="marker_label_min_zoom">Mostrar etiquetas de marcadores desde el nivel de zoom</string>
     <string name="pref_markers_header">Marcadores</string>
     <string name="pref_default_marker_color_title">Color de marcador predeterminado</string>
     <string name="marker_color">Color</string>

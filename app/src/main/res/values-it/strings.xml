@@ -69,7 +69,7 @@
     <string name="invalid_gpx">GPX non valido</string>
     <string name="location_unknown">Posizione sconosciuta</string>
 
-    <string name="wiki_base_url">https://en.wikipedia.org/</string>
+    <string name="wiki_base_url">https://it.wikipedia.org/</string>
 
     <string name="about">Info</string>
     <string name="app_version">Versione %1$s</string>
@@ -89,14 +89,16 @@
 
     <string name="ok">OK</string>
     <string name="cancel">Annulla</string>
+    <string name="clear">Cancella</string>
     <string name="delete">Elimina</string>
     <string name="confirm_delete">Conferma eliminazione</string>
     <string name="prompt_confirm_delete">Sei sicuro di voler eliminare questo elemento?"</string>
 
     <string name="settings">Impostazioni</string>
     <string name="screen_header">Schermo</string>
-    <string name="colors_header">Colori</string>
     <string name="cache_header">Cache</string>
+    <string name="gpx_header">GPX</string>
+    <string name="colors_header">Colori</string>
 
     <string name="kml_header">KML</string>
     <string name="kml_enable">Abilita il supporto KML</string>
@@ -134,13 +136,17 @@
     <string name="profile_wheelchair">Sedia a rotelle</string>
 
     <string name="markers">Segnaposti</string>
+    <string name="long_press_to_add_marker">Pressione lunga per aggiungere un marcatore</string>
+    <string name="long_press_to_add_marker_summary">Aggiungi un marcatore premendo a lungo sulla mappa</string>
     <string name="show_marker_labels">Mostra etichette segnaposto</string>
     <string name="show_marker_labels_summary">Mostra i nomi dei segnaposto sulla mappa</string>
+    <string name="marker_label_min_zoom">Mostra le etichette dei marcatori dal livello di zoom</string>
     <string name="pref_markers_header">Segnaposti</string>
     <string name="pref_default_marker_color_title">Colore marcatore predefinito</string>
     <string name="marker_color">Colore</string>
     <string name="select_color">Seleziona un colore</string>
     <string name="marker_color_description">Colore del marcatore</string>
+    <string name="pref_gpx_track_color_title">Colore traccia GPX</string>
     <string name="import_gpx">Importa GPX</string>
     <string name="select_all">Seleziona tutto</string>
     <string name="export_selected">Esporta selezionati</string>

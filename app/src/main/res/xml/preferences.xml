@@ -39,10 +39,23 @@
             app:key="default_marker_color"
             app:title="@string/pref_default_marker_color_title" />
         <SwitchPreferenceCompat
+            app:key="long_press_to_add_marker"
+            app:title="@string/long_press_to_add_marker"
+            app:summary="@string/long_press_to_add_marker_summary"
+            app:defaultValue="true" />
+        <SwitchPreferenceCompat
             app:key="show_marker_labels"
             app:title="@string/show_marker_labels"
             app:summary="@string/show_marker_labels_summary"
             app:defaultValue="false" />
+        <ListPreference
+            app:key="marker_label_min_zoom"
+            app:title="@string/marker_label_min_zoom"
+            app:entries="@array/marker_label_zoom_entries"
+            app:entryValues="@array/marker_label_zoom_values"
+            app:defaultValue="14"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="show_marker_labels" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/colors_header">

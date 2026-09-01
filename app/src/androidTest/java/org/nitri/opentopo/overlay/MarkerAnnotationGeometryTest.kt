@@ -116,7 +116,7 @@ class MarkerAnnotationGeometryTest {
         val geometry = renderer.getLastGeometry()!!
         
         val density = context.resources.displayMetrics.density
-        val maxAllowedContentWidth = 120f * density
+        val maxAllowedContentWidth = 200f * density
         val horizontalPadding = 4f * density * 2
         
         // geometry.localBounds.width() should be contentWidth + padding

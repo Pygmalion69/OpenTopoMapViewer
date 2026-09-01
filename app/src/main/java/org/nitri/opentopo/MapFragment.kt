@@ -29,6 +29,8 @@ import android.view.WindowManager
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
@@ -252,7 +254,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
         if (mapViewInitialized || !::mapView.isInitialized) return
 
-        val dm = this.resources.displayMetrics
         val hostActivity = activity ?: return
 
         mapViewInitialized = true
@@ -265,16 +266,23 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
             override fun longPressHelper(p: GeoPoint): Boolean {
                 listener?.onMapLongPress()
-                val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
-                val seq = highestSeq + 1
-                val marker = MarkerModel(
-                    seq = seq,
-                    latitude = p.latitude,
-                    longitude = p.longitude,
-                    name = getString(R.string.default_marker_name, seq),
-                    description = "",
-                    color = requireContext().defaultMarkerColor())
-                markerViewModel.addMarker(marker)
+                if (sharedPreferences.getBoolean(
+                        SettingsActivity.PREF_LONG_PRESS_TO_ADD_MARKER,
+                        true
+                    )
+                ) {
+                    val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
+                    val seq = highestSeq + 1
+                    val marker = MarkerModel(
+                        seq = seq,
+                        latitude = p.latitude,
+                        longitude = p.longitude,
+                        name = getString(R.string.default_marker_name, seq),
+                        description = "",
+                        color = requireContext().defaultMarkerColor()
+                    )
+                    markerViewModel.addMarker(marker)
+                }
                 return true
             }
         }))
@@ -297,9 +305,32 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val bmMapBearing =
             Utils.getBitmapFromDrawable(hostActivity, R.drawable.ic_direction, 204)
         locationOverlay?.setDirectionArrow(bmMapLocation, bmMapBearing)
-        scaleBarOverlay = ScaleBarOverlay(mapView)
-        scaleBarOverlay?.setCentred(true)
-        scaleBarOverlay?.setScaleBarOffset(dm.widthPixels / 2, 10)
+
+        val scaleBarMargin = (16 * resources.displayMetrics.density).toInt()
+
+        scaleBarOverlay = ScaleBarOverlay(mapView).apply {
+            setAlignRight(true)
+            setAlignBottom(false)
+            setScaleBarOffset(scaleBarMargin, scaleBarMargin)
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(mapView) { _, insets ->
+            val safeInsets = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                        WindowInsetsCompat.Type.displayCutout()
+            )
+
+            scaleBarOverlay?.setScaleBarOffset(
+                safeInsets.right + scaleBarMargin,
+                safeInsets.top + scaleBarMargin
+            )
+
+            mapView.invalidate()
+            insets
+        }
+
+        ViewCompat.requestApplyInsets(mapView)
+
         rotationGestureOverlay = RotationGestureOverlay(mapView)
         rotationGestureOverlay?.isEnabled = true
         gestureOverlay = GestureOverlay(this)
@@ -736,6 +767,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         syncMapRotationPreference()
         overlayHelper?.updateMarkerLabelVisibility(sharedPreferences.getBoolean(SettingsActivity.PREF_SHOW_MARKER_LABELS, false))
+        overlayHelper?.updateMarkerMinimumLabelZoom(requireContext().markerLabelMinimumZoom())
         overlayHelper?.updateGpxTrackColor(requireContext().defaultGpxTrackColor())
         if (!sharedPreferences.getBoolean(PREF_KML_ENABLED, true)) {
             clearKml()

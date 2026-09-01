@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.annotation.WorkerThread
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiApi
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiResponse
@@ -21,13 +23,11 @@ class NearbyRepository(
     private val mLongitude: Double,
 ) {
 
-    fun loadNearbyItems(viewModelScope: CoroutineScope): List<NearbyItem> {
-        refresh(viewModelScope)
-        return mDao?.loadAll() ?: emptyList()
-    }
+    val items: Flow<List<NearbyItem>>
+        get() = mDao?.observeAll() ?: flowOf(emptyList())
 
     @WorkerThread
-    private fun refresh(viewModelScope: CoroutineScope) {
+    fun refresh(viewModelScope: CoroutineScope) {
         if (mApi != null) {
             val call = mApi.getNearbyPages(
                 "query", "coordinates|pageimages|pageterms|info",
@@ -97,10 +97,7 @@ class NearbyRepository(
                 }
             }.toTypedArray()
 
-            mDao?.let { dao ->
-                dao.delete()
-                dao.insertItems(*items)
-            }
+            mDao?.replaceAll(items.toList())
 
         } ?: return
     }

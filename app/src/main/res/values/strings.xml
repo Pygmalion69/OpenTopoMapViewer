@@ -101,6 +101,7 @@
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
     <string name="delete">Delete</string>
     <string name="confirm_delete">Confirm Delete</string>
     <string name="prompt_confirm_delete">Are you sure you want to delete this item?</string>
@@ -147,8 +148,11 @@
 
 
     <string name="markers">Markers</string>
+    <string name="long_press_to_add_marker">Long press to add marker</string>
+    <string name="long_press_to_add_marker_summary">Add a marker by pressing and holding the map</string>
     <string name="show_marker_labels">Show marker labels</string>
     <string name="show_marker_labels_summary">Show marker names on the map</string>
+    <string name="marker_label_min_zoom">Show marker labels from zoom level</string>
     <string name="pref_markers_header">Markers</string>
     <string name="pref_default_marker_color_title">Default marker color</string>
     <string name="marker_color">Color</string>

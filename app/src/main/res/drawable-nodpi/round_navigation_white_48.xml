@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    MyLocationNewOverlay loads this fallback before the app installs ic_direction.
+    Keeping the bitmap alias in drawable-nodpi makes the resource available at
+    every device density without adding a binary asset to the source tree.
+-->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/ic_default_marker"
+    android:gravity="center" />

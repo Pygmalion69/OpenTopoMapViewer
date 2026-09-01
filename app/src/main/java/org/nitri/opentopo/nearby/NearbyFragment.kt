@@ -39,6 +39,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     private val gson = GsonBuilder().setLenient().create()
     private val mNearbyItems: MutableList<NearbyItem?> = ArrayList()
     private lateinit var mNearbyAdapter: NearbyAdapter
+    private lateinit var nearbyViewModel: NearbyViewModel
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +74,12 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
         val dao = nearbyDatabase.nearbyDao()
         val nearbyRepository = NearbyRepository(dao, api, mLatitude, mLongitude)
         val factory = NearbyViewModelFactory(nearbyRepository)
-        val nearbyViewModel = ViewModelProvider(this, factory)[NearbyViewModel::class.java]
+        nearbyViewModel = ViewModelProvider(this, factory)[NearbyViewModel::class.java]
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val nearbyObserver = Observer { items: List<NearbyItem?>? ->
             mNearbyItems.clear()
             items?.let {
@@ -83,7 +89,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
                 mNearbyAdapter.notifyDataSetChanged()
             }
         }
-        nearbyViewModel.items.observe(this, nearbyObserver)
+        nearbyViewModel.items.observe(viewLifecycleOwner, nearbyObserver)
     }
 
     private fun setDistance() {

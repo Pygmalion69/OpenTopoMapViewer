@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -36,6 +40,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
@@ -255,6 +260,19 @@ private fun MarkerEditorContent(
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
                 singleLine = true,
+                trailingIcon = {
+                    if (name.isNotEmpty()) {
+                        IconButton(onClick = {
+                            name = ""
+                            onNameChange("")
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = stringResource(R.string.clear)
+                            )
+                        }
+                    }
+                },
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences
                 )
@@ -298,5 +316,20 @@ private fun MarkerEditorContent(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Marker Editor")
+@Composable
+private fun MarkerEditorContentPreview() {
+    OpenTopoTheme(dynamicColor = false) {
+        MarkerEditorContent(
+            initialName = "Summit",
+            initialDescription = "Beautiful view from here",
+            initialColor = DEFAULT_MARKER_COLOR,
+            onNameChange = {},
+            onDescriptionChange = {},
+            onColorChange = {}
+        )
     }
 }
