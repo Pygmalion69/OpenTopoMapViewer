@@ -200,7 +200,7 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         var waypointTypes: List<String>?
         mGpxViewModel.gpx?.let { gpx ->
             waypointTypes = Utils.getWayPointTypes(gpx, defaultType)
-            waypointTypes?.forEach { type ->
+            waypointTypes.forEach { type ->
                 wayPoints = Utils.getWayPointsByType(gpx, type).toMutableList()
                 if (type == defaultType) wayPoints.addAll(
                     Utils.getWayPointsByType(

@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.GsonBuilder
+import com.google.gson.Strictness
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import org.nitri.opentopo.BuildConfig
@@ -36,7 +37,7 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     private var mListener: OnFragmentInteractionListener? = null
     private var mLatitude = 0.0
     private var mLongitude = 0.0
-    private val gson = GsonBuilder().setLenient().create()
+    private val gson = GsonBuilder().setStrictness(Strictness.LENIENT).create()
     private val mNearbyItems: MutableList<NearbyItem?> = ArrayList()
     private lateinit var mNearbyAdapter: NearbyAdapter
     private lateinit var nearbyViewModel: NearbyViewModel
