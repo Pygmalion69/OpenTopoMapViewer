@@ -45,6 +45,7 @@ android {
     buildTypes {
         release {
             minifyEnabled = true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             if (myStoreFile && myStorePassword && myKeyAlias && myKeyPassword) {
                 signingConfig = signingConfigs.release
