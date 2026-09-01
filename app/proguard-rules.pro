@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Wikipedia Nearby DTOs rely on Gson field-name matching.
+-keep class org.nitri.opentopo.nearby.api.mediawiki.** { *; }
+-keepclassmembers class org.nitri.opentopo.nearby.api.mediawiki.** {
+    <fields>;
+    <init>(...);
+}
+
+# Needed for Retrofit generic response types.
+-keepattributes Signature, InnerClasses, EnclosingMethod
+
+# Keep useful source/line information for crash reports.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
