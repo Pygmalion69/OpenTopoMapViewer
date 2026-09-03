@@ -49,7 +49,6 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
@@ -262,8 +261,6 @@ class SettingsActivity : AppCompatActivity() {
                         PreferenceManager.getDefaultSharedPreferences(context)
                             .edit { putString(PREF_ORS_API_KEY, key) }
                         Toast.makeText(context, "Key saved", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(ACTION_API_KEY_CHANGED)
-                        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
                         recreate()
                     }
                     dialog.dismiss()
@@ -327,8 +324,6 @@ class SettingsActivity : AppCompatActivity() {
                 .setPositiveButton(android.R.string.ok) { dialog, _ ->
                     PreferenceManager.getDefaultSharedPreferences(context)
                         .edit { remove(PREF_ORS_API_KEY) }
-                    val intent = Intent(ACTION_API_KEY_CHANGED)
-                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
                     Toast.makeText(context, R.string.key_erased, Toast.LENGTH_SHORT).show()
                     recreate()
                     dialog.dismiss()
@@ -407,7 +402,7 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_SHOW_MARKER_LABELS = "show_marker_labels"
         const val PREF_MARKER_LABEL_MIN_ZOOM = "marker_label_min_zoom"
         const val PREF_LONG_PRESS_TO_ADD_MARKER = "long_press_to_add_marker"
-        const val ACTION_API_KEY_CHANGED = "org.nitri.opentopo.API_KEY_CHANGED"
+        const val RESULT_CACHE_SETTINGS_CHANGED = RESULT_FIRST_USER + 1
     }
 }
 

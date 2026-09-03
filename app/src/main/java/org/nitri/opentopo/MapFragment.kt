@@ -1136,8 +1136,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             R.id.action_settings -> {
                 mapCenterState = mapView.mapCenter as GeoPoint
                 saveMapCenterPrefs()
-                val settingsIntent = Intent(activity, SettingsActivity::class.java)
-                startActivity(settingsIntent)
+                listener?.openSettings()
+                return true
             }
             R.id.action_about -> {
                 context?.let { AboutDialog.show(it) }
@@ -1413,6 +1413,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
          * Consent form
          */
         fun showPrivacyOptionsForm()
+
+        /**
+         * Show app settings
+         */
+        fun openSettings()
 
         /**
          * Get the ORS client if available

@@ -1,10 +1,8 @@
 package org.nitri.opentopo
 
 import android.Manifest
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -34,7 +32,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import de.k3b.geo.api.GeoPointDto
 import de.k3b.geo.io.GeoUri
@@ -47,6 +44,7 @@ import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_FULLSCREEN_ON_MAP_TAP
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
+import org.nitri.opentopo.SettingsActivity.Companion.RESULT_CACHE_SETTINGS_CHANGED
 import org.nitri.opentopo.analytics.AnalyticsNames
 import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.nearby.NearbyFragment
@@ -83,18 +81,9 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             PREF_KEEP_SCREEN_ON -> {
                 mapFragment?.setKeepScreenOn(sharedPreferences.getBoolean(key, false))
             }
-        }
-    }
-
-    private val cacheChangedReceiver = object: BroadcastReceiver() {
-        override fun onReceive(p0: Context?, intent: Intent?) {
-            restart()
-        }
-    }
-
-    private val orsApiKeyChangesReceiver = object: BroadcastReceiver() {
-        override fun onReceive(p0: Context?, intent: Intent?) {
-           createOrsClient()
+            PREF_ORS_API_KEY -> {
+                createOrsClient()
+            }
         }
     }
 
@@ -195,8 +184,6 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         applyFullscreen()
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
-        LocalBroadcastManager.getInstance(this).registerReceiver(cacheChangedReceiver, IntentFilter(CacheSettingsFragment.ACTION_CACHE_CHANGED))
-        LocalBroadcastManager.getInstance(this).registerReceiver(orsApiKeyChangesReceiver, IntentFilter(SettingsActivity.ACTION_API_KEY_CHANGED))
 
         // Test ORS
 //        val ors = OpenRouteService(getString(R.string.ors_api_key), this)
@@ -378,6 +365,19 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
                 parseGpx(uri)
             }
         }
+    }
+
+    private var settingsActivityResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_CACHE_SETTINGS_CHANGED) {
+            restart()
+        }
+    }
+
+    override fun openSettings() {
+        val settingsIntent = Intent(this, SettingsActivity::class.java)
+        settingsActivityResultLauncher.launch(settingsIntent)
     }
 
     override fun setGpx() {
@@ -610,8 +610,6 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     override fun onDestroy() {
         super.onDestroy()
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(cacheChangedReceiver)
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(orsApiKeyChangesReceiver)
     }
 
     override fun getGpx(): Gpx? {

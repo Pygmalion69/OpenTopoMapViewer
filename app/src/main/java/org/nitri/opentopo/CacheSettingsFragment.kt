@@ -3,7 +3,6 @@ package org.nitri.opentopo
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -28,7 +27,6 @@ import androidx.core.content.edit
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.preference.PreferenceManager
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import org.nitri.opentopo.analytics.AnalyticsNames
@@ -230,12 +228,8 @@ class CacheSettingsFragment : DialogFragment() {
             // Remove any leftover sqlite files to avoid SqlTileWriter using them
             Utils.clearOsmdroidSqliteCache(appContext)
             configuration.save(appContext, defaultPrefs)
-            val intent = Intent(ACTION_CACHE_CHANGED)
-            val localBroadcastManager = LocalBroadcastManager.getInstance(
-                fragmentActivity
-            )
             if (currentExternalStorage != newExternalStorage || currentTileCache != newTileCache || currentCacheSize != newCacheSize) {
-                localBroadcastManager.sendBroadcast(intent)
+                (fragmentActivity as? SettingsActivity)?.setResult(SettingsActivity.RESULT_CACHE_SETTINGS_CHANGED)
                 fragmentActivity.finish()
             }
             dismiss()
@@ -253,6 +247,5 @@ class CacheSettingsFragment : DialogFragment() {
         const val PREF_TILE_CACHE = "tile_cache"
         const val PREF_CACHE_SIZE = "cache_size"
         const val PREF_EXTERNAL_STORAGE = "external_storage"
-        const val ACTION_CACHE_CHANGED = "cache_changed"
     }
 }
