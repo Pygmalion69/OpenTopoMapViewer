@@ -295,17 +295,20 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             GpsMyLocationProvider(hostActivity),
             mapView
         )
+
         val bmMapLocation =
             Utils.getBitmapFromDrawable(hostActivity, R.drawable.ic_position, 204)
-        locationOverlay?.setPersonIcon(bmMapLocation)
-        locationOverlay?.setPersonHotspot(
-            bmMapLocation.width / 2f,
-            bmMapLocation.height / 2f
-        )
+
         val bmMapBearing =
             Utils.getBitmapFromDrawable(hostActivity, R.drawable.ic_direction, 204)
-        locationOverlay?.setDirectionArrow(bmMapLocation, bmMapBearing)
 
+        locationOverlay?.apply {
+            setPersonIcon(bmMapLocation)
+            setPersonAnchor(0.5f, 0.5f)
+
+            setDirectionIcon(bmMapBearing)
+            setDirectionAnchor(0.5f, 0.5f)
+        }
         val scaleBarMargin = (16 * resources.displayMetrics.density).toInt()
 
         scaleBarOverlay = ScaleBarOverlay(mapView).apply {
