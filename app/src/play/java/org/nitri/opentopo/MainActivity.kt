@@ -1,18 +1,18 @@
 package org.nitri.opentopo
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowMetrics
 import android.widget.Toast
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +28,7 @@ class MainActivity : BaseMainActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        recordInstallationDiagnostics(this)
 
         adViewContainer = findViewById(R.id.ad_view_container)
 //        val backgroundScope = CoroutineScope(Dispatchers.IO)
@@ -158,6 +159,33 @@ class MainActivity : BaseMainActivity() {
                 Toast.makeText(this@MainActivity, formError.message, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun recordInstallationDiagnostics(context: Context) {
+        val crashlytics = FirebaseCrashlytics.getInstance()
+        val packageManager = context.packageManager
+        val packageName = context.packageName
+
+        val installer = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            runCatching {
+                packageManager.getInstallSourceInfo(packageName)
+                    .installingPackageName
+            }.getOrNull()
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getInstallerPackageName(packageName)
+        }
+
+        crashlytics.setCustomKey("installer_package", installer ?: "unknown")
+        crashlytics.setCustomKey("build_fingerprint", Build.FINGERPRINT)
+        crashlytics.setCustomKey("build_incremental", Build.VERSION.INCREMENTAL)
+        crashlytics.setCustomKey("security_patch", Build.VERSION.SECURITY_PATCH)
+        crashlytics.setCustomKey("sdk_int", Build.VERSION.SDK_INT)
+        crashlytics.setCustomKey("device_model", "${Build.MANUFACTURER} ${Build.MODEL}")
+        crashlytics.setCustomKey(
+            "installed_splits",
+            context.applicationInfo.splitSourceDirs?.joinToString() ?: "none"
+        )
     }
 
     companion object {
