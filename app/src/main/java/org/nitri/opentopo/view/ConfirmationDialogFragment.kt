@@ -39,12 +39,14 @@ import org.nitri.opentopo.ui.theme.OpenTopoTheme
 class ConfirmationDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val titleRes = requireArguments().getInt(ARG_TITLE)
-        val messageRes = requireArguments().getInt(ARG_MESSAGE)
-        val iconRes = requireArguments().getInt(ARG_ICON)
-        val confirmButtonRes = requireArguments().getInt(ARG_CONFIRM_BUTTON)
-        val dismissButtonRes = requireArguments().getInt(ARG_DISMISS_BUTTON)
-        val requestKey = requireArguments().getString(ARG_REQUEST_KEY)
+        val arguments = requireArguments()
+        val titleRes = arguments.getInt(ARG_TITLE)
+        val messageRes = arguments.getInt(ARG_MESSAGE)
+        val messageText = arguments.getString(ARG_MESSAGE_TEXT)
+        val iconRes = arguments.getInt(ARG_ICON).takeIf { it != 0 }
+        val confirmButtonRes = arguments.getInt(ARG_CONFIRM_BUTTON)
+        val dismissButtonRes = arguments.getInt(ARG_DISMISS_BUTTON)
+        val requestKey = arguments.getString(ARG_REQUEST_KEY)
             ?: error("A Fragment Result request key is required")
 
         val composeView = ComposeView(requireContext()).apply {
@@ -53,7 +55,7 @@ class ConfirmationDialogFragment : DialogFragment() {
                 OpenTopoTheme(dynamicColor = false) {
                     ConfirmationDialogContent(
                         title = stringResource(titleRes),
-                        message = stringResource(messageRes),
+                        message = messageText ?: stringResource(messageRes),
                         iconRes = iconRes,
                         confirmButton = stringResource(confirmButtonRes),
                         dismissButton = stringResource(dismissButtonRes),
@@ -89,6 +91,7 @@ class ConfirmationDialogFragment : DialogFragment() {
     companion object {
         private const val ARG_TITLE = "title"
         private const val ARG_MESSAGE = "message"
+        private const val ARG_MESSAGE_TEXT = "message_text"
         private const val ARG_ICON = "icon"
         private const val ARG_CONFIRM_BUTTON = "confirm_button"
         private const val ARG_DISMISS_BUTTON = "dismiss_button"
@@ -98,16 +101,56 @@ class ConfirmationDialogFragment : DialogFragment() {
         fun newInstance(
             @StringRes titleRes: Int,
             @StringRes messageRes: Int,
-            @DrawableRes iconRes: Int,
+            @DrawableRes iconRes: Int?,
             @StringRes confirmButtonRes: Int,
             @StringRes dismissButtonRes: Int,
             requestKey: String,
             result: Bundle = bundleOf()
+        ) = createInstance(
+            titleRes = titleRes,
+            messageRes = messageRes,
+            messageText = null,
+            iconRes = iconRes,
+            confirmButtonRes = confirmButtonRes,
+            dismissButtonRes = dismissButtonRes,
+            requestKey = requestKey,
+            result = result
+        )
+
+        fun newInstance(
+            @StringRes titleRes: Int,
+            message: String,
+            @DrawableRes iconRes: Int?,
+            @StringRes confirmButtonRes: Int,
+            @StringRes dismissButtonRes: Int,
+            requestKey: String,
+            result: Bundle = bundleOf()
+        ) = createInstance(
+            titleRes = titleRes,
+            messageRes = 0,
+            messageText = message,
+            iconRes = iconRes,
+            confirmButtonRes = confirmButtonRes,
+            dismissButtonRes = dismissButtonRes,
+            requestKey = requestKey,
+            result = result
+        )
+
+        private fun createInstance(
+            @StringRes titleRes: Int,
+            @StringRes messageRes: Int,
+            messageText: String?,
+            @DrawableRes iconRes: Int?,
+            @StringRes confirmButtonRes: Int,
+            @StringRes dismissButtonRes: Int,
+            requestKey: String,
+            result: Bundle
         ) = ConfirmationDialogFragment().apply {
             arguments = bundleOf(
                 ARG_TITLE to titleRes,
                 ARG_MESSAGE to messageRes,
-                ARG_ICON to iconRes,
+                ARG_MESSAGE_TEXT to messageText,
+                ARG_ICON to (iconRes ?: 0),
                 ARG_CONFIRM_BUTTON to confirmButtonRes,
                 ARG_DISMISS_BUTTON to dismissButtonRes,
                 ARG_REQUEST_KEY to requestKey,
@@ -121,7 +164,7 @@ class ConfirmationDialogFragment : DialogFragment() {
 private fun ConfirmationDialogContent(
     title: String,
     message: String,
-    @DrawableRes iconRes: Int,
+    @DrawableRes iconRes: Int?,
     confirmButton: String,
     dismissButton: String,
     onConfirm: () -> Unit,
@@ -134,16 +177,21 @@ private fun ConfirmationDialogContent(
         tonalElevation = 6.dp
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(iconRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.Unspecified
-                )
-                Spacer(Modifier.width(16.dp))
+            if (iconRes != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(iconRes),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = Color.Unspecified
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
+            } else {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.headlineSmall
