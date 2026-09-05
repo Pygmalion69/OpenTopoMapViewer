@@ -42,7 +42,7 @@ class SingleChoiceDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val arguments = requireArguments()
         val titleRes = arguments.getInt(ARG_TITLE)
-        val entries = arguments.getStringArray(ARG_ENTRIES).orEmpty()
+        val entries = arguments.getStringArray(ARG_ENTRIES).orEmpty().toList()
         val selectedIndex = arguments.getInt(ARG_SELECTED_INDEX)
         val requestKey = arguments.getString(ARG_REQUEST_KEY)
             ?: error("A Fragment Result request key is required")
@@ -113,7 +113,7 @@ class SingleChoiceDialogFragment : DialogFragment() {
 @Composable
 private fun SingleChoiceDialogContent(
     title: String,
-    entries: Array<String>,
+    entries: List<String>,
     selectedIndex: Int,
     onSelected: (Int) -> Unit,
     onDismiss: () -> Unit
