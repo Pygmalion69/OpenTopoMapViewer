@@ -58,7 +58,8 @@ class ConfirmationDialogFragment : DialogFragment() {
                         confirmButton = stringResource(confirmButtonRes),
                         dismissButton = stringResource(dismissButtonRes),
                         onConfirm = {
-                            parentFragmentManager.setFragmentResult(requestKey, bundleOf())
+                            val result = requireArguments().getBundle(ARG_RESULT) ?: bundleOf()
+                            parentFragmentManager.setFragmentResult(requestKey, result)
                             dismiss()
                         },
                         onDismiss = { dismiss() }
@@ -92,6 +93,7 @@ class ConfirmationDialogFragment : DialogFragment() {
         private const val ARG_CONFIRM_BUTTON = "confirm_button"
         private const val ARG_DISMISS_BUTTON = "dismiss_button"
         private const val ARG_REQUEST_KEY = "request_key"
+        private const val ARG_RESULT = "result"
 
         fun newInstance(
             @StringRes titleRes: Int,
@@ -99,7 +101,8 @@ class ConfirmationDialogFragment : DialogFragment() {
             @DrawableRes iconRes: Int,
             @StringRes confirmButtonRes: Int,
             @StringRes dismissButtonRes: Int,
-            requestKey: String
+            requestKey: String,
+            result: Bundle = bundleOf()
         ) = ConfirmationDialogFragment().apply {
             arguments = bundleOf(
                 ARG_TITLE to titleRes,
@@ -107,7 +110,8 @@ class ConfirmationDialogFragment : DialogFragment() {
                 ARG_ICON to iconRes,
                 ARG_CONFIRM_BUTTON to confirmButtonRes,
                 ARG_DISMISS_BUTTON to dismissButtonRes,
-                ARG_REQUEST_KEY to requestKey
+                ARG_REQUEST_KEY to requestKey,
+                ARG_RESULT to result
             )
         }
     }
