@@ -16,6 +16,8 @@ import android.webkit.WebView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -76,6 +78,19 @@ class GpxDetailFragment : Fragment(), WayPointListAdapter.OnItemClickListener,
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_gpx_detail, container, false)
+        rootView.post {
+            val windowInsets = ViewCompat.getRootWindowInsets(rootView) ?: return@post
+            val safeInsets = windowInsets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or
+                        WindowInsetsCompat.Type.displayCutout()
+            )
+            rootView.setPadding(
+                safeInsets.left,
+                rootView.paddingTop,
+                safeInsets.right,
+                rootView.paddingBottom
+            )
+        }
         tvName = rootView.findViewById(R.id.tvTitle)
         tvDescription = rootView.findViewById(R.id.tvDescription)
         wvDescription = rootView.findViewById(R.id.wvDescription)
