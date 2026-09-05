@@ -3,7 +3,6 @@ package org.nitri.opentopo
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -24,16 +23,15 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
-import android.view.Window
 import android.view.WindowManager
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -59,6 +57,7 @@ import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.view.AboutDialog
+import org.nitri.opentopo.view.ConfirmationDialogFragment
 import org.nitri.opentopo.view.MarkerEditorDialog
 import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.viewmodel.GpxViewModel.GpxDisplayState
@@ -174,6 +173,34 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     @Suppress("deprecation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        childFragmentManager.setFragmentResultListener(
+            GPX_DISCARD_REQUEST_KEY,
+            this
+        ) { _, result ->
+            when (result.getString(GPX_DISCARD_ACTION_KEY)) {
+                GPX_DISCARD_ACTION_REPLACE_CALCULATED -> {
+                    removeGpx()
+                    result.getString(GPX_REPLACEMENT_KEY)?.let { gpx ->
+                        listener?.parseCalculatedGpx(gpx)
+                    }
+                }
+                GPX_DISCARD_ACTION_SELECT_NEW -> {
+                    removeGpx()
+                    markerViewModel.markers.value?.forEach {
+                        it.routeWaypoint = false
+                    }
+                    listener?.clearGpx()
+                    listener?.selectGpx()
+                }
+                GPX_DISCARD_ACTION_REMOVE -> {
+                    removeGpx()
+                    markerViewModel.markers.value?.forEach {
+                        it.routeWaypoint = false
+                    }
+                    listener?.clearGpx()
+                }
+            }
+        }
         mapHandler = Handler(Looper.getMainLooper())
         setHasOptionsMenu(true)
         val hostActivity = activity ?: return
@@ -566,9 +593,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     gpxViewModel?.orsProfile = profile
 
                     if (gpxDisplayState == GpxDisplayState.LOADED_FROM_FILE) {
-                        showGpxDialog {
-                            listener?.parseCalculatedGpx(gpx)
-                        }
+                        showGpxDialog(
+                            action = GPX_DISCARD_ACTION_REPLACE_CALCULATED,
+                            replacementGpx = gpx
+                        )
                     } else {
                         removeGpx()
                         listener?.parseCalculatedGpx(gpx)
@@ -902,23 +930,22 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
     }
 
-    private fun showGpxDialog(onConfirmed: (() -> Unit)? = null) {
-        val hostActivity = activity ?: return
-        val builder: AlertDialog.Builder = AlertDialog.Builder(hostActivity, R.style.AlertDialogTheme)
-        builder.setTitle(getString(R.string.gpx))
-            .setMessage(getString(R.string.discard_current_gpx))
-            .setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int ->
-                removeGpx()
-                onConfirmed?.invoke()
-                dialog.dismiss()
-            }
-            .setNegativeButton(
-                android.R.string.cancel
-            ) { dialog: DialogInterface, _: Int -> dialog.cancel() }
-            .setIcon(R.drawable.ic_alert)
-        val dialog = builder.create()
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.show()
+    private fun showGpxDialog(
+        action: String,
+        replacementGpx: String? = null
+    ) {
+        val result = bundleOf(GPX_DISCARD_ACTION_KEY to action)
+        replacementGpx?.let { result.putString(GPX_REPLACEMENT_KEY, it) }
+
+        ConfirmationDialogFragment.newInstance(
+            titleRes = R.string.gpx,
+            messageRes = R.string.discard_current_gpx,
+            iconRes = R.drawable.ic_alert,
+            confirmButtonRes = android.R.string.ok,
+            dismissButtonRes = android.R.string.cancel,
+            requestKey = GPX_DISCARD_REQUEST_KEY,
+            result = result
+        ).show(childFragmentManager, GPX_DISCARD_DIALOG_TAG)
     }
 
     private fun zoomToBounds(box: BoundingBox) {
@@ -1020,13 +1047,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         when (itemId) {
             R.id.action_gpx -> {
                 if (gpxDisplayState != GpxDisplayState.IDLE) {
-                    showGpxDialog {
-                        markerViewModel.markers.value?.forEach {
-                            it.routeWaypoint = false
-                        }
-                        listener?.clearGpx()
-                        listener?.selectGpx()
-                    }
+                    showGpxDialog(GPX_DISCARD_ACTION_SELECT_NEW)
                 } else {
                     listener?.selectGpx()
                 }
@@ -1086,12 +1107,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
             R.id.action_gpx_remove -> {
-                showGpxDialog {
-                    markerViewModel.markers.value?.forEach {
-                        it.routeWaypoint = false
-                    }
-                    listener?.clearGpx()
-                }
+                showGpxDialog(GPX_DISCARD_ACTION_REMOVE)
                 return true
             }
             R.id.action_kml_zoom -> {
@@ -1435,6 +1451,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     companion object {
+        private const val GPX_DISCARD_REQUEST_KEY = "gpx_discard_request"
+        private const val GPX_DISCARD_DIALOG_TAG = "gpx_discard_dialog"
+        private const val GPX_DISCARD_ACTION_KEY = "gpx_discard_action"
+        private const val GPX_REPLACEMENT_KEY = "gpx_replacement"
+        private const val GPX_DISCARD_ACTION_REPLACE_CALCULATED = "replace_calculated"
+        private const val GPX_DISCARD_ACTION_SELECT_NEW = "select_new"
+        private const val GPX_DISCARD_ACTION_REMOVE = "remove"
         private const val PARAM_LATITUDE = "latitude"
         private const val PARAM_LONGITUDE = "longitude"
         private const val STATE_LATITUDE = "latitude"
