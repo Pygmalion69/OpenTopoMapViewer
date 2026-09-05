@@ -64,6 +64,7 @@ import org.nitri.opentopo.ui.color.DEFAULT_GPX_TRACK_COLOR
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
+import org.nitri.opentopo.view.SingleChoiceDialogFragment
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -132,6 +133,28 @@ class SettingsActivity : AppCompatActivity() {
             val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
             val apiKey = prefs.getString(PREF_ORS_API_KEY, null)
             val currentProfile = prefs.getString(PREF_ORS_PROFILE, "driving-car")
+
+            parentFragmentManager.setFragmentResultListener(
+                ORS_PROFILE_REQUEST_KEY,
+                this
+            ) { _, result ->
+                val selectedIndex = result.getInt(
+                    SingleChoiceDialogFragment.RESULT_SELECTED_INDEX,
+                    -1
+                )
+                val selectedKey = profileKeys.getOrNull(selectedIndex)
+                    ?: return@setFragmentResultListener
+                val selectedLabel = getProfileLabels(requireContext()).getOrNull(selectedIndex)
+                    ?: return@setFragmentResultListener
+
+                prefs.edit { putString(PREF_ORS_PROFILE, selectedKey) }
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.profile_set, selectedLabel),
+                    Toast.LENGTH_SHORT
+                ).show()
+                recreate()
+            }
 
             val setKeyPref = findPreference<Preference>("ors_set_key")
             val eraseKeyPref = findPreference<Preference>("ors_erase_key")
@@ -286,20 +309,21 @@ class SettingsActivity : AppCompatActivity() {
 
         private fun showRoutingProfileDialog() {
             val context = requireContext()
-            val profiles = profileKeys
             val labels = getProfileLabels(context)
             val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-            val dialog = AlertDialog.Builder(context)
-                .setTitle(R.string.select_ors_profile)
-                .setItems(labels) { _, which ->
-                    val selectedKey = profiles[which]
-                    prefs.edit { putString(PREF_ORS_PROFILE, selectedKey) }
-                    Toast.makeText(context, context.getString(R.string.profile_set, labels[which]), Toast.LENGTH_SHORT).show()
-                    recreate()
-                }
-                .create()
-            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-            dialog.show()
+            val currentProfile = prefs.getString(PREF_ORS_PROFILE, "driving-car")
+            val selectedIndex = profileKeys.indexOf(currentProfile).coerceAtLeast(0)
+
+            if (parentFragmentManager.findFragmentByTag(ORS_PROFILE_DIALOG_TAG) != null) {
+                return
+            }
+
+            SingleChoiceDialogFragment.newInstance(
+                titleRes = R.string.select_ors_profile,
+                entries = labels,
+                selectedIndex = selectedIndex,
+                requestKey = ORS_PROFILE_REQUEST_KEY
+            ).show(parentFragmentManager, ORS_PROFILE_DIALOG_TAG)
         }
 
         private fun getProfileLabels(context: Context): Array<String> {
@@ -388,6 +412,9 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val ORS_PROFILE_REQUEST_KEY = "ors_profile_selection"
+        private const val ORS_PROFILE_DIALOG_TAG = "OrsProfileSelectionDialog"
+
         const val PREF_FULLSCREEN = "fullscreen"
         const val PREF_FULLSCREEN_ON_MAP_TAP = "fullscreen_on_map_tap"
         const val PREF_KEEP_SCREEN_ON = "keep_screen_on"
