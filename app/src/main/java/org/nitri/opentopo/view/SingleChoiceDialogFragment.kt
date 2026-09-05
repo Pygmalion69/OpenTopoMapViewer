@@ -29,13 +29,13 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import org.nitri.opentopo.R
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
+import androidx.core.graphics.drawable.toDrawable
 
 class SingleChoiceDialogFragment : DialogFragment() {
 
@@ -56,9 +56,11 @@ class SingleChoiceDialogFragment : DialogFragment() {
                         entries = entries,
                         selectedIndex = selectedIndex,
                         onSelected = { index ->
+                            val result = Bundle().apply {
+                                putInt(RESULT_SELECTED_INDEX, index)
+                            }
                             parentFragmentManager.setFragmentResult(
-                                requestKey,
-                                bundleOf(RESULT_SELECTED_INDEX to index)
+                                requestKey, result
                             )
                             dismiss()
                         },
@@ -75,7 +77,7 @@ class SingleChoiceDialogFragment : DialogFragment() {
         return Dialog(requireContext()).apply {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
             setContentView(composeView)
-            window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            window?.setBackgroundDrawable(android.graphics.Color.TRANSPARENT.toDrawable())
             setOnShowListener {
                 window?.decorView?.let { decorView ->
                     decorView.setViewTreeLifecycleOwner(this@SingleChoiceDialogFragment)
@@ -100,12 +102,12 @@ class SingleChoiceDialogFragment : DialogFragment() {
             selectedIndex: Int,
             requestKey: String
         ) = SingleChoiceDialogFragment().apply {
-            arguments = bundleOf(
-                ARG_TITLE to titleRes,
-                ARG_ENTRIES to entries,
-                ARG_SELECTED_INDEX to selectedIndex,
-                ARG_REQUEST_KEY to requestKey
-            )
+            arguments = Bundle().apply {
+                putInt(ARG_TITLE, titleRes)
+                putStringArray(ARG_ENTRIES, entries)
+                putInt(ARG_SELECTED_INDEX, selectedIndex)
+                putString(ARG_REQUEST_KEY, requestKey)
+            }
         }
     }
 }
