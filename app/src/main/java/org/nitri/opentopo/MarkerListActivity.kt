@@ -2,7 +2,6 @@ package org.nitri.opentopo
 
 import android.net.Uri
 import android.os.Bundle
-import android.view.Window
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -56,6 +55,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.os.bundleOf
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -65,6 +65,7 @@ import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.GpxMarkerExporter
 import org.nitri.opentopo.util.GpxMarkerImporter
+import org.nitri.opentopo.view.ConfirmationDialogFragment
 import org.nitri.opentopo.view.MarkerEditorDialog
 import org.nitri.opentopo.viewmodel.MarkerViewModel
 import java.util.Locale
@@ -118,6 +119,21 @@ class MarkerListActivity : AppCompatActivity() {
             }
         }
 
+        supportFragmentManager.setFragmentResultListener(
+            DELETE_SELECTED_REQUEST_KEY,
+            this
+        ) { _, result ->
+            val selectedIds = result.getIntArray(RESULT_SELECTED_MARKER_IDS)
+                ?.toSet()
+                .orEmpty()
+            if (selectedIds.isEmpty()) {
+                return@setFragmentResultListener
+            }
+
+            markerViewModel.removeMarkers(selectedIds.toList())
+            AnalyticsProvider.get(this).trackMarkersDeleted(selectedIds.size)
+        }
+
         setContent {
             OpenTopoTheme(dynamicColor = false) {
                 MarkerListScreen(
@@ -146,20 +162,19 @@ class MarkerListActivity : AppCompatActivity() {
     }
 
     private fun showDeleteSelectedConfirmation(selectedIds: Set<Int>) {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle(getString(R.string.confirm_delete))
-            .setMessage(getString(R.string.delete_selected_markers_message, selectedIds.size))
-            .setPositiveButton(R.string.delete) { _, _ ->
-                val deletedCount = selectedIds.size
-                markerViewModel.removeMarkers(selectedIds.toList())
-                AnalyticsProvider.get(this@MarkerListActivity).trackMarkersDeleted(deletedCount)
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .create()
-            .also {
-                it.requestWindowFeature(Window.FEATURE_NO_TITLE)
-                it.show()
-            }
+        if (supportFragmentManager.findFragmentByTag(DELETE_SELECTED_DIALOG_TAG) != null) {
+            return
+        }
+
+        ConfirmationDialogFragment.newInstance(
+            titleRes = R.string.confirm_delete,
+            message = getString(R.string.delete_selected_markers_message, selectedIds.size),
+            iconRes = null,
+            confirmButtonRes = R.string.delete,
+            dismissButtonRes = R.string.cancel,
+            requestKey = DELETE_SELECTED_REQUEST_KEY,
+            result = bundleOf(RESULT_SELECTED_MARKER_IDS to selectedIds.toIntArray())
+        ).show(supportFragmentManager, DELETE_SELECTED_DIALOG_TAG)
     }
 
     private fun exportSelectedMarkers(uri: Uri, selectedIds: Set<Int>) {
@@ -228,6 +243,9 @@ class MarkerListActivity : AppCompatActivity() {
 
     companion object {
         private const val DEFAULT_EXPORT_FILENAME = "opentopomap-markers.gpx"
+        private const val DELETE_SELECTED_REQUEST_KEY = "delete_selected_markers"
+        private const val DELETE_SELECTED_DIALOG_TAG = "DeleteSelectedMarkersConfirmation"
+        private const val RESULT_SELECTED_MARKER_IDS = "selected_marker_ids"
     }
 }
 
