@@ -1,55 +1,109 @@
 package org.nitri.opentopo
 
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
-import android.text.method.LinkMovementMethod
-import android.view.View
 import android.view.Window
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.DialogFragment
-import org.nitri.opentopo.util.Utils.fromHtml
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import org.nitri.opentopo.model.WayPointItem
+import org.nitri.opentopo.ui.theme.OpenTopoTheme
+import org.nitri.opentopo.view.HtmlText
 
 class WayPointDetailDialogFragment : DialogFragment() {
     private var mCallback: Callback? = null
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val fragmentActivity = requireActivity()
         mCallback =
-            requireActivity().supportFragmentManager.findFragmentByTag(BaseMainActivity.GPX_DETAIL_FRAGMENT_TAG) as Callback?
-        val builder = AlertDialog.Builder(requireActivity())
-        val inflater = requireActivity().layoutInflater
+            fragmentActivity.supportFragmentManager.findFragmentByTag(
+                BaseMainActivity.GPX_DETAIL_FRAGMENT_TAG
+            ) as Callback?
 
-        // Pass null as the parent view because it's going in the dialog layout
-        @SuppressLint("InflateParams") val rootView =
-            inflater.inflate(R.layout.fragment_way_point_detail, null)
-        val tvName = rootView.findViewById<TextView>(R.id.tvTitle)
-        val tvDescription = rootView.findViewById<TextView>(R.id.tvDescription)
-        tvDescription.movementMethod = LinkMovementMethod.getInstance()
-        builder.setView(rootView)
-        val dialog: Dialog = builder.create()
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        if (mCallback != null) {
-            val item = mCallback?.getSelectedWayPointItem()
-            item?.wayPoint?.let { wp ->
-                tvName.text = wp.name ?: ""
+        val wayPoint = mCallback?.getSelectedWayPointItem()?.wayPoint
+        val name = wayPoint?.name.orEmpty()
+        val description = wayPoint?.desc
+            ?.takeIf { it.isNotBlank() }
+            ?.replace("href=\"//", "href=\"http://")
 
-                val rawDesc = wp.desc
-                if (!rawDesc.isNullOrBlank()) {
-                    tvDescription.text = fromHtml(
-                        rawDesc.replace("href=\"//", "href=\"http://")
+        val composeView = ComposeView(fragmentActivity).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                OpenTopoTheme(dynamicColor = false) {
+                    WayPointDetailContent(
+                        name = name,
+                        description = description
                     )
-                    tvDescription.visibility = View.VISIBLE
-                } else {
-                    tvDescription.text = ""
-                    tvDescription.visibility = View.GONE
                 }
             }
         }
+
+        composeView.setViewTreeLifecycleOwner(this)
+        composeView.setViewTreeViewModelStoreOwner(this)
+        composeView.setViewTreeSavedStateRegistryOwner(this)
+
+        val dialog = AlertDialog.Builder(fragmentActivity)
+            .setView(composeView)
+            .create()
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+
+        dialog.setOnShowListener {
+            dialog.window?.decorView?.let { decorView ->
+                decorView.setViewTreeLifecycleOwner(this)
+                decorView.setViewTreeViewModelStoreOwner(this)
+                decorView.setViewTreeSavedStateRegistryOwner(this)
+            }
+        }
+
         return dialog
     }
 
     internal interface Callback {
         fun getSelectedWayPointItem(): WayPointItem?
+    }
+}
+
+@Composable
+private fun WayPointDetailContent(
+    name: String,
+    description: String?
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = name,
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.titleLarge,
+            textAlign = TextAlign.Center
+        )
+        if (description != null) {
+            HtmlText(
+                html = description,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+        }
     }
 }
