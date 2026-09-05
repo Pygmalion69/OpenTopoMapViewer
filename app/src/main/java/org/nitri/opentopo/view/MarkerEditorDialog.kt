@@ -144,32 +144,30 @@ class MarkerEditorDialog : DialogFragment() {
     }
 
     private fun showDeleteConfirmation(markerId: Int) {
-        // Selecting the editor's neutral button dismisses its AlertDialog, which can detach this
-        // DialogFragment before the confirmation dialog's button callback runs.
+        // Selecting the editor's neutral button dismisses its AlertDialog, so use the
+        // activity's FragmentManager for the follow-up confirmation and its result.
         val fragmentManager = parentFragmentManager
+        if (fragmentManager.findFragmentByTag(DELETE_CONFIRMATION_TAG) != null) {
+            return
+        }
 
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.confirm_delete)
-            .setMessage(R.string.prompt_confirm_delete)
-            .setPositiveButton(R.string.delete) { _, _ ->
-                fragmentManager.setFragmentResult(
-                    RESULT_REQUEST_KEY,
-                    Bundle().apply {
-                        putString(RESULT_ACTION, RESULT_ACTION_DELETE)
-                        putInt(RESULT_MARKER_ID, markerId)
-                    }
-                )
+        ConfirmationDialogFragment.newInstance(
+            titleRes = R.string.confirm_delete,
+            messageRes = R.string.prompt_confirm_delete,
+            iconRes = null,
+            confirmButtonRes = R.string.delete,
+            dismissButtonRes = R.string.cancel,
+            requestKey = RESULT_REQUEST_KEY,
+            result = Bundle().apply {
+                putString(RESULT_ACTION, RESULT_ACTION_DELETE)
+                putInt(RESULT_MARKER_ID, markerId)
             }
-            .setNegativeButton(R.string.cancel, null)
-            .create()
-            .also {
-                it.requestWindowFeature(Window.FEATURE_NO_TITLE)
-                it.show()
-            }
+        ).show(fragmentManager, DELETE_CONFIRMATION_TAG)
     }
 
     companion object {
         const val TAG = "MarkerEditorDialog"
+        private const val DELETE_CONFIRMATION_TAG = "MarkerDeleteConfirmation"
 
         private const val ARG_ID = "arg_id"
         private const val ARG_NAME = "arg_name"
