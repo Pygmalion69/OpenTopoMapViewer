@@ -188,17 +188,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
                 GPX_DISCARD_ACTION_SELECT_NEW -> {
                     removeGpx()
-                    markerViewModel.markers.value?.forEach {
-                        it.routeWaypoint = false
-                    }
+                    markerViewModel.clearRouteWaypoints()
                     listener?.clearGpx()
                     listener?.selectGpx()
                 }
                 GPX_DISCARD_ACTION_REMOVE -> {
                     removeGpx()
-                    markerViewModel.markers.value?.forEach {
-                        it.routeWaypoint = false
-                    }
+                    markerViewModel.clearRouteWaypoints()
                     listener?.clearGpx()
                 }
             }
@@ -542,9 +538,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     calculateRoute()
                 }
             })
-            if (markerViewModel.hasRoutePoints()) {
-                calculateRoute()
-            }
+            calculateRoute()
         }
     }
 
@@ -557,9 +551,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
 
         if (markers.isEmpty()) {
-            if (gpxDisplayState == GpxDisplayState.CALCULATED) {
-                listener?.clearGpx()
-            }
+            clearCalculatedRoute()
             return
         }
 
@@ -628,6 +620,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
             )
         }
+    }
+
+    private fun clearCalculatedRoute() {
+        if (gpxDisplayState != GpxDisplayState.CALCULATED) {
+            return
+        }
+
+        removeGpx()
+        listener?.clearGpx()
     }
 
     private fun centerOnFirstFix() {

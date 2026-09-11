@@ -24,6 +24,9 @@ interface MarkerDao {
     @Update
     suspend fun updateMarker(marker: MarkerModel)
 
+    @Query("UPDATE MarkerModel SET routeWaypoint = 0 WHERE routeWaypoint = 1")
+    suspend fun clearRouteWaypoints()
+
     @Query("DELETE FROM MarkerModel WHERE id = :markerId")
     suspend fun deleteMarkerById(markerId: Int)
 
