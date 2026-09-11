@@ -188,17 +188,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
                 GPX_DISCARD_ACTION_SELECT_NEW -> {
                     removeGpx()
-                    markerViewModel.markers.value?.forEach {
-                        it.routeWaypoint = false
-                    }
+                    markerViewModel.clearRouteWaypoints()
                     listener?.clearGpx()
                     listener?.selectGpx()
                 }
                 GPX_DISCARD_ACTION_REMOVE -> {
                     removeGpx()
-                    markerViewModel.markers.value?.forEach {
-                        it.routeWaypoint = false
-                    }
+                    markerViewModel.clearRouteWaypoints()
                     listener?.clearGpx()
                 }
             }
