@@ -247,6 +247,7 @@ class OverlayHelper(
                 wayPointOverlay = null
             }
         }
+        mMapView?.invalidate()
     }
 
     fun setKml(kmlDocument: KmlDocument) {

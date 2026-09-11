@@ -542,9 +542,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     calculateRoute()
                 }
             })
-            if (markerViewModel.hasRoutePoints()) {
-                calculateRoute()
-            }
+            calculateRoute()
         }
     }
 
@@ -557,9 +555,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
 
         if (markers.isEmpty()) {
-            if (gpxDisplayState == GpxDisplayState.CALCULATED) {
-                listener?.clearGpx()
-            }
+            clearCalculatedRoute()
             return
         }
 
@@ -628,6 +624,15 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
             )
         }
+    }
+
+    private fun clearCalculatedRoute() {
+        if (gpxDisplayState != GpxDisplayState.CALCULATED) {
+            return
+        }
+
+        removeGpx()
+        listener?.clearGpx()
     }
 
     private fun centerOnFirstFix() {
