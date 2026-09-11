@@ -2,6 +2,7 @@ package org.nitri.opentopo.viewmodel
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -161,6 +162,48 @@ class PlaceSearchViewModelTest {
     }
 
     @Test
+    fun runningRequestIsCancelledByNewQuery() = runTest {
+        var queryACancelled = false
+
+        val fakeClient = FakeOrsClient { text ->
+            if (text == "QueryA") {
+                suspendCancellableCoroutine { continuation ->
+                    continuation.invokeOnCancellation {
+                        queryACancelled = true
+                    }
+                }
+            } else {
+                GeocodeSearchResponse(
+                    features = listOf(
+                        GeocodeFeature(
+                            geometry = GeocodeGeometry(coordinates = listOf(3.0, 4.0)),
+                            properties = GeocodeProperties(name = "ResultB", label = "ResultB")
+                        )
+                    )
+                )
+            }
+        }
+
+        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0)
+
+        viewModel.setQuery("QueryA")
+        advanceTimeBy(400)
+        testScheduler.runCurrent()
+        assertTrue(viewModel.uiState.value is PlaceSearchUiState.Loading)
+
+        viewModel.setQuery("QueryB")
+        advanceTimeBy(400)
+        advanceUntilIdle()
+
+        assertTrue(queryACancelled)
+        val state = viewModel.uiState.value
+        assertTrue(state is PlaceSearchUiState.Success)
+        val results = (state as PlaceSearchUiState.Success).results
+        assertEquals(1, results.size)
+        assertEquals("ResultB", results[0].name)
+    }
+
+    @Test
     fun repeatedIdenticalQuery_doesNotRepeatRequest() = runTest {
         val fakeClient = FakeOrsClient()
         val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0)
@@ -223,5 +266,44 @@ class PlaceSearchViewModelTest {
 
         assertEquals(1, fakeClient.callCount)
         assertTrue(viewModel.uiState.value is PlaceSearchUiState.Error)
+    }
+
+    @Test
+    fun retry_reissuesRequestWithoutModifyingQueryText() = runTest {
+        var shouldFail = true
+        val fakeClient = FakeOrsClient { text ->
+            if (shouldFail) {
+                throw RuntimeException("Network error")
+            } else {
+                GeocodeSearchResponse(
+                    features = listOf(
+                        GeocodeFeature(
+                            geometry = GeocodeGeometry(coordinates = listOf(6.0, 51.0)),
+                            properties = GeocodeProperties(name = text, label = text)
+                        )
+                    )
+                )
+            }
+        }
+
+        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0)
+
+        viewModel.setQuery("Kleve")
+        advanceTimeBy(400)
+        advanceUntilIdle()
+
+        assertEquals(1, fakeClient.callCount)
+        assertTrue(viewModel.uiState.value is PlaceSearchUiState.Error)
+        assertEquals("Kleve", viewModel.query.value)
+
+        shouldFail = false
+        viewModel.retry()
+        advanceUntilIdle()
+
+        assertEquals(2, fakeClient.callCount)
+        assertEquals("Kleve", viewModel.query.value)
+        assertTrue(viewModel.uiState.value is PlaceSearchUiState.Success)
+        val success = viewModel.uiState.value as PlaceSearchUiState.Success
+        assertEquals("Kleve", success.results[0].name)
     }
 }

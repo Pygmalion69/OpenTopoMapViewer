@@ -34,6 +34,21 @@ class PlaceSearchMapperTest {
     }
 
     @Test
+    fun nonPointGeometry_returnsNull() {
+        val featureLine = GeocodeFeature(
+            geometry = GeocodeGeometry(type = "LineString", coordinates = listOf(10.0, 20.0)),
+            properties = GeocodeProperties(name = "Line", label = "Line Label")
+        )
+        assertNull(mapGeocodeFeatureToPlaceSearchResult(featureLine))
+
+        val featurePolygon = GeocodeFeature(
+            geometry = GeocodeGeometry(type = "Polygon", coordinates = listOf(10.0, 20.0)),
+            properties = GeocodeProperties(name = "Poly", label = "Poly Label")
+        )
+        assertNull(mapGeocodeFeatureToPlaceSearchResult(featurePolygon))
+    }
+
+    @Test
     fun longitudeAndLatitude_areNotSwapped() {
         // Longitude = 12.34, Latitude = 56.78
         val feature = GeocodeFeature(

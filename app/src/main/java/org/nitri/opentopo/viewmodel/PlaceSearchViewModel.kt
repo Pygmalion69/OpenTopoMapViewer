@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import org.nitri.opentopo.model.PlaceSearchResult
 import org.nitri.opentopo.ors.mapGeocodeFeaturesToPlaceSearchResults
@@ -41,13 +43,19 @@ class PlaceSearchViewModel(
     private val _uiState = MutableStateFlow<PlaceSearchUiState>(PlaceSearchUiState.QueryTooShort)
     val uiState: StateFlow<PlaceSearchUiState> = _uiState.asStateFlow()
 
+    private val _retryTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     init {
-        _query
+        val debouncedQuery = _query
             .map { it.trim() }
             .distinctUntilChanged()
             .debounce { normalizedQuery ->
                 if (normalizedQuery.length >= 3) 400L else 0L
             }
+
+        val retryQuery = _retryTrigger.map { _query.value.trim() }
+
+        merge(debouncedQuery, retryQuery)
             .flatMapLatest { normalizedQuery ->
                 flow {
                     if (normalizedQuery.length < 3) {
@@ -94,9 +102,7 @@ class PlaceSearchViewModel(
     }
 
     fun retry() {
-        val current = _query.value
-        _query.value = ""
-        _query.value = current
+        _retryTrigger.tryEmit(Unit)
     }
 
     class Factory(

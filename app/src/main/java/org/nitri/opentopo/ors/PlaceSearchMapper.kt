@@ -4,7 +4,14 @@ import org.nitri.opentopo.model.PlaceSearchResult
 import org.nitri.ors.domain.geocode.GeocodeFeature
 
 fun mapGeocodeFeatureToPlaceSearchResult(feature: GeocodeFeature): PlaceSearchResult? {
-    val coordinates = feature.geometry?.coordinates ?: return null
+    val geom = feature.geometry ?: return null
+
+    val geomType = geom.type?.trim()
+    if (!geomType.isNullOrEmpty() && !geomType.equals("Point", ignoreCase = true)) {
+        return null
+    }
+
+    val coordinates = geom.coordinates
     if (coordinates.size < 2) return null
 
     val lon = coordinates[0]
