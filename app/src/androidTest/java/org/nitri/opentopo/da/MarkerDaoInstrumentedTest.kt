@@ -37,6 +37,33 @@ class MarkerDaoInstrumentedTest {
         assertTrue(dao.getAllMarkersNow().isEmpty())
     }
 
+    @Test fun clearRouteWaypoints_preservesMarkersAndClearsOnlyWaypointFlags() = runBlocking {
+        dao.insertMarkers(listOf(
+            MarkerModel(
+                seq = 1,
+                latitude = 1.0,
+                longitude = 1.0,
+                name = "waypoint",
+                description = "",
+                routeWaypoint = true
+            ),
+            MarkerModel(
+                seq = 2,
+                latitude = 2.0,
+                longitude = 2.0,
+                name = "ordinary",
+                description = "",
+                routeWaypoint = false
+            )
+        ))
+
+        dao.clearRouteWaypoints()
+
+        val markers = dao.getAllMarkersNow()
+        assertEquals(2, markers.size)
+        assertTrue(markers.none { it.routeWaypoint })
+    }
+
     @Test fun deleteMarkersByIds_removesMultiple() = runBlocking {
         dao.insertMarkers(listOf(
             MarkerModel(seq = 1, latitude = 1.0, longitude = 1.0, name = "a", description = ""),

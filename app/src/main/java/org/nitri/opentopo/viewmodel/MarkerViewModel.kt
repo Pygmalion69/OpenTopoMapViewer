@@ -41,6 +41,10 @@ class MarkerViewModel(application: Application) : AndroidViewModel(application) 
         db.markerDao().updateMarker(marker)
     }
 
+    fun clearRouteWaypoints() = viewModelScope.launch {
+        db.markerDao().clearRouteWaypoints()
+    }
+
     fun hasRoutePoints(): Boolean {
         return markers.value?.any { it.routeWaypoint } ?: false
     }
