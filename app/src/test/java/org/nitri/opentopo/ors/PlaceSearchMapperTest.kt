@@ -168,4 +168,28 @@ class PlaceSearchMapperTest {
         assertEquals("Valid 1", results[0].name)
         assertEquals("Valid 2", results[1].name)
     }
+
+    @Test
+    fun listMapping_deduplicatesByStableId() {
+        val features = listOf(
+            GeocodeFeature(
+                geometry = GeocodeGeometry(type = "Point", coordinates = listOf(10.0, 20.0)),
+                properties = GeocodeProperties(gid = "gid1", name = "First", label = "First Label")
+            ),
+            GeocodeFeature(
+                geometry = GeocodeGeometry(type = "Point", coordinates = listOf(10.0, 20.0)),
+                properties = GeocodeProperties(gid = "gid1", name = "Duplicate", label = "Duplicate Label")
+            ),
+            GeocodeFeature(
+                geometry = GeocodeGeometry(type = "Point", coordinates = listOf(30.0, 40.0)),
+                properties = GeocodeProperties(gid = "gid2", name = "Second", label = "Second Label")
+            )
+        )
+
+        val results = mapGeocodeFeaturesToPlaceSearchResults(features)
+
+        assertEquals(2, results.size)
+        assertEquals("First", results[0].name)
+        assertEquals("Second", results[1].name)
+    }
 }

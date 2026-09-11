@@ -48,5 +48,7 @@ fun mapGeocodeFeatureToPlaceSearchResult(feature: GeocodeFeature): PlaceSearchRe
 }
 
 fun mapGeocodeFeaturesToPlaceSearchResults(features: List<GeocodeFeature>?): List<PlaceSearchResult> {
-    return features?.mapNotNull { mapGeocodeFeatureToPlaceSearchResult(it) }.orEmpty()
+    return features.orEmpty()
+        .mapNotNull(::mapGeocodeFeatureToPlaceSearchResult)
+        .distinctBy { it.stableId }
 }
