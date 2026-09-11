@@ -166,4 +166,11 @@ Dit kan niet ongedaan worden gemaakt.</string>
     <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 
     <string name="more_options">Meer opties</string>
+
+    <string name="search">Zoeken</string>
+    <string name="search_place">Plaats zoeken</string>
+    <string name="search_min_chars">Voer ten minste 3 tekens in</string>
+    <string name="no_matching_places">Geen overeenkomstige plaatsen gevonden</string>
+    <string name="unable_to_search_places">Kan geen plaatsen zoeken</string>
+    <string name="retry">Opnieuw proberen</string>
 </resources>

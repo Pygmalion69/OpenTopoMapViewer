@@ -44,6 +44,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KEEP_SCREEN_ON
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_KML_ENABLED
+import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_API_KEY
 import org.nitri.opentopo.SettingsActivity.Companion.PREF_ORS_PROFILE
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
@@ -59,6 +60,7 @@ import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.view.AboutDialog
 import org.nitri.opentopo.view.ConfirmationDialogFragment
 import org.nitri.opentopo.view.MarkerEditorDialog
+import org.nitri.opentopo.view.PlaceSearchDialogFragment
 import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.viewmodel.GpxViewModel.GpxDisplayState
 import org.nitri.opentopo.viewmodel.LocationViewModel
@@ -200,6 +202,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     listener?.clearGpx()
                 }
             }
+        }
+        parentFragmentManager.setFragmentResultListener(
+            PlaceSearchDialogFragment.REQUEST_KEY,
+            this
+        ) { _, result ->
+            val lat = result.getDouble(PlaceSearchDialogFragment.KEY_LATITUDE)
+            val lon = result.getDouble(PlaceSearchDialogFragment.KEY_LONGITUDE)
+            val name = result.getString(PlaceSearchDialogFragment.KEY_NAME).orEmpty()
+            val label = result.getString(PlaceSearchDialogFragment.KEY_LABEL).orEmpty()
+            onPlaceSearchResultSelected(lat, lon, name, label)
         }
         mapHandler = Handler(Looper.getMainLooper())
         setHasOptionsMenu(true)
@@ -1037,6 +1049,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         menu.findItem(R.id.action_kml_zoom).isVisible = kmlVisible
         menu.findItem(R.id.action_kml_remove).isVisible = kmlVisible
 
+        val orsApiKey = sharedPreferences.getString(PREF_ORS_API_KEY, null)?.trim()
+        menu.findItem(R.id.action_search)?.isVisible = !orsApiKey.isNullOrEmpty()
+
         listener?.let {
             menu.findItem(R.id.action_privacy_settings).isVisible = it.isPrivacyOptionsRequired()
         }
@@ -1045,6 +1060,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
+            R.id.action_search -> {
+                val orsApiKey = sharedPreferences.getString(PREF_ORS_API_KEY, null)?.trim()
+                val orsClient = (activity as? OnFragmentInteractionListener)?.getOpenRouteServiceClient()
+                if (orsApiKey.isNullOrEmpty() || orsClient == null) {
+                    Toast.makeText(activity, R.string.ors_key_prompt, Toast.LENGTH_SHORT).show()
+                } else {
+                    showPlaceSearchDialog()
+                }
+                return true
+            }
             R.id.action_gpx -> {
                 if (gpxDisplayState != GpxDisplayState.IDLE) {
                     showGpxDialog(GPX_DISCARD_ACTION_SELECT_NEW)
@@ -1448,6 +1473,41 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
          */
         fun parseCalculatedGpx(gpxString: String)
 
+    }
+
+    private fun showPlaceSearchDialog() {
+        val fm = parentFragmentManager
+        if (fm.findFragmentByTag(PlaceSearchDialogFragment.TAG) != null) {
+            return
+        }
+        val focusLon = mapView.mapCenter.longitude
+        val focusLat = mapView.mapCenter.latitude
+        val dialog = PlaceSearchDialogFragment.newInstance(focusLon, focusLat)
+        dialog.show(fm, PlaceSearchDialogFragment.TAG)
+    }
+
+    private fun onPlaceSearchResultSelected(lat: Double, lon: Double, name: String, label: String) {
+        val highestSeq = markerViewModel.markers.value?.maxByOrNull { it.seq }?.seq ?: 0
+        val seq = highestSeq + 1
+        val markerName = name.ifBlank { label.ifBlank { getString(R.string.default_marker_name, seq) } }
+        val description = if (label.isNotBlank() && label != markerName) label else ""
+
+        val marker = MarkerModel(
+            seq = seq,
+            latitude = lat,
+            longitude = lon,
+            name = markerName,
+            description = description,
+            nearbyId = 0,
+            routeWaypoint = false,
+            color = requireContext().defaultMarkerColor()
+        )
+        markerViewModel.addMarker(marker)
+
+        val targetZoom = maxOf(mapView.zoomLevelDouble, 15.0)
+        disableFollow()
+        mapView.controller.setZoom(targetZoom)
+        mapView.controller.animateTo(GeoPoint(lat, lon))
     }
 
     companion object {

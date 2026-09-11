@@ -76,6 +76,12 @@
         android:visible="true"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_action_search"
+        android:title="@string/search"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_nearby"
         android:icon="@drawable/ic_action_nearby"
         android:title="@string/nearby"

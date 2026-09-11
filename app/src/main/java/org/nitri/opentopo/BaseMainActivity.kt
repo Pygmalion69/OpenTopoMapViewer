@@ -83,6 +83,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             }
             PREF_ORS_API_KEY -> {
                 createOrsClient()
+                invalidateOptionsMenu()
             }
         }
     }

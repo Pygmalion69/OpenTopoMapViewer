@@ -179,4 +179,11 @@ This cannot be undone.</string>
 
     <string name="more_options">More options</string>
 
+    <string name="search">Search</string>
+    <string name="search_place">Search place</string>
+    <string name="search_min_chars">Enter at least 3 characters</string>
+    <string name="no_matching_places">No matching places found</string>
+    <string name="unable_to_search_places">Unable to search places</string>
+    <string name="retry">Retry</string>
+
 </resources>

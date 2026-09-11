@@ -166,4 +166,11 @@ Dies kann nicht rückgängig gemacht werden.</string>
     <string name="marker_fallback_coordinates">%1$.5f, %2$.5f</string>
 
     <string name="more_options">Weitere Optionen</string>
+
+    <string name="search">Suche</string>
+    <string name="search_place">Ort suchen</string>
+    <string name="search_min_chars">Mindestens 3 Zeichen eingeben</string>
+    <string name="no_matching_places">Keine passenden Orte gefunden</string>
+    <string name="unable_to_search_places">Orte konnten nicht gesucht werden</string>
+    <string name="retry">Wiederholen</string>
 </resources>
