@@ -185,6 +185,7 @@ This cannot be undone.</string>
     <string name="search_min_chars">Enter at least 3 characters</string>
     <string name="no_matching_places">No matching places found</string>
     <string name="unable_to_search_places">Unable to search places</string>
+    <string name="unable_to_calculate_route">Unable to calculate route</string>
     <string name="retry">Retry</string>
 
 </resources>

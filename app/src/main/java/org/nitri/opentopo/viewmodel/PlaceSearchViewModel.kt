@@ -18,6 +18,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import org.nitri.opentopo.model.PlaceSearchResult
+import org.nitri.opentopo.analytics.AnalyticsTracker
+import org.nitri.opentopo.analytics.NoOpAnalyticsTracker
+import org.nitri.opentopo.analytics.OrsOutcome
+import org.nitri.opentopo.analytics.classifyOrsError
+import org.nitri.opentopo.analytics.durationBucket
+import org.nitri.opentopo.analytics.queryLengthBucket
 import org.nitri.opentopo.ors.mapGeocodeFeaturesToPlaceSearchResults
 import org.nitri.ors.OrsClient
 import kotlin.coroutines.cancellation.CancellationException
@@ -34,8 +40,12 @@ sealed interface PlaceSearchUiState {
 class PlaceSearchViewModel(
     private val clientProvider: () -> OrsClient?,
     private val focusLon: Double?,
-    private val focusLat: Double?
+    private val focusLat: Double?,
+    private val analytics: AnalyticsTracker = NoOpAnalyticsTracker,
+    private val clockMillis: () -> Long = { System.nanoTime() / 1_000_000 }
 ) : ViewModel() {
+
+    private data class SearchRequest(val query: String, val isRetry: Boolean)
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
@@ -52,12 +62,14 @@ class PlaceSearchViewModel(
             .debounce { normalizedQuery ->
                 if (normalizedQuery.length >= 3) 400L else 0L
             }
+            .map { SearchRequest(it, false) }
 
-        val retryQuery = _retryTrigger.map { _query.value.trim() }
+        val retryQuery = _retryTrigger.map { SearchRequest(_query.value.trim(), true) }
 
         merge(debouncedQuery, retryQuery)
-            .flatMapLatest { normalizedQuery ->
+            .flatMapLatest { request ->
                 flow {
+                    val normalizedQuery = request.query
                     if (normalizedQuery.length < 3) {
                         emit(PlaceSearchUiState.QueryTooShort)
                         return@flow
@@ -71,6 +83,7 @@ class PlaceSearchViewModel(
 
                     emit(PlaceSearchUiState.Loading)
 
+                    val startedAt = clockMillis()
                     try {
                         val response = client.geocodeAutocomplete(
                             text = normalizedQuery,
@@ -79,6 +92,10 @@ class PlaceSearchViewModel(
                             size = 10
                         )
                         val results = mapGeocodeFeaturesToPlaceSearchResults(response.features)
+                        val outcome = if (results.isEmpty()) OrsOutcome.EMPTY else OrsOutcome.SUCCESS
+                        analytics.trackOrsSearchResult(outcome, results.size.coerceAtMost(10),
+                            durationBucket(clockMillis() - startedAt), queryLengthBucket(normalizedQuery.length),
+                            request.isRetry)
                         if (results.isEmpty()) {
                             emit(PlaceSearchUiState.Empty)
                         } else {
@@ -87,7 +104,10 @@ class PlaceSearchViewModel(
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Throwable) {
-                        emit(PlaceSearchUiState.Error(e.localizedMessage))
+                        analytics.trackOrsSearchResult(OrsOutcome.ERROR, 0,
+                            durationBucket(clockMillis() - startedAt), queryLengthBucket(normalizedQuery.length),
+                            request.isRetry, classifyOrsError(e))
+                        emit(PlaceSearchUiState.Error(null))
                     }
                 }
             }
@@ -108,11 +128,12 @@ class PlaceSearchViewModel(
     class Factory(
         private val clientProvider: () -> OrsClient?,
         private val focusLon: Double?,
-        private val focusLat: Double?
+        private val focusLat: Double?,
+        private val analytics: AnalyticsTracker = NoOpAnalyticsTracker
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return PlaceSearchViewModel(clientProvider, focusLon, focusLat) as T
+            return PlaceSearchViewModel(clientProvider, focusLon, focusLat, analytics) as T
         }
     }
 }
