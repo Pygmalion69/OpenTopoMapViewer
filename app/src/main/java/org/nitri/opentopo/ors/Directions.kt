@@ -6,6 +6,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.nitri.ors.OrsClient
 import org.nitri.ors.helper.RouteHelper
+import org.nitri.opentopo.analytics.OrsErrorCategory
+import org.nitri.opentopo.analytics.classifyOrsError
 
 class Directions(val client: OrsClient, private val profile: String) {
 
@@ -19,12 +21,12 @@ class Directions(val client: OrsClient, private val profile: String) {
                     if (gpxXml.isNotBlank()) {
                         result.onSuccess(gpxXml)
                     } else {
-                        result.onError("Empty response body")
+                        result.onEmpty()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    result.onError("Failed to fetch GPX: ${e.message}")
+                    result.onError(classifyOrsError(e))
                 }
             }
         }
@@ -32,6 +34,7 @@ class Directions(val client: OrsClient, private val profile: String) {
 
     interface RouteGpxResult {
         fun onSuccess(gpx: String)
-        fun onError(message: String)
+        fun onEmpty()
+        fun onError(category: OrsErrorCategory)
     }
 }

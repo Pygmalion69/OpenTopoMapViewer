@@ -41,9 +41,30 @@ import org.nitri.ors.domain.route.RouteResponse
 import org.nitri.ors.domain.snap.SnapGeoJsonResponse
 import org.nitri.ors.domain.snap.SnapRequest
 import org.nitri.ors.domain.snap.SnapResponse
+import io.ticofab.androidgpxparser.parser.domain.Gpx
+import org.nitri.opentopo.analytics.*
+import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaceSearchViewModelTest {
+
+    private data class SearchEvent(val outcome: OrsOutcome, val count: Int, val retry: Boolean, val error: OrsErrorCategory?)
+    private class RecordingTracker : AnalyticsTracker {
+        val searchEvents = mutableListOf<SearchEvent>()
+        override fun trackOrsSearchResult(outcome: OrsOutcome, resultCount: Int, durationBucket: DurationBucket, queryLengthBucket: QueryLengthBucket, isRetry: Boolean, errorCategory: OrsErrorCategory?) {
+            searchEvents += SearchEvent(outcome, resultCount, isRetry, errorCategory)
+        }
+        override fun trackScreen(screenName: String, screenClass: String) = Unit
+        override fun trackGpxLoaded(source: String, gpx: Gpx, fileName: String?) = Unit
+        override fun trackKmlLoaded(source: String, contentType: String, fileName: String?) = Unit
+        override fun trackOrsRouteResult(outcome: OrsOutcome, profile: String, destinationCount: Int, startSource: OrsStartSource, durationBucket: DurationBucket, errorCategory: OrsErrorCategory?) = Unit
+        override fun trackOrsSearchOpened(hasMapFocus: Boolean) = Unit
+        override fun trackOrsSearchSelection(resultPosition: ResultPositionBucket, resultCount: Int) = Unit
+        override fun trackMapLayerSelected(baseMap: String, overlay: String) = Unit
+        override fun trackMarkersImported(importedCount: Int, skippedCount: Int) = Unit
+        override fun trackMarkersExported(markerCount: Int) = Unit
+        override fun trackMarkersDeleted(markerCount: Int) = Unit
+    }
 
     private val testDispatcher = StandardTestDispatcher()
 
@@ -164,6 +185,7 @@ class PlaceSearchViewModelTest {
     @Test
     fun runningRequestIsCancelledByNewQuery() = runTest {
         var queryACancelled = false
+        val tracker = RecordingTracker()
 
         val fakeClient = FakeOrsClient { text ->
             if (text == "QueryA") {
@@ -184,7 +206,7 @@ class PlaceSearchViewModelTest {
             }
         }
 
-        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0)
+        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0, tracker)
 
         viewModel.setQuery("QueryA")
         advanceTimeBy(400)
@@ -201,6 +223,7 @@ class PlaceSearchViewModelTest {
         val results = (state as PlaceSearchUiState.Success).results
         assertEquals(1, results.size)
         assertEquals("ResultB", results[0].name)
+        assertEquals(listOf(OrsOutcome.SUCCESS), tracker.searchEvents.map { it.outcome })
     }
 
     @Test
@@ -242,34 +265,40 @@ class PlaceSearchViewModelTest {
 
     @Test
     fun emptyResponse_producesEmptyState() = runTest {
+        val tracker = RecordingTracker()
         val fakeClient = FakeOrsClient {
             GeocodeSearchResponse(features = emptyList())
         }
-        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0)
+        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0, tracker)
 
         viewModel.setQuery("NonExistentPlace12345")
         advanceUntilIdle()
 
         assertEquals(1, fakeClient.callCount)
         assertEquals(PlaceSearchUiState.Empty, viewModel.uiState.value)
+        assertEquals(SearchEvent(OrsOutcome.EMPTY, 0, false, null), tracker.searchEvents.single())
     }
 
     @Test
     fun serviceFailure_producesErrorState() = runTest {
+        val tracker = RecordingTracker()
         val fakeClient = FakeOrsClient {
-            throw RuntimeException("Network error")
+            throw IOException("private raw message")
         }
-        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0)
+        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0, tracker)
 
         viewModel.setQuery("Kleve")
         advanceUntilIdle()
 
         assertEquals(1, fakeClient.callCount)
         assertTrue(viewModel.uiState.value is PlaceSearchUiState.Error)
+        assertEquals(SearchEvent(OrsOutcome.ERROR, 0, false, OrsErrorCategory.NETWORK), tracker.searchEvents.single())
+        assertEquals(null, (viewModel.uiState.value as PlaceSearchUiState.Error).message)
     }
 
     @Test
     fun retry_reissuesRequestWithoutModifyingQueryText() = runTest {
+        val tracker = RecordingTracker()
         var shouldFail = true
         val fakeClient = FakeOrsClient { text ->
             if (shouldFail) {
@@ -286,7 +315,7 @@ class PlaceSearchViewModelTest {
             }
         }
 
-        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0)
+        val viewModel = PlaceSearchViewModel({ fakeClient }, 6.0, 51.0, tracker)
 
         viewModel.setQuery("Kleve")
         advanceTimeBy(400)
@@ -305,5 +334,6 @@ class PlaceSearchViewModelTest {
         assertTrue(viewModel.uiState.value is PlaceSearchUiState.Success)
         val success = viewModel.uiState.value as PlaceSearchUiState.Success
         assertEquals("Kleve", success.results[0].name)
+        assertEquals(listOf(false, true), tracker.searchEvents.map { it.retry })
     }
 }

@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -53,12 +53,16 @@ import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import org.nitri.opentopo.MapFragment
 import org.nitri.opentopo.R
+import org.nitri.opentopo.analytics.AnalyticsProvider
+import org.nitri.opentopo.analytics.resultPositionBucket
 import org.nitri.opentopo.model.PlaceSearchResult
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.viewmodel.PlaceSearchUiState
 import org.nitri.opentopo.viewmodel.PlaceSearchViewModel
 
 class PlaceSearchDialogFragment : DialogFragment() {
+
+    private val analytics by lazy { AnalyticsProvider.get(requireContext()) }
 
     private val viewModel: PlaceSearchViewModel by viewModels {
         val focusLon = arguments?.getDouble(ARG_FOCUS_LON)
@@ -72,8 +76,18 @@ class PlaceSearchDialogFragment : DialogFragment() {
                 }
             },
             focusLon = focusLon,
-            focusLat = focusLat
+            focusLat = focusLat,
+            analytics = analytics
         )
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) {
+            analytics.trackOrsSearchOpened(
+                arguments?.containsKey(ARG_FOCUS_LON) == true && arguments?.containsKey(ARG_FOCUS_LAT) == true
+            )
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -84,7 +98,8 @@ class PlaceSearchDialogFragment : DialogFragment() {
                     PlaceSearchDialogContent(
                         viewModel = viewModel,
                         isInitialLaunch = savedInstanceState == null,
-                        onResultSelected = { result ->
+                        onResultSelected = { result, index, resultCount ->
+                            analytics.trackOrsSearchSelection(resultPositionBucket(index), resultCount.coerceAtMost(10))
                             setFragmentResult(
                                 REQUEST_KEY,
                                 Bundle().apply {
@@ -146,7 +161,7 @@ class PlaceSearchDialogFragment : DialogFragment() {
 private fun PlaceSearchDialogContent(
     viewModel: PlaceSearchViewModel,
     isInitialLaunch: Boolean,
-    onResultSelected: (PlaceSearchResult) -> Unit,
+    onResultSelected: (PlaceSearchResult, Int, Int) -> Unit,
     onDismiss: () -> Unit
 ) {
     val query by viewModel.query.collectAsState()
@@ -249,14 +264,14 @@ private fun PlaceSearchDialogContent(
                             .heightIn(max = 280.dp)
                             .padding(vertical = 8.dp)
                     ) {
-                        items(
+                        itemsIndexed(
                             items = state.results,
-                            key = { it.stableId }
-                        ) { result ->
+                            key = { _, item -> item.stableId }
+                        ) { index, result ->
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { onResultSelected(result) }
+                                    .clickable { onResultSelected(result, index, state.results.size) }
                                     .padding(vertical = 12.dp, horizontal = 4.dp)
                             ) {
                                 Text(
