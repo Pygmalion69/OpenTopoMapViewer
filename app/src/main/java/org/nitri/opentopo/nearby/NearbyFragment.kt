@@ -1,6 +1,7 @@
 package org.nitri.opentopo.nearby
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -10,6 +11,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -143,7 +145,11 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
     override fun onItemClick(index: Int) {
         val uri = mNearbyItems[index]?.url?.let { Uri.parse(it) } ?: Uri.EMPTY
         val browserIntent = Intent(Intent.ACTION_VIEW, uri)
-        startActivity(browserIntent)
+        try {
+            startActivity(browserIntent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onMapItemClick(index: Int) {
