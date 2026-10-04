@@ -177,5 +177,7 @@ Cette action est irréversible.</string>
     <string name="retry">Réessayer</string>
     <string name="support_openmaps">Soutenir openmaps.fr</string>
     <string name="support_openmaps_summary">Aidez à financer l’hébergement d’OpenTopoMap-R.</string>
+    <string name="support_top_o_map">Soutenir Top-O-Map</string>
+    <string name="support_top_o_map_summary">Aidez à financer l’hébergement de Top-O-Map.</string>
     <string name="otm_source_migration_notice">Votre source de tuiles OpenTopoMap a été remplacée par le serveur officiel à la demande du fournisseur. OpenTopoMap-R reste disponible dans les paramètres.</string>
 </resources>

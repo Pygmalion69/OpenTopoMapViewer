@@ -190,5 +190,7 @@ This cannot be undone.</string>
 
     <string name="support_openmaps">Support openmaps.fr</string>
     <string name="support_openmaps_summary">Help fund OpenTopoMap-R hosting.</string>
+    <string name="support_top_o_map">Support Top-O-Map</string>
+    <string name="support_top_o_map_summary">Help fund Top-O-Map hosting.</string>
     <string name="otm_source_migration_notice">Your OpenTopoMap tile source has been switched to the official server at the provider’s request. OpenTopoMap-R remains available in Settings.</string>
 </resources>

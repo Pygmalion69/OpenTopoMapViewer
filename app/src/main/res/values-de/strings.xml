@@ -177,5 +177,7 @@ Dies kann nicht rückgängig gemacht werden.</string>
     <string name="retry">Wiederholen</string>
     <string name="support_openmaps">openmaps.fr unterstützen</string>
     <string name="support_openmaps_summary">Hilf mit, das Hosting von OpenTopoMap-R zu finanzieren.</string>
+    <string name="support_top_o_map">Top-O-Map unterstützen</string>
+    <string name="support_top_o_map_summary">Hilf mit, das Hosting von Top-O-Map zu finanzieren.</string>
     <string name="otm_source_migration_notice">Deine OpenTopoMap-Kachelquelle wurde auf Wunsch des Anbieters auf den offiziellen Server umgestellt. OpenTopoMap-R bleibt in den Einstellungen verfügbar.</string>
 </resources>

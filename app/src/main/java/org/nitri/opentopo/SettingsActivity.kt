@@ -131,15 +131,20 @@ class SettingsActivity : AppCompatActivity() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
 
-            findPreference<Preference>("support_openmaps")?.apply {
-                isVisible = BuildConfig.SHOW_DONATE_LINK
-                setOnPreferenceClickListener {
-                    try {
-                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://openmaps.fr/donate")))
-                    } catch (_: ActivityNotFoundException) {
-                        Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT).show()
+            mapOf(
+                "support_openmaps" to "https://openmaps.fr/donate",
+                "support_top_o_map" to "https://ko-fi.com/topomap"
+            ).forEach { (key, url) ->
+                findPreference<Preference>(key)?.apply {
+                    isVisible = BuildConfig.SHOW_DONATE_LINK
+                    setOnPreferenceClickListener {
+                        try {
+                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        } catch (_: ActivityNotFoundException) {
+                            Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT).show()
+                        }
+                        true
                     }
-                    true
                 }
             }
 

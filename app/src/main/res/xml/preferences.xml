@@ -37,6 +37,11 @@
             app:title="@string/support_openmaps"
             app:summary="@string/support_openmaps_summary" />
 
+        <Preference
+            app:key="support_top_o_map"
+            app:title="@string/support_top_o_map"
+            app:summary="@string/support_top_o_map_summary" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/pref_markers_header">
