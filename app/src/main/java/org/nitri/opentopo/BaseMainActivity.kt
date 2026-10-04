@@ -103,7 +103,19 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var handler: Handler
 
+    override fun onResumeFragments() {
+        super.onResumeFragments()
+        val tag = "otm_source_migration_notice"
+        if (sharedPreferences.getBoolean(OpenTopoMapSourceMigration.NOTICE_PENDING, false) &&
+            supportFragmentManager.findFragmentByTag(tag) == null
+        ) {
+            org.nitri.opentopo.view.OpenTopoMapMigrationDialog().showNow(supportFragmentManager, tag)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Migrate before super restores fragments and their tile providers.
+        OpenTopoMapSourceMigration.run(PreferenceManager.getDefaultSharedPreferences(this))
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.activity_main)

@@ -174,4 +174,7 @@ L\'azione è irreversibile.</string>
     <string name="no_matching_places">Nessun luogo corrispondente trovato</string>
     <string name="unable_to_search_places">Impossibile cercare i luoghi</string>
     <string name="retry">Riprova</string>
+    <string name="support_openmaps">Sostieni openmaps.fr</string>
+    <string name="support_openmaps_summary">Aiuta a finanziare l’hosting di OpenTopoMap-R.</string>
+    <string name="otm_source_migration_notice">La sorgente delle tessere OpenTopoMap è stata spostata sul server ufficiale su richiesta del fornitore. OpenTopoMap-R rimane disponibile nelle impostazioni.</string>
 </resources>

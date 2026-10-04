@@ -174,4 +174,7 @@ Cette action est irréversible.</string>
     <string name="no_matching_places">Aucun lieu correspondant trouvé</string>
     <string name="unable_to_search_places">Impossible de rechercher des lieux</string>
     <string name="retry">Réessayer</string>
+    <string name="support_openmaps">Soutenir openmaps.fr</string>
+    <string name="support_openmaps_summary">Aidez à financer l’hébergement d’OpenTopoMap-R.</string>
+    <string name="otm_source_migration_notice">Votre source de tuiles OpenTopoMap a été remplacée par le serveur officiel à la demande du fournisseur. OpenTopoMap-R reste disponible dans les paramètres.</string>
 </resources>

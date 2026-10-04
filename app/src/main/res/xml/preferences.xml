@@ -32,6 +32,11 @@
             app:defaultValue="opentopomap"
             app:useSimpleSummaryProvider="true" />
 
+        <Preference
+            app:key="support_openmaps"
+            app:title="@string/support_openmaps"
+            app:summary="@string/support_openmaps_summary" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/pref_markers_header">

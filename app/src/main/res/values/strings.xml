@@ -188,4 +188,7 @@ This cannot be undone.</string>
     <string name="unable_to_calculate_route">Unable to calculate route</string>
     <string name="retry">Retry</string>
 
+    <string name="support_openmaps">Support openmaps.fr</string>
+    <string name="support_openmaps_summary">Help fund OpenTopoMap-R hosting.</string>
+    <string name="otm_source_migration_notice">Your OpenTopoMap tile source has been switched to the official server at the provider’s request. OpenTopoMap-R remains available in Settings.</string>
 </resources>

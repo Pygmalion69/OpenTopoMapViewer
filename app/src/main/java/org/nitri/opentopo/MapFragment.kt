@@ -159,7 +159,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private var listener: OnFragmentInteractionListener? = null
     private lateinit var sharedPreferences: SharedPreferences
     private var baseMap = BASE_MAP_OTM
-    private var openTopoMapSource = OTM_SOURCE_R
+    private var openTopoMapSource = OTM_SOURCE_OTM
     private var copyrightView: TextView? = null
     private var overlay = OverlayHelper.OVERLAY_NONE
     private var mapCenterState: GeoPoint? = null
@@ -1574,9 +1574,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         )?.toDoubleOrNull() ?: DEFAULT_MAX_ZOOM
     }
 
-    private fun readOpenTopoMapSource(): String {
-        return sharedPreferences.getString(PREF_OPEN_TOPO_MAP_SOURCE, OTM_SOURCE_R)
-            ?: OTM_SOURCE_R
+    internal fun readOpenTopoMapSource(preferences: SharedPreferences = sharedPreferences): String {
+        return preferences.getString(PREF_OPEN_TOPO_MAP_SOURCE, OTM_SOURCE_OTM)
+            ?: OTM_SOURCE_OTM
     }
 
 }

@@ -174,4 +174,7 @@ Dit kan niet ongedaan worden gemaakt.</string>
     <string name="no_matching_places">Geen overeenkomstige plaatsen gevonden</string>
     <string name="unable_to_search_places">Kan geen plaatsen zoeken</string>
     <string name="retry">Opnieuw proberen</string>
+    <string name="support_openmaps">Steun openmaps.fr</string>
+    <string name="support_openmaps_summary">Help de hosting van OpenTopoMap-R te financieren.</string>
+    <string name="otm_source_migration_notice">Je OpenTopoMap-tegelbron is op verzoek van de aanbieder gewijzigd naar de officiële server. OpenTopoMap-R blijft beschikbaar in Instellingen.</string>
 </resources>

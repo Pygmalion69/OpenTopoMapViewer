@@ -174,4 +174,7 @@ Dies kann nicht rückgängig gemacht werden.</string>
     <string name="no_matching_places">Keine passenden Orte gefunden</string>
     <string name="unable_to_search_places">Orte konnten nicht gesucht werden</string>
     <string name="retry">Wiederholen</string>
+    <string name="support_openmaps">openmaps.fr unterstützen</string>
+    <string name="support_openmaps_summary">Hilf mit, das Hosting von OpenTopoMap-R zu finanzieren.</string>
+    <string name="otm_source_migration_notice">Deine OpenTopoMap-Kachelquelle wurde auf Wunsch des Anbieters auf den offiziellen Server umgestellt. OpenTopoMap-R bleibt in den Einstellungen verfügbar.</string>
 </resources>

@@ -1,5 +1,6 @@
 package org.nitri.opentopo
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -129,6 +130,18 @@ class SettingsActivity : AppCompatActivity() {
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
+
+            findPreference<Preference>("support_openmaps")?.apply {
+                isVisible = BuildConfig.SHOW_DONATE_LINK
+                setOnPreferenceClickListener {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://openmaps.fr/donate")))
+                    } catch (_: ActivityNotFoundException) {
+                        Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT).show()
+                    }
+                    true
+                }
+            }
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
             val apiKey = prefs.getString(PREF_ORS_API_KEY, null)
