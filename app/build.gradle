@@ -57,11 +57,13 @@ android {
     productFlavors {
         foss {
             dimension = "distribution"
+            buildConfigField "boolean", "SHOW_DONATE_LINK", "true"
             // Configuration for FOSS (GitHub, F-Droid)
             // No proprietary services, no ads
         }
         play {
             dimension = "distribution"
+            buildConfigField "boolean", "SHOW_DONATE_LINK", "false"
             // Configuration for Google Play
             // Google Services, Admob
         }

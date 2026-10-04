@@ -74,6 +74,7 @@
     <string name="about">Über</string>
     <string name="app_version">Version %1$s</string>
     <string name="app_author">Von &lt;a href="http://www.sergehelfrich.eu/"&gt;Serge Helfrich&lt;/a&gt;</string>
+    <string name="donate_kofi">&lt;a href="https://ko-fi.com/U7U372JJ"&gt;Über Ko-fi spenden&lt;/a&gt;</string>
     <string name="issue_tracker">Fehlermeldungen und Funktionsanfragen: &lt;a href="https://github.com/Pygmalion69/OpenTopoMapViewer/issues"&gt;GitHub Issues&lt;/a&gt;</string>
     <string name="about_open_topo_map">Karte von &lt;a href="https://opentopomap.org/"&gt;OpenTopoMap&lt;/a&gt; (© OpenStreetMap-Mitwirkende, SRTM).</string>
     <string name="about_open_street_map">Kartendaten von &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt;-Mitwirkenden.</string>

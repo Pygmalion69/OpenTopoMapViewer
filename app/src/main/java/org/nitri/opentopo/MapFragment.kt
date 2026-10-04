@@ -54,6 +54,9 @@ import org.nitri.opentopo.overlay.GestureOverlay
 import org.nitri.opentopo.overlay.GestureOverlay.GestureCallback
 import org.nitri.opentopo.overlay.OverlayHelper
 import org.nitri.opentopo.analytics.AnalyticsProvider
+import org.nitri.opentopo.analytics.OrsOutcome
+import org.nitri.opentopo.analytics.OrsStartSource
+import org.nitri.opentopo.analytics.durationBucket
 import org.nitri.opentopo.util.MapOrientation
 import org.nitri.opentopo.util.OrientationSensor
 import org.nitri.opentopo.util.Utils
@@ -585,14 +588,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val language = locale.language.lowercase()
         listener?.getOpenRouteServiceClient()?.let { client ->
             val directions = Directions(client, profile)
+            val destinationCount = markers.size
+            val startSource = if (currentLocation != null) OrsStartSource.CURRENT_LOCATION else OrsStartSource.MARKER_ONLY
+            val startedAt = System.nanoTime() / 1_000_000
+            val analytics = AnalyticsProvider.get(requireContext())
             directions.getRouteGpx(coordinates, language, object : Directions.RouteGpxResult {
                 override fun onSuccess(gpx: String) {
-                    Log.d(TAG, "GPX: $gpx")
-                    // Analytics: route calculation succeeded (Play flavor reports it; FOSS no-ops)
-                    AnalyticsProvider.get(requireContext()).trackRouteCalculated(
-                        profile = profile,
-                        waypointCount = coordinates.size
-                    )
+                    Log.d(TAG, "ORS route GPX received (${gpx.length} chars)")
+                    trackRouteResult(OrsOutcome.SUCCESS)
                     gpxViewModel?.markerCoordinates = markers
                     gpxViewModel?.orsProfile = profile
 
@@ -607,15 +610,25 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     }
                 }
 
-                override fun onError(message: String) {
-                    Log.e(TAG, "Error fetching GPX: $message")
+                override fun onEmpty() {
+                    trackRouteResult(OrsOutcome.EMPTY)
                     context?.let { ctx ->
                         Toast.makeText(
                             ctx,
-                            "Error fetching GPX: $message",
+                            R.string.unable_to_calculate_route,
                             Toast.LENGTH_LONG
                         ).show()
                     }
+                }
+
+                override fun onError(category: org.nitri.opentopo.analytics.OrsErrorCategory) {
+                    trackRouteResult(OrsOutcome.ERROR, category)
+                    context?.let { Toast.makeText(it, R.string.unable_to_calculate_route, Toast.LENGTH_LONG).show() }
+                }
+
+                private fun trackRouteResult(outcome: OrsOutcome, category: org.nitri.opentopo.analytics.OrsErrorCategory? = null) {
+                    analytics.trackOrsRouteResult(outcome, profile, destinationCount,
+                        startSource, durationBucket(System.nanoTime() / 1_000_000 - startedAt), category)
                 }
             }
             )

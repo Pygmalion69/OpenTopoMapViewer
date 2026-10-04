@@ -30,6 +30,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import org.nitri.opentopo.BuildConfig
 import org.nitri.opentopo.R
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.Utils
@@ -127,6 +128,12 @@ fun AboutDialogContent() {
             html = stringResource(R.string.app_product_page),
             modifier = Modifier.padding(top = 16.dp)
         )
+        if (BuildConfig.SHOW_DONATE_LINK) {
+            HtmlText(
+                html = stringResource(R.string.donate_kofi),
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
         HtmlText(
             html = stringResource(R.string.issue_tracker),
             modifier = Modifier.padding(top = 8.dp)

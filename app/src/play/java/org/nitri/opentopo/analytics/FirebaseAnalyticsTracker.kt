@@ -7,7 +7,10 @@ import io.ticofab.androidgpxparser.parser.domain.Gpx
 
 private const val EVENT_GPX_LOADED = "gpx_loaded"
 private const val EVENT_KML_LOADED = "kml_loaded"
-private const val EVENT_ROUTE_CALCULATED = "route_calculated"
+private const val EVENT_ORS_ROUTE_RESULT = "ors_route_result"
+private const val EVENT_ORS_SEARCH_OPENED = "ors_search_opened"
+private const val EVENT_ORS_SEARCH_RESULT = "ors_search_result"
+private const val EVENT_ORS_SEARCH_SELECTION = "ors_search_selection"
 private const val EVENT_MAP_LAYER_SELECTED = "map_layer_selected"
 private const val EVENT_MARKERS_IMPORTED = "markers_imported"
 private const val EVENT_MARKERS_EXPORTED = "markers_exported"
@@ -28,7 +31,6 @@ class FirebaseAnalyticsTracker(context: Context) : AnalyticsTracker {
     override fun trackGpxLoaded(source: String, gpx: Gpx, fileName: String?) {
         val params = Bundle().apply {
             putString("source", source)
-            fileName?.let { putString("file_name", it) }
             putInt("track_count", gpx.tracks?.size ?: 0)
             putInt("route_count", gpx.routes?.size ?: 0)
             putInt("waypoint_count", gpx.wayPoints?.size ?: 0)
@@ -40,17 +42,45 @@ class FirebaseAnalyticsTracker(context: Context) : AnalyticsTracker {
         val params = Bundle().apply {
             putString("source", source)
             putString(FirebaseAnalytics.Param.CONTENT_TYPE, contentType)
-            fileName?.let { putString("file_name", it) }
         }
         firebase.logEvent(EVENT_KML_LOADED, params)
     }
 
-    override fun trackRouteCalculated(profile: String?, waypointCount: Int) {
+    override fun trackOrsRouteResult(outcome: OrsOutcome, profile: String, destinationCount: Int,
+        startSource: OrsStartSource, durationBucket: DurationBucket, errorCategory: OrsErrorCategory?) {
         val params = Bundle().apply {
-            profile?.let { putString("profile", it) }
-            putInt("waypoint_count", waypointCount)
+            putString("outcome", outcome.value)
+            putString("profile", profile)
+            putInt("destination_count", destinationCount)
+            putString("start_source", startSource.value)
+            putString("duration_bucket", durationBucket.value)
+            if (outcome == OrsOutcome.ERROR) errorCategory?.let { putString("error_category", it.value) }
         }
-        firebase.logEvent(EVENT_ROUTE_CALCULATED, params)
+        firebase.logEvent(EVENT_ORS_ROUTE_RESULT, params)
+    }
+
+    override fun trackOrsSearchOpened(hasMapFocus: Boolean) {
+        firebase.logEvent(EVENT_ORS_SEARCH_OPENED, Bundle().apply { putBoolean("has_map_focus", hasMapFocus) })
+    }
+
+    override fun trackOrsSearchResult(outcome: OrsOutcome, resultCount: Int,
+        durationBucket: DurationBucket, queryLengthBucket: QueryLengthBucket,
+        isRetry: Boolean, errorCategory: OrsErrorCategory?) {
+        firebase.logEvent(EVENT_ORS_SEARCH_RESULT, Bundle().apply {
+            putString("outcome", outcome.value)
+            putInt("result_count", resultCount.coerceIn(0, 10))
+            putString("duration_bucket", durationBucket.value)
+            putString("query_length_bucket", queryLengthBucket.value)
+            putBoolean("is_retry", isRetry)
+            if (outcome == OrsOutcome.ERROR) errorCategory?.let { putString("error_category", it.value) }
+        })
+    }
+
+    override fun trackOrsSearchSelection(resultPosition: ResultPositionBucket, resultCount: Int) {
+        firebase.logEvent(EVENT_ORS_SEARCH_SELECTION, Bundle().apply {
+            putString("result_position", resultPosition.value)
+            putInt("result_count", resultCount.coerceIn(0, 10))
+        })
     }
 
     override fun trackMapLayerSelected(baseMap: String, overlay: String) {

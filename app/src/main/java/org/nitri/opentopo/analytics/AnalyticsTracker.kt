@@ -21,10 +21,17 @@ interface AnalyticsTracker {
         fileName: String?
     )
 
-    fun trackRouteCalculated(
-        profile: String?,
-        waypointCount: Int
-    )
+    fun trackOrsRouteResult(outcome: OrsOutcome, profile: String, destinationCount: Int,
+        startSource: OrsStartSource, durationBucket: DurationBucket,
+        errorCategory: OrsErrorCategory? = null)
+
+    fun trackOrsSearchOpened(hasMapFocus: Boolean)
+
+    fun trackOrsSearchResult(outcome: OrsOutcome, resultCount: Int,
+        durationBucket: DurationBucket, queryLengthBucket: QueryLengthBucket,
+        isRetry: Boolean, errorCategory: OrsErrorCategory? = null)
+
+    fun trackOrsSearchSelection(resultPosition: ResultPositionBucket, resultCount: Int)
 
     fun trackMapLayerSelected(baseMap: String, overlay: String)
 
@@ -40,7 +47,10 @@ object NoOpAnalyticsTracker : AnalyticsTracker {
     override fun trackScreen(screenName: String, screenClass: String) { /* no-op */ }
     override fun trackGpxLoaded(source: String, gpx: Gpx, fileName: String?) { /* no-op */ }
     override fun trackKmlLoaded(source: String, contentType: String, fileName: String?) { /* no-op */ }
-    override fun trackRouteCalculated(profile: String?, waypointCount: Int) { /* no-op */ }
+    override fun trackOrsRouteResult(outcome: OrsOutcome, profile: String, destinationCount: Int, startSource: OrsStartSource, durationBucket: DurationBucket, errorCategory: OrsErrorCategory?) { /* no-op */ }
+    override fun trackOrsSearchOpened(hasMapFocus: Boolean) { /* no-op */ }
+    override fun trackOrsSearchResult(outcome: OrsOutcome, resultCount: Int, durationBucket: DurationBucket, queryLengthBucket: QueryLengthBucket, isRetry: Boolean, errorCategory: OrsErrorCategory?) { /* no-op */ }
+    override fun trackOrsSearchSelection(resultPosition: ResultPositionBucket, resultCount: Int) { /* no-op */ }
     override fun trackMapLayerSelected(baseMap: String, overlay: String) { /* no-op */ }
     override fun trackMarkersImported(importedCount: Int, skippedCount: Int) { /* no-op */ }
     override fun trackMarkersExported(markerCount: Int) { /* no-op */ }
