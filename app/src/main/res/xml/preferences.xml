@@ -21,7 +21,7 @@
             app:title="@string/max_zoom_level"
             app:entries="@array/max_zoom_level_entries"
             app:entryValues="@array/max_zoom_level_values"
-            app:defaultValue="17"
+            app:defaultValue="15"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
