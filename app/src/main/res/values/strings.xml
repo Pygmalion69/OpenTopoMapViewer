@@ -188,6 +188,7 @@ This cannot be undone.</string>
     <string name="unable_to_calculate_route">Unable to calculate route</string>
     <string name="retry">Retry</string>
 
+    <string name="support_map_providers">Support map providers</string>
     <string name="support_openmaps">Support openmaps.fr</string>
     <string name="support_openmaps_summary">Help fund OpenTopoMap-R hosting.</string>
     <string name="support_top_o_map">Support Top-O-Map</string>

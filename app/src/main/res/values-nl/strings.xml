@@ -175,6 +175,7 @@ Dit kan niet ongedaan worden gemaakt.</string>
     <string name="unable_to_search_places">Kan geen plaatsen zoeken</string>
     <string name="unable_to_calculate_route">Kan route niet berekenen</string>
     <string name="retry">Opnieuw proberen</string>
+    <string name="support_map_providers">Steun kaartaanbieders</string>
     <string name="support_openmaps">Steun openmaps.fr</string>
     <string name="support_openmaps_summary">Help de hosting van OpenTopoMap-R te financieren.</string>
     <string name="support_top_o_map">Steun Top-O-Map</string>

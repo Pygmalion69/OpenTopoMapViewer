@@ -51,6 +51,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
@@ -131,12 +132,14 @@ class SettingsActivity : AppCompatActivity() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
 
+            findPreference<PreferenceCategory>("support_map_providers")?.isVisible =
+                BuildConfig.SHOW_DONATE_LINK
+
             mapOf(
                 "support_openmaps" to "https://openmaps.fr/donate",
                 "support_top_o_map" to "https://ko-fi.com/topomap"
             ).forEach { (key, url) ->
                 findPreference<Preference>(key)?.apply {
-                    isVisible = BuildConfig.SHOW_DONATE_LINK
                     setOnPreferenceClickListener {
                         try {
                             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))

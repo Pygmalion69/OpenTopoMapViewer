@@ -175,6 +175,7 @@ Cette action est irréversible.</string>
     <string name="unable_to_search_places">Impossible de rechercher des lieux</string>
     <string name="unable_to_calculate_route">Impossible de calculer l\'itinéraire</string>
     <string name="retry">Réessayer</string>
+    <string name="support_map_providers">Soutenir les fournisseurs de cartes</string>
     <string name="support_openmaps">Soutenir openmaps.fr</string>
     <string name="support_openmaps_summary">Aidez à financer l’hébergement d’OpenTopoMap-R.</string>
     <string name="support_top_o_map">Soutenir Top-O-Map</string>

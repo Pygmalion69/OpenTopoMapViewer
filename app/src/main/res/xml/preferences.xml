@@ -32,16 +32,6 @@
             app:defaultValue="opentopomap"
             app:useSimpleSummaryProvider="true" />
 
-        <Preference
-            app:key="support_openmaps"
-            app:title="@string/support_openmaps"
-            app:summary="@string/support_openmaps_summary" />
-
-        <Preference
-            app:key="support_top_o_map"
-            app:title="@string/support_top_o_map"
-            app:summary="@string/support_top_o_map_summary" />
-
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/pref_markers_header">
@@ -115,6 +105,21 @@
             app:title="@string/ors_profile"
             android:summary="driving-car"
             android:visible="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:key="support_map_providers"
+        app:title="@string/support_map_providers">
+
+        <Preference
+            app:key="support_openmaps"
+            app:title="@string/support_openmaps"
+            app:summary="@string/support_openmaps_summary" />
+
+        <Preference
+            app:key="support_top_o_map"
+            app:title="@string/support_top_o_map"
+            app:summary="@string/support_top_o_map_summary" />
     </PreferenceCategory>
 
 </PreferenceScreen>

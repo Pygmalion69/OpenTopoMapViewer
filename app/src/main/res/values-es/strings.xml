@@ -175,6 +175,7 @@ Esto no se puede deshacer.</string>
     <string name="unable_to_search_places">No se pudieron buscar lugares</string>
     <string name="unable_to_calculate_route">No se pudo calcular la ruta</string>
     <string name="retry">Reintentar</string>
+    <string name="support_map_providers">Apoyar a los proveedores de mapas</string>
     <string name="support_openmaps">Apoyar a openmaps.fr</string>
     <string name="support_openmaps_summary">Ayuda a financiar el alojamiento de OpenTopoMap-R.</string>
     <string name="support_top_o_map">Apoyar a Top-O-Map</string>
