@@ -173,6 +173,7 @@ L\'azione è irreversibile.</string>
     <string name="search_min_chars">Inserisci almeno 3 caratteri</string>
     <string name="no_matching_places">Nessun luogo corrispondente trovato</string>
     <string name="unable_to_search_places">Impossibile cercare i luoghi</string>
+    <string name="unable_to_calculate_route">Impossibile calcolare il percorso</string>
     <string name="retry">Riprova</string>
     <string name="support_openmaps">Sostieni openmaps.fr</string>
     <string name="support_openmaps_summary">Aiuta a finanziare l’hosting di OpenTopoMap-R.</string>

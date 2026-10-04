@@ -173,6 +173,7 @@ Esto no se puede deshacer.</string>
     <string name="search_min_chars">Ingrese al menos 3 caracteres</string>
     <string name="no_matching_places">No se encontraron lugares coincidentes</string>
     <string name="unable_to_search_places">No se pudieron buscar lugares</string>
+    <string name="unable_to_calculate_route">No se pudo calcular la ruta</string>
     <string name="retry">Reintentar</string>
     <string name="support_openmaps">Apoyar a openmaps.fr</string>
     <string name="support_openmaps_summary">Ayuda a financiar el alojamiento de OpenTopoMap-R.</string>
