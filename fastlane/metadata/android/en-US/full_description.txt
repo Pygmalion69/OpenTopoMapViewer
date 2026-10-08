@@ -1,0 +1,32 @@
+OpenTopoMap Viewer is an open-source Android app for exploring topographic maps, viewing tracks and planning routes. Use it for hiking, cycling and discovering places, with detailed terrain maps and your own waypoints.
+
+MAPS AND LOCATION
+• Choose from OpenTopoMap, OpenTopoMap-R, Top-O-Map, OpenStreetMap, OpenHikingMap and Freemap.sk.
+• Add Waymarked Trails overlays for hiking and cycling routes.
+• Follow your location, return to it quickly and rotate the map using the compass or GPS bearing.
+• View coordinates and elevation information.
+
+TRACKS AND WAYPOINTS
+• Open GPX files to display tracks, routes and waypoints.
+• Inspect track distance, elevation profiles, descriptions and waypoint details.
+• Choose track colors and zoom to imported content.
+• Enable KML/KMZ import to display additional map content.
+
+MARKERS AND NEARBY PLACES
+• Long-press the map to save a marker, then move, edit or delete it.
+• Add names, descriptions, colors and optional labels.
+• Import and export markers as GPX waypoints.
+• Browse nearby Wikipedia places and show selected results on the map.
+
+OPTIONAL ROUTE PLANNING AND PLACE SEARCH
+Configure your own OpenRouteService (ORS) API key to search for places and calculate routes between markers. Choose profiles for driving, cycling, walking, hiking or wheelchair routing. Adjust waypoints on the map and inspect the resulting route and elevation data.
+
+OFFLINE MAP TILES
+Previously cached tiles can be viewed without an internet connection. You can also import a prepared OpenTopoMap tile ZIP into the cache and configure its location and size. Offline coverage depends on the tiles available on your device; uncached areas and zoom levels require an internet connection.
+
+MAKE IT YOUR OWN
+Choose a light or dark theme, keep the screen on while viewing the map and adjust map display settings. The interface is available in English, German, Spanish, French, Italian and Dutch.
+
+Online map loading, Wikipedia lookups and ORS services require an internet connection. ORS routing, place search and optional elevation lookup require an API key and are subject to the service's usage limits.
+
+OpenTopoMap Viewer is licensed under Apache 2.0. The F-Droid edition contains no ads.
