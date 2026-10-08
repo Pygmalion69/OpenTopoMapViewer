@@ -25,7 +25,7 @@ OFFLINE MAP TILES
 Previously cached tiles can be viewed without an internet connection. You can also import a prepared OpenTopoMap tile ZIP into the cache and configure its location and size. Offline coverage depends on the tiles available on your device; uncached areas and zoom levels require an internet connection.
 
 MAKE IT YOUR OWN
-Choose a light or dark theme, keep the screen on while viewing the map and adjust map display settings. The interface is available in English, German, Spanish, French, Italian and Dutch.
+Keep the screen on while viewing the map and adjust map display settings. The interface is available in English, German, Spanish, French, Italian and Dutch.
 
 Online map loading, Wikipedia lookups and ORS services require an internet connection. ORS routing, place search and optional elevation lookup require an API key and are subject to the service's usage limits.
 
