@@ -1,5 +1,7 @@
 package org.nitri.opentopo
 
+import org.nitri.opentopo.diagnostics.FocusAlertDialog
+import org.nitri.opentopo.diagnostics.FocusBoundary
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -39,6 +41,13 @@ import java.io.File
 
 class CacheSettingsFragment : DialogFragment() {
 
+    private val focusBoundary = FocusBoundary("CacheSettingsFragment")
+
+    override fun onDestroyView() {
+        focusBoundary.clear("destroyView")
+        super.onDestroyView()
+    }
+
     private var externalStorageState by mutableStateOf(false)
     private var tileCacheState by mutableStateOf("")
     private var cacheSizeState by mutableStateOf("")
@@ -71,6 +80,7 @@ class CacheSettingsFragment : DialogFragment() {
         val composeView = ComposeView(fragmentActivity).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
+                focusBoundary.Bind()
                 OpenTopoTheme(dynamicColor = false) {
                     val currentStorageRoot = Utils.getOsmdroidBasePath(fragmentActivity.applicationContext, externalStorageState).absolutePath
                     val storageRootText = stringResource(id = R.string.storage_root, currentStorageRoot)
@@ -92,13 +102,13 @@ class CacheSettingsFragment : DialogFragment() {
         composeView.setViewTreeViewModelStoreOwner(this)
         composeView.setViewTreeSavedStateRegistryOwner(this)
 
-        val builder = AlertDialog.Builder(fragmentActivity)
-            .setView(composeView)
-            .setPositiveButton(android.R.string.ok, null) // Listener set in onResume to prevent auto-dismiss
-            .setNegativeButton(android.R.string.cancel) { _: DialogInterface?, _: Int -> dismiss() }
-            .setNeutralButton(R.string.reset, null) // Listener set in onResume
-
-        val dialog = builder.create()
+        val dialog = FocusAlertDialog(fragmentActivity, focusBoundary).apply {
+            setView(composeView)
+            // Positive and neutral listeners are installed in onResume.
+            setButton(AlertDialog.BUTTON_POSITIVE, getString(android.R.string.ok), null as DialogInterface.OnClickListener?)
+            setButton(AlertDialog.BUTTON_NEGATIVE, getString(android.R.string.cancel)) { _, _ -> dismiss() }
+            setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.reset), null as DialogInterface.OnClickListener?)
+        }
         setCancelable(false)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
 
@@ -230,6 +240,7 @@ class CacheSettingsFragment : DialogFragment() {
             configuration.save(appContext, defaultPrefs)
             if (currentExternalStorage != newExternalStorage || currentTileCache != newTileCache || currentCacheSize != newCacheSize) {
                 (fragmentActivity as? SettingsActivity)?.setResult(SettingsActivity.RESULT_CACHE_SETTINGS_CHANGED)
+                focusBoundary.clear("finishSettings")
                 fragmentActivity.finish()
             }
             dismiss()

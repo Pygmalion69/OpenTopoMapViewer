@@ -1,5 +1,7 @@
 package org.nitri.opentopo.view
 
+import org.nitri.opentopo.diagnostics.FocusDialog
+import org.nitri.opentopo.diagnostics.FocusBoundary
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -31,6 +33,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.platform.LocalView
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -61,6 +68,13 @@ import org.nitri.opentopo.viewmodel.PlaceSearchUiState
 import org.nitri.opentopo.viewmodel.PlaceSearchViewModel
 
 class PlaceSearchDialogFragment : DialogFragment() {
+
+    private val focusBoundary = FocusBoundary("PlaceSearchDialogFragment")
+
+    override fun onDestroyView() {
+        focusBoundary.clear("destroyView")
+        super.onDestroyView()
+    }
 
     private val analytics by lazy { AnalyticsProvider.get(requireContext()) }
 
@@ -94,11 +108,16 @@ class PlaceSearchDialogFragment : DialogFragment() {
         val composeView = ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
+                focusBoundary.Bind()
                 OpenTopoTheme(dynamicColor = false) {
                     PlaceSearchDialogContent(
                         viewModel = viewModel,
                         isInitialLaunch = savedInstanceState == null,
+                        isActiveDialog = { isResumed && dialog?.isShowing == true &&
+                            dialog?.window?.decorView?.findViewById<android.view.View>(android.R.id.content)
+                                ?.rootView === this@apply.rootView },
                         onResultSelected = { result, index, resultCount ->
+                            focusBoundary.clear("select")
                             analytics.trackOrsSearchSelection(resultPositionBucket(index), resultCount.coerceAtMost(10))
                             setFragmentResult(
                                 REQUEST_KEY,
@@ -121,7 +140,7 @@ class PlaceSearchDialogFragment : DialogFragment() {
         composeView.setViewTreeViewModelStoreOwner(this)
         composeView.setViewTreeSavedStateRegistryOwner(this)
 
-        return Dialog(requireContext()).apply {
+        return FocusDialog(requireContext(), focusBoundary).apply {
             requestWindowFeature(Window.FEATURE_NO_TITLE)
             setContentView(composeView)
             window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -161,6 +180,7 @@ class PlaceSearchDialogFragment : DialogFragment() {
 private fun PlaceSearchDialogContent(
     viewModel: PlaceSearchViewModel,
     isInitialLaunch: Boolean,
+    isActiveDialog: () -> Boolean,
     onResultSelected: (PlaceSearchResult, Int, Int) -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -169,9 +189,20 @@ private fun PlaceSearchDialogContent(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    LaunchedEffect(Unit) {
-        if (isInitialLaunch) {
-            focusRequester.requestFocus()
+    val owner = LocalLifecycleOwner.current
+    val view = LocalView.current
+    LaunchedEffect(owner, view) {
+        var requested = !isInitialLaunch
+        owner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            // Cancelled on pause/disposal. Wait for this dialog's window, not just attachment.
+            while (!requested && isActiveDialog()) {
+                if (view.isAttachedToWindow && view.hasWindowFocus()) {
+                    focusRequester.requestFocus()
+                    requested = true
+                } else {
+                    withFrameNanos { }
+                }
+            }
         }
     }
 

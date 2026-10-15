@@ -1,5 +1,8 @@
 package org.nitri.opentopo
 
+import org.nitri.opentopo.diagnostics.FocusAlertDialog
+import org.nitri.opentopo.diagnostics.FocusBoundary
+import org.nitri.opentopo.diagnostics.recordFocus
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -93,6 +96,16 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
+
+        private var inputDialog: AlertDialog? = null
+        private val inputFocus = FocusBoundary("OrsApiKeyDialog")
+
+        override fun onDestroyView() {
+            inputFocus.clear("destroyView")
+            inputDialog?.dismiss()
+            inputDialog = null
+            super.onDestroyView()
+        }
 
         private val profileKeys = listOf(
             "driving-car", "driving-hgv",
@@ -292,14 +305,17 @@ class SettingsActivity : AppCompatActivity() {
 
                 setContent {
                     OpenTopoTheme(dynamicColor = false) {
+                        inputFocus.Bind()
                         OrsApiKeyDialogContent(onKeyChange = { enteredKey = it })
                     }
                 }
             }
 
-            val dialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)
-                .setTitle(R.string.ors_api_key_title)
-                .setPositiveButton(android.R.string.ok) { dialog, _ ->
+            val dialog = FocusAlertDialog(context, inputFocus, R.style.AlertDialogTheme).apply {
+                setTitle(R.string.ors_api_key_title)
+                setButton(AlertDialog.BUTTON_POSITIVE, getString(android.R.string.ok)) { dialog, _ ->
+                    inputFocus.clear("save")
+                    dialog.dismiss()
                     val key = enteredKey.trim()
                     if (key.isNotEmpty()) {
                         PreferenceManager.getDefaultSharedPreferences(context)
@@ -307,11 +323,15 @@ class SettingsActivity : AppCompatActivity() {
                         Toast.makeText(context, "Key saved", Toast.LENGTH_SHORT).show()
                         recreate()
                     }
-                    dialog.dismiss()
                 }
-                .setNegativeButton(android.R.string.cancel, null)
-                .create()
+                setButton(AlertDialog.BUTTON_NEGATIVE, getString(android.R.string.cancel)) { _, _ -> inputFocus.clear("cancelButton") }
+            }
 
+            inputDialog = dialog
+            dialog.setOnDismissListener {
+                composeView.disposeComposition()
+                if (inputDialog === dialog) inputDialog = null
+            }
             dialog.setView(composeView, 0, 0, 0, 0)
 
             // Required for Compose inside AppCompat AlertDialog.
@@ -426,6 +446,8 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         private fun recreate() {
+            recordFocus("SettingsFragment.replace", view)
+            view?.clearFocus()
             activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(id, SettingsFragment())
                 ?.commit()

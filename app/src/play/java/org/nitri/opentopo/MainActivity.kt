@@ -14,7 +14,8 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import kotlinx.coroutines.CoroutineScope
+import org.nitri.opentopo.diagnostics.recordFocus
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
@@ -100,11 +101,14 @@ class MainActivity : BaseMainActivity() {
     }
 
     public override fun onDestroy() {
+        recordFocus("ads.destroy", adView)
+        adView?.clearFocus()
         adView?.destroy()
         super.onDestroy()
     }
 
     private fun loadBanner() {
+        if (isFinishing || isDestroyed) return
 
         // Create and configure a new ad view.
         val adView = AdView(this)
@@ -114,6 +118,8 @@ class MainActivity : BaseMainActivity() {
 
         // Replace ad container with the new ad view.
         adViewContainer.apply {
+            recordFocus("ads.replace", this)
+            clearFocus()
             removeAllViews()
             addView(adView)
         }
@@ -133,7 +139,7 @@ class MainActivity : BaseMainActivity() {
             RequestConfiguration.Builder().setTestDeviceIds(listOf(getString(R.string.test_device_hashed_id))).build()
         )
 
-        CoroutineScope(Dispatchers.IO).launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             // Initialize the Google Mobile Ads SDK on a background thread.
             MobileAds.initialize(this@MainActivity) {}
 

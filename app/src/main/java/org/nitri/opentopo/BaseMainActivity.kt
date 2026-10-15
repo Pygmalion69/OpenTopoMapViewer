@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import org.nitri.opentopo.diagnostics.recordFocus
 import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
@@ -307,6 +308,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
         }
         mapFragment?.let {
+            recordFocus("main.replace.map", findViewById(R.id.map_container))
+            findViewById<android.view.View>(R.id.map_container)?.clearFocus()
             supportFragmentManager.beginTransaction()
                 .replace(R.id.map_container, it, MAP_FRAGMENT_TAG)
                 .commit()
@@ -324,6 +327,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun addGpxDetailFragment() {
         val gpxDetailFragment = GpxDetailFragment.newInstance()
+        recordFocus("main.replace.detail", findViewById(R.id.map_container))
+        findViewById<android.view.View>(R.id.map_container)?.clearFocus()
         supportFragmentManager.beginTransaction().addToBackStack("gpx")
             .replace(R.id.map_container, gpxDetailFragment, GPX_DETAIL_FRAGMENT_TAG)
             .commit()
@@ -336,6 +341,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     override fun addNearbyFragment(nearbyCenterPoint: GeoPoint) {
         val nearbyFragment =
             NearbyFragment.newInstance(nearbyCenterPoint.latitude, nearbyCenterPoint.longitude)
+        recordFocus("main.replace.detail", findViewById(R.id.map_container))
+        findViewById<android.view.View>(R.id.map_container)?.clearFocus()
         supportFragmentManager.beginTransaction().addToBackStack("nearby")
             .replace(R.id.map_container, nearbyFragment, NEARBY_FRAGMENT_TAG)
             .commit()
@@ -644,6 +651,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
     override fun showNearbyPlace(nearbyItem: NearbyItem?) {
         selectedNearbyPlace = nearbyItem
+        recordFocus("main.pop.nearby", findViewById(R.id.map_container))
+        findViewById<android.view.View>(R.id.map_container)?.clearFocus()
         supportFragmentManager.popBackStack()
         addMapFragment()
         val mapFragment = supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as MapFragment?

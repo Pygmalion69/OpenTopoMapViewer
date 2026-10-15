@@ -1,5 +1,7 @@
 package org.nitri.opentopo.view
 
+import org.nitri.opentopo.diagnostics.FocusAlertDialog
+import org.nitri.opentopo.diagnostics.FocusBoundary
 import android.app.Dialog
 import android.os.Bundle
 import android.view.Window
@@ -55,6 +57,13 @@ import org.nitri.opentopo.ui.theme.OpenTopoTheme
 
 class MarkerEditorDialog : DialogFragment() {
 
+    private val focusBoundary = FocusBoundary("MarkerEditorDialog")
+
+    override fun onDestroyView() {
+        focusBoundary.clear("destroyView")
+        super.onDestroyView()
+    }
+
     private var editedName: String = ""
     private var editedDescription: String = ""
     private var editedColor: Int = DEFAULT_MARKER_COLOR
@@ -87,6 +96,7 @@ class MarkerEditorDialog : DialogFragment() {
             setViewTreeSavedStateRegistryOwner(this@MarkerEditorDialog)
 
             setContent {
+                focusBoundary.Bind()
                 OpenTopoTheme(dynamicColor = false) {
                     MarkerEditorContent(
                         initialName = editedName,
@@ -100,10 +110,11 @@ class MarkerEditorDialog : DialogFragment() {
             }
         }
 
-        val builder = AlertDialog.Builder(requireContext())
-            .setTitle(R.string.edit_marker)
-            .setView(composeView)
-            .setPositiveButton(R.string.ok) { _, _ ->
+        val dialog = FocusAlertDialog(requireContext(), focusBoundary).apply {
+            setTitle(R.string.edit_marker)
+            setView(composeView)
+            setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok)) { _, _ ->
+                focusBoundary.clear("save")
                 setFragmentResult(
                     RESULT_REQUEST_KEY,
                     Bundle().apply {
@@ -115,12 +126,13 @@ class MarkerEditorDialog : DialogFragment() {
                     }
                 )
             }
-            .setNegativeButton(R.string.cancel, null)
-            .setNeutralButton(R.string.delete) { _, _ ->
+            setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.cancel)) { _, _ -> focusBoundary.clear("cancelButton") }
+            setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.delete)) { _, _ ->
+                focusBoundary.clear("delete")
                 showDeleteConfirmation(markerId)
             }
 
-        val dialog = builder.create()
+        }
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
 
         // Standard pattern for AppCompat + Compose dialog interoperability
