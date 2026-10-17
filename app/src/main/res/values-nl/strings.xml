@@ -181,4 +181,12 @@ Dit kan niet ongedaan worden gemaakt.</string>
     <string name="support_top_o_map">Steun Top-O-Map</string>
     <string name="support_top_o_map_summary">Help de hosting van Top-O-Map te financieren.</string>
     <string name="otm_source_migration_notice">Je OpenTopoMap-tegelbron is op verzoek van de aanbieder gewijzigd naar de officiële server. OpenTopoMap-R blijft beschikbaar in Instellingen.</string>
+
+    <string name="clear_map_cache">Kaartcache wissen</string>
+    <string name="clear_map_cache_title">Kaartcache wissen?</string>
+    <string name="clear_map_cache_message">Alle kaarttegels in de cache verwijderen, inclusief geïmporteerde tegels? Kaarten moeten opnieuw worden gedownload of geïmporteerd voor offline gebruik.</string>
+    <string name="clear_map_cache_confirm">Cache wissen</string>
+    <string name="clear_map_cache_progress">Kaartcache wordt gewist…</string>
+    <string name="clear_map_cache_success">Kaartcache gewist.</string>
+    <string name="clear_map_cache_failure">De kaartcache kon niet worden gewist. Probeer het opnieuw.</string>
 </resources>

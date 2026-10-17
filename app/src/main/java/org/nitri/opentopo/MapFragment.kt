@@ -69,6 +69,7 @@ import org.nitri.opentopo.viewmodel.GpxViewModel.GpxDisplayState
 import org.nitri.opentopo.viewmodel.LocationViewModel
 import org.nitri.opentopo.viewmodel.MarkerViewModel
 import org.nitri.ors.OrsClient
+import org.nitri.opentopo.util.MapCache
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.DelayedMapListener
 import org.osmdroid.events.MapEventsReceiver
@@ -285,8 +286,21 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     ): View? {
         val view = inflater.inflate(R.layout.fragment_map, container, false)
         mapView = view.findViewById(R.id.mapview)
+        mapView.setTileProvider(MapCache.provider(requireContext(), mapView.tileProvider.tileSource))
+        var cacheRevision = MapCache.revision.value
+        cacheRevisionJob = lifecycleScope.launch {
+            MapCache.revision.collect { revision ->
+                if (revision == cacheRevision) return@collect
+                cacheRevision = revision
+                MapCache.resetProvider(mapView)
+                overlayHelper?.setTilesOverlay(overlay)
+                mapView.invalidate()
+            }
+        }
         return view
     }
+
+    private var cacheRevisionJob: Job? = null
 
     fun initializeMapView() {
 
@@ -1346,6 +1360,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onDestroyView() {
+        cacheRevisionJob?.cancel()
+        mapView.tileProvider.detach()
         super.onDestroyView()
         mapViewInitialized = false
     }

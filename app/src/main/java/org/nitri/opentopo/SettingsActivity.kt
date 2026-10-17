@@ -64,6 +64,7 @@ import org.nitri.opentopo.ui.color.ColorPreference
 import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 import org.nitri.opentopo.ui.color.DEFAULT_GPX_TRACK_COLOR
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
+import org.nitri.opentopo.util.MapCache
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
 import org.nitri.opentopo.view.SingleChoiceDialogFragment
@@ -181,6 +182,25 @@ class SettingsActivity : AppCompatActivity() {
             val eraseKeyPref = findPreference<Preference>("ors_erase_key")
             val profilePref = findPreference<Preference>("ors_select_profile")
             val tapCompassToRotatePref = findPreference<Preference>(PREF_TAP_COMPASS_TO_ROTATE)
+            val clearCachePref = findPreference<Preference>("clear_map_cache")
+            clearCachePref?.setOnPreferenceClickListener {
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.clear_map_cache_title)
+                    .setMessage(R.string.clear_map_cache_message)
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.clear_map_cache_confirm) { _, _ ->
+                        MapCache.clear(requireContext())
+                    }.show()
+                true
+            }
+            lifecycleScope.launch {
+                MapCache.clearing.collect { clearing ->
+                    clearCachePref?.isEnabled = !clearing
+                    clearCachePref?.summary = if (clearing) getString(R.string.clear_map_cache_progress) else null
+                    findPreference<Preference>("import_tiles")?.isEnabled = !clearing
+                    findPreference<Preference>("cache_settings")?.isEnabled = !clearing
+                }
+            }
             val importTilesPref = findPreference<Preference>("import_tiles")
             val defaultMarkerColorPref = findPreference<ColorPreference>(PREF_DEFAULT_MARKER_COLOR)
             val gpxTrackColorPref = findPreference<ColorPreference>(PREF_GPX_TRACK_COLOR)

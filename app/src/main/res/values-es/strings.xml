@@ -181,4 +181,12 @@ Esto no se puede deshacer.</string>
     <string name="support_top_o_map">Apoyar a Top-O-Map</string>
     <string name="support_top_o_map_summary">Ayuda a financiar el alojamiento de Top-O-Map.</string>
     <string name="otm_source_migration_notice">Tu fuente de teselas de OpenTopoMap se ha cambiado al servidor oficial a petición del proveedor. OpenTopoMap-R sigue disponible en Ajustes.</string>
+
+    <string name="clear_map_cache">Borrar la caché de mapas</string>
+    <string name="clear_map_cache_title">¿Borrar la caché de mapas?</string>
+    <string name="clear_map_cache_message">¿Eliminar todas las teselas de mapas almacenadas en caché, incluidas las importadas? Será necesario descargar o importar los mapas de nuevo para usarlos sin conexión.</string>
+    <string name="clear_map_cache_confirm">Borrar caché</string>
+    <string name="clear_map_cache_progress">Borrando la caché de mapas…</string>
+    <string name="clear_map_cache_success">Caché de mapas borrada.</string>
+    <string name="clear_map_cache_failure">No se pudo borrar la caché de mapas. Inténtalo de nuevo.</string>
 </resources>

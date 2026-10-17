@@ -71,6 +71,10 @@
             app:title="@string/cache_settings"/>
 
         <Preference
+            app:key="clear_map_cache"
+            app:title="@string/clear_map_cache" />
+
+        <Preference
             app:key="import_tiles"
             app:title="@string/import_offline_tiles_title"
             app:summary="@string/import_offline_tiles_summary"/>

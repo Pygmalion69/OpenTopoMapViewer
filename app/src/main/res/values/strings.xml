@@ -194,4 +194,12 @@ This cannot be undone.</string>
     <string name="support_top_o_map">Support Top-O-Map</string>
     <string name="support_top_o_map_summary">Help fund Top-O-Map hosting.</string>
     <string name="otm_source_migration_notice">Your OpenTopoMap tile source has been switched to the official server at the provider’s request. OpenTopoMap-R remains available in Settings.</string>
+
+    <string name="clear_map_cache">Clear map cache</string>
+    <string name="clear_map_cache_title">Clear map cache?</string>
+    <string name="clear_map_cache_message">Delete all cached map tiles, including imported tiles? Maps will need to be downloaded or imported again for offline use.</string>
+    <string name="clear_map_cache_confirm">Clear cache</string>
+    <string name="clear_map_cache_progress">Clearing map cache…</string>
+    <string name="clear_map_cache_success">Map cache cleared.</string>
+    <string name="clear_map_cache_failure">Could not clear the map cache. Please try again.</string>
 </resources>

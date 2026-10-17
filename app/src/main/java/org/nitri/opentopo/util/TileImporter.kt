@@ -23,7 +23,24 @@ data class ImportResult(
 suspend fun importOpenTopoMapZipToSqliteCache(
     context: Context,
     uri: Uri
-): ImportResult = withContext(Dispatchers.IO) {
+): ImportResult {
+    val requestedGeneration = MapCache.generation
+    val requestedDuringClear = MapCache.clearing.value
+    return withContext(Dispatchers.IO) {
+        // Wait for a running import before purging. Reject queued imports crossing a clear.
+        synchronized(MapCache.lock) {
+            if (requestedDuringClear || MapCache.clearing.value ||
+                requestedGeneration != MapCache.generation
+            ) {
+                ImportResult(0, 0, emptyList(), context.getString(org.nitri.opentopo.R.string.clear_map_cache_progress))
+            } else {
+                importZipLocked(context, uri)
+            }
+        }
+    }
+}
+
+private fun importZipLocked(context: Context, uri: Uri): ImportResult {
     var imported = 0
     var skipped = 0
     val skippedSamples = mutableListOf<String>()
@@ -37,9 +54,9 @@ suspend fun importOpenTopoMapZipToSqliteCache(
         emptyArray()
     )
 
-    try {
+    return try {
         val writer = SqlTileWriter()
-        writer.refreshDb()
+        // Do not close the SQLite connection shared by active map providers.
         
         context.contentResolver.openInputStream(uri)?.use { inputStream ->
             ZipInputStream(inputStream).use { zis ->

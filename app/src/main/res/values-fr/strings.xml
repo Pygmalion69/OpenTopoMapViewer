@@ -181,4 +181,12 @@ Cette action est irréversible.</string>
     <string name="support_top_o_map">Soutenir Top-O-Map</string>
     <string name="support_top_o_map_summary">Aidez à financer l’hébergement de Top-O-Map.</string>
     <string name="otm_source_migration_notice">Votre source de tuiles OpenTopoMap a été remplacée par le serveur officiel à la demande du fournisseur. OpenTopoMap-R reste disponible dans les paramètres.</string>
+
+    <string name="clear_map_cache">Vider le cache des cartes</string>
+    <string name="clear_map_cache_title">Vider le cache des cartes ?</string>
+    <string name="clear_map_cache_message">Supprimer toutes les tuiles cartographiques en cache, y compris les tuiles importées ? Les cartes devront être téléchargées ou importées à nouveau pour une utilisation hors connexion.</string>
+    <string name="clear_map_cache_confirm">Vider le cache</string>
+    <string name="clear_map_cache_progress">Suppression du cache des cartes…</string>
+    <string name="clear_map_cache_success">Cache des cartes vidé.</string>
+    <string name="clear_map_cache_failure">Impossible de vider le cache des cartes. Veuillez réessayer.</string>
 </resources>

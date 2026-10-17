@@ -17,6 +17,7 @@ import org.nitri.opentopo.markerLabelMinimumZoom
 import org.nitri.opentopo.viewmodel.GpxViewModel
 import org.nitri.opentopo.model.MarkerModel
 import org.nitri.opentopo.nearby.entity.NearbyItem
+import org.nitri.opentopo.util.MapCache
 import org.osmdroid.tileprovider.MapTileProviderBasic
 import org.nitri.opentopo.view.MarkerEditorDialog
 import org.nitri.opentopo.defaultGpxTrackColor
@@ -405,6 +406,8 @@ class OverlayHelper(
         tilesOverlay?.let {
             mMapView?.overlays?.remove(it)
         }
+        overlayTileProvider?.detach()
+        overlayTileProvider?.clearTileCache()
         overlayTileProvider = null
         when (overlayType) {
             OVERLAY_NONE -> {}
@@ -421,9 +424,7 @@ class OverlayHelper(
             )
         }
         overlayTiles?.let { tiles ->
-//            // Ensure any leftover db files are removed
-//            Utils.clearOsmdroidSqliteCache(mContext)
-            val tileProvider = MapTileProviderBasic(mContext).apply {
+            val tileProvider = MapCache.provider(mContext, tiles).apply {
                 setTileSource(tiles)
                 tileRequestCompleteHandlers.clear()
                 tileRequestCompleteHandlers.add(mMapView?.tileRequestCompleteHandler)
@@ -451,6 +452,8 @@ class OverlayHelper(
 
     fun destroy() {
         tilesOverlay = null
+        overlayTileProvider?.detach()
+        overlayTileProvider?.clearTileCache()
         overlayTileProvider = null
         wayPointOverlay = null
     }

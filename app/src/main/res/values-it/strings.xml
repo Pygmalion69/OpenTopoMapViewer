@@ -181,4 +181,12 @@ L\'azione è irreversibile.</string>
     <string name="support_top_o_map">Sostieni Top-O-Map</string>
     <string name="support_top_o_map_summary">Aiuta a finanziare l’hosting di Top-O-Map.</string>
     <string name="otm_source_migration_notice">La sorgente delle tessere OpenTopoMap è stata spostata sul server ufficiale su richiesta del fornitore. OpenTopoMap-R rimane disponibile nelle impostazioni.</string>
+
+    <string name="clear_map_cache">Svuota la cache delle mappe</string>
+    <string name="clear_map_cache_title">Svuotare la cache delle mappe?</string>
+    <string name="clear_map_cache_message">Eliminare tutte le tessere delle mappe nella cache, comprese quelle importate? Per utilizzare le mappe offline sarà necessario scaricarle o importarle nuovamente.</string>
+    <string name="clear_map_cache_confirm">Svuota cache</string>
+    <string name="clear_map_cache_progress">Svuotamento della cache delle mappe…</string>
+    <string name="clear_map_cache_success">Cache delle mappe svuotata.</string>
+    <string name="clear_map_cache_failure">Impossibile svuotare la cache delle mappe. Riprova.</string>
 </resources>

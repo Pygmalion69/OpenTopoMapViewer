@@ -181,4 +181,12 @@ Dies kann nicht rückgängig gemacht werden.</string>
     <string name="support_top_o_map">Top-O-Map unterstützen</string>
     <string name="support_top_o_map_summary">Hilf mit, das Hosting von Top-O-Map zu finanzieren.</string>
     <string name="otm_source_migration_notice">Deine OpenTopoMap-Kachelquelle wurde auf Wunsch des Anbieters auf den offiziellen Server umgestellt. OpenTopoMap-R bleibt in den Einstellungen verfügbar.</string>
+
+    <string name="clear_map_cache">Karten-Cache leeren</string>
+    <string name="clear_map_cache_title">Karten-Cache leeren?</string>
+    <string name="clear_map_cache_message">Alle zwischengespeicherten Kartenkacheln einschließlich importierter Kacheln löschen? Für die Offline-Nutzung müssen Karten erneut heruntergeladen oder importiert werden.</string>
+    <string name="clear_map_cache_confirm">Cache leeren</string>
+    <string name="clear_map_cache_progress">Karten-Cache wird geleert…</string>
+    <string name="clear_map_cache_success">Karten-Cache geleert.</string>
+    <string name="clear_map_cache_failure">Der Karten-Cache konnte nicht geleert werden. Bitte erneut versuchen.</string>
 </resources>
