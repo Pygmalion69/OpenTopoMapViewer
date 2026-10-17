@@ -352,11 +352,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                addMapFragment()
-            } else {
-                finish()
-            }
+            // Location is optional: the map can restore its viewport or show the fallback.
+            addMapFragment()
         }
     }
 

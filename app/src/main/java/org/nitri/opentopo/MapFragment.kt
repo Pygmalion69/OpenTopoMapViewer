@@ -92,7 +92,6 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
-import kotlin.math.min
 
 class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListener,
     GestureCallback, ClickableCompassOverlay.OnCompassClickListener {
@@ -171,6 +170,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private var gpxViewModel: GpxViewModel? = null
     private var gestureOverlay: GestureOverlay? = null
 
+    private var firstFixZoom = DEFAULT_ZOOM
+    private var awaitingFirstFix = false
+    private var explicitViewport = false
     private var mapViewInitialized = false
 
     private val markerViewModel: MarkerViewModel by viewModels()
@@ -388,7 +390,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
         rotationGestureOverlay = RotationGestureOverlay(mapView)
         rotationGestureOverlay?.isEnabled = true
-        gestureOverlay = GestureOverlay(this)
+        gestureOverlay = GestureOverlay(object : GestureCallback {
+            override fun onUserMapInteraction() {
+                awaitingFirstFix = false
+                this@MapFragment.onUserMapInteraction()
+            }
+        })
         mapView.overlays.add(gestureOverlay)
         mapView.maxZoomLevel = maxZoomLevel
         mapView.isTilesScaledToDpi = true
@@ -398,6 +405,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         mapView.overlays.add(locationOverlay)
         mapView.overlays.add(compassOverlay)
         mapView.overlays.add(scaleBarOverlay)
+        mapView.addMapListener(object : MapListener {
+            override fun onScroll(event: ScrollEvent) = false
+            override fun onZoom(event: ZoomEvent): Boolean {
+                if (event.zoomLevel != firstFixZoom) awaitingFirstFix = false
+                return false
+            }
+        })
         mapView.addMapListener(DelayedMapListener(dragListener))
         copyrightView = view?.findViewById(R.id.copyrightView)
         setBaseMap()
@@ -449,21 +463,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun initializeMapState(savedInstanceState: Bundle?) {
-        listener?.setGpx()
-        listener?.setKml()
-
-        val arguments = arguments
-        var mapCenterSet = false
-        // Move to received geo intent coordinates
-        arguments?.let {
-            val lat = it.getDouble(PARAM_LATITUDE, Double.MIN_VALUE)
-            val lon = it.getDouble(PARAM_LONGITUDE, Double.MIN_VALUE)
-            if (lat != Double.MIN_VALUE && lon != Double.MIN_VALUE) {
-                mapCenterSet = true
-                animateToLatLon(lat, lon)
-            }
-        }
-
         val hostActivity = activity
         val hasFineLocationPermission =
             hostActivity?.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -480,53 +479,41 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 }
             }
         }
-        savedInstanceState?.let {
-            if (it.containsKey(STATE_LATITUDE) && savedInstanceState.containsKey(STATE_LONGITUDE)
-            ) {
-                mapCenterState = GeoPoint(
-                    it.getDouble(STATE_LATITUDE, 0.0),
-                    it.getDouble(STATE_LONGITUDE, 0.0)
-                )
-                Log.d(
-                    TAG,
-                    String.format(
-                        "Restoring center state: %f, %f",
-                        mapCenterState?.latitude,
-                        mapCenterState?.longitude
-                    )
-                )
-                zoomState = it.getDouble(STATE_ZOOM, DEFAULT_ZOOM)
-            } else {
-                Log.d(TAG, "No center state delivered")
+        val restored = savedInstanceState?.let {
+            MapViewport.restore(
+                if (it.containsKey(STATE_LATITUDE)) it.getDouble(STATE_LATITUDE) else null,
+                if (it.containsKey(STATE_LONGITUDE)) it.getDouble(STATE_LONGITUDE) else null,
+                it.getDouble(STATE_ZOOM, DEFAULT_ZOOM)
+            )
+        } ?: mapCenterState?.let { MapViewport(it.latitude, it.longitude, zoomState) }
+        val persisted = MapViewport.fromPreferences(sharedPreferences.all)
+        val known = locationViewModel?.currentLocation?.value?.let {
+            MapViewport.restore(it.latitude, it.longitude, DEFAULT_ZOOM)
+        }
+        val viewport = MapViewport.select(restored, persisted, known)
+        firstFixZoom = viewport.clampedZoom(mapView.minZoomLevel, mapView.maxZoomLevel)
+        mapView.controller.setZoom(firstFixZoom)
+        mapView.controller.setCenter(GeoPoint(viewport.latitude, viewport.longitude))
+        awaitingFirstFix = restored == null && persisted == null && known == null
+        explicitViewport = false
+
+        // Consume navigation arguments once; recreation should restore the viewed viewport.
+        arguments?.let {
+            val destination = MapViewport.restore(
+                if (it.containsKey(PARAM_LATITUDE)) it.getDouble(PARAM_LATITUDE) else null,
+                if (it.containsKey(PARAM_LONGITUDE)) it.getDouble(PARAM_LONGITUDE) else null,
+                DEFAULT_ZOOM
+            )
+            if (destination != null && savedInstanceState == null && mapCenterState == null) {
+                animateToLatLon(destination.latitude, destination.longitude)
             }
+            it.remove(PARAM_LATITUDE)
+            it.remove(PARAM_LONGITUDE)
         }
-        if (mapCenterState == null) {
-            Log.d(TAG, "No saved center state")
-            val prefLat = sharedPreferences.getFloat(PREF_LATITUDE, 0f)
-            val prefLon = sharedPreferences.getFloat(PREF_LONGITUDE, 0f)
-            if (prefLat > 0 && prefLon > 0) {
-                mapCenterState = GeoPoint(prefLat.toDouble(), prefLon.toDouble())
-                Log.d(
-                    TAG,
-                    String.format("Restoring center state from prefs: %f, %f", prefLat, prefLon)
-                )
-            }
-        }
-        mapCenterState?.let {
-            mapView.controller.setCenter(it)
-            mapCenterSet = true
-        } ?: run {
-            locationViewModel?.currentLocation?.value?.let { location ->
-                mapView.controller.setCenter(GeoPoint(location.latitude, location.longitude))
-                mapCenterSet = true
-            }
-        }
-        if (!mapCenterSet) {
-            centerOnFirstFix()
-        }
-        zoomState = min(zoomState, maxZoomLevel)
-        mapView.controller.setZoom(zoomState)
-        if (sharedPreferences.getBoolean(PREF_FOLLOW, false)) enableFollow()
+        listener?.setGpx()
+        listener?.setKml()
+        if (awaitingFirstFix) centerOnFirstFix()
+        if (!explicitViewport && sharedPreferences.getBoolean(PREF_FOLLOW, false)) enableFollow()
 
         setKeepScreenOn(sharedPreferences.getBoolean(PREF_KEEP_SCREEN_ON, false))
 
@@ -659,21 +646,22 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun centerOnFirstFix() {
-        locationOverlay?.runOnFirstFix {
-            val location = locationOverlay?.myLocation
-            location?.let {
-                try {
-                    activity?.runOnUiThread {
-                        mapView.controller.animateTo(it)
-                    }
-                } catch (e: IllegalStateException) {
-                    e.printStackTrace()
+        val startupMap = mapView
+        val startupOverlay = locationOverlay
+        startupOverlay?.runOnFirstFix {
+            activity?.runOnUiThread {
+                if (view == null || mapView !== startupMap) return@runOnUiThread
+                if (awaitingFirstFix) {
+                    startupOverlay.myLocation?.let { startupMap.controller.animateTo(it) }
                 }
+                awaitingFirstFix = false
             }
         }
     }
 
     private fun animateToLatLon(lat: Double, lon: Double) {
+        awaitingFirstFix = false
+        explicitViewport = true
         mapHandler.postDelayed({
             disableFollow()
             mapView.controller.animateTo(GeoPoint(lat, lon))
@@ -792,6 +780,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun disableFollow() {
+        awaitingFirstFix = false
         followEnabled = false
         activity?.let { (it as AppCompatActivity).supportInvalidateOptionsMenu() }
         locationOverlay?.disableFollowLocation()
@@ -800,17 +789,14 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun saveMapCenterPrefs() {
-        mapCenterState?.let {
-            sharedPreferences.edit { putFloat(PREF_LATITUDE, it.latitude.toFloat()) }
-            sharedPreferences.edit { putFloat(PREF_LONGITUDE, it.longitude.toFloat()) }
-            Log.d(
-                TAG,
-                String.format(
-                    "Saving center prefs: %f, %f",
-                    it.latitude,
-                    it.longitude
-                )
-            )
+        if (!mapViewInitialized) return
+        val center = mapView.mapCenter
+        mapCenterState = GeoPoint(center.latitude, center.longitude)
+        zoomState = mapView.zoomLevelDouble
+        sharedPreferences.edit {
+            putFloat(PREF_LATITUDE, center.latitude.toFloat())
+            putFloat(PREF_LONGITUDE, center.longitude.toFloat())
+            putFloat(PREF_ZOOM, zoomState.toFloat())
         }
     }
 
@@ -853,15 +839,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         compassOverlay?.enableCompass()
         scaleBarOverlay?.enableScaleBar()
         mapView.invalidate()
-        mapCenterState?.let {
-            mapView.controller.setCenter(mapCenterState)
-            mapCenterState = null // We're done with the old state
-        } ?: run {
-            locationViewModel?.currentLocation?.value?.let { location ->
-                val geoPoint = GeoPoint(location.latitude, location.longitude)
-                mapView.controller.setCenter(geoPoint)
-            }
-        }
         locationManager?.let {
             try {
                 it.requestLocationUpdates(
@@ -887,8 +864,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onPause() {
+        awaitingFirstFix = false
         if (::mapView.isInitialized) {
-            mapCenterState = mapView.mapCenter as GeoPoint
+            saveMapCenterPrefs()
         }
         try {
             locationManager?.removeUpdates(this)
@@ -922,7 +900,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     )
                 )
             }
-            outState.putDouble(STATE_ZOOM, mapView.zoomLevelDouble)
+            zoomState = mapView.zoomLevelDouble
+            outState.putDouble(STATE_ZOOM, zoomState)
         }
         super.onSaveInstanceState(outState)
     }
@@ -989,6 +968,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private fun zoomToBounds(box: BoundingBox) {
+        awaitingFirstFix = false
+        explicitViewport = true
         mapView.post {
             if (mapView.height > 0) {
                 mapView.zoomToBoundingBox(box, true, 64)
@@ -1107,6 +1088,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return true
             }
             R.id.action_location -> {
+                awaitingFirstFix = false
                 locationViewModel?.currentLocation?.value?.let { location ->
                     mapView.controller.animateTo(GeoPoint(location))
                 }
@@ -1206,7 +1188,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return false
             }
             R.id.action_settings -> {
-                mapCenterState = mapView.mapCenter as GeoPoint
                 saveMapCenterPrefs()
                 listener?.openSettings()
                 return true
@@ -1360,6 +1341,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onDestroyView() {
+        awaitingFirstFix = false
         cacheRevisionJob?.cancel()
         mapView.tileProvider.detach()
         super.onDestroyView()
@@ -1558,6 +1540,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         private const val PREF_OVERLAY = "overlay"
         private const val PREF_LATITUDE = "latitude"
         private const val PREF_LONGITUDE = "longitude"
+        private const val PREF_ZOOM = "zoom"
         private const val PREF_FOLLOW = "follow"
         private const val BASE_MAP_OTM = 1
         private const val BASE_MAP_OSM = 2
