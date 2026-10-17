@@ -1,1 +1,1 @@
-Topographic map viewer with GPX import
+Topo maps, GPX tracks, offline tiles, markers and optional route planning
