@@ -189,4 +189,5 @@ Dit kan niet ongedaan worden gemaakt.</string>
     <string name="clear_map_cache_progress">Kaartcache wordt gewist…</string>
     <string name="clear_map_cache_success">Kaartcache gewist.</string>
     <string name="clear_map_cache_failure">De kaartcache kon niet worden gewist. Probeer het opnieuw.</string>
+    <string name="nearby_show_on_map">Op kaart tonen</string>
 </resources>

@@ -1,6 +1,5 @@
 package org.nitri.opentopo.nearby
 
-import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -12,39 +11,36 @@ import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import org.nitri.opentopo.BuildConfig
 import org.nitri.opentopo.R
-import org.nitri.opentopo.nearby.adapter.NearbyAdapter
 import org.nitri.opentopo.nearby.api.NearbyDatabase.Companion.getDatabase
 import org.nitri.opentopo.nearby.api.mediawiki.MediaWikiApi
 import org.nitri.opentopo.nearby.entity.NearbyItem
 import org.nitri.opentopo.nearby.repo.NearbyRepository
 import org.nitri.opentopo.nearby.viewmodel.NearbyViewModel
 import org.nitri.opentopo.nearby.viewmodel.NearbyViewModelFactory
-import org.nitri.opentopo.util.DistanceCalculator
+import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlin.math.roundToInt
 
-class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
+class NearbyFragment : Fragment() {
     private var mListener: OnFragmentInteractionListener? = null
     private var mLatitude = 0.0
     private var mLongitude = 0.0
     private val gson = GsonBuilder().setStrictness(Strictness.LENIENT).create()
-    private val mNearbyItems: MutableList<NearbyItem?> = ArrayList()
-    private lateinit var mNearbyAdapter: NearbyAdapter
     private lateinit var nearbyViewModel: NearbyViewModel
 
-    @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -70,8 +66,6 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
             .addConverterFactory(GsonConverterFactory.create(gson))
             .client(httpClient.build())
             .build()
-        mNearbyAdapter = NearbyAdapter(mNearbyItems, this)
-        mNearbyAdapter.setHasStableIds(true)
         val api = retrofit.create(MediaWikiApi::class.java)
         val nearbyDatabase = getDatabase(requireActivity())
         val dao = nearbyDatabase.nearbyDao()
@@ -80,43 +74,30 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
         nearbyViewModel = ViewModelProvider(this, factory)[NearbyViewModel::class.java]
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val nearbyObserver = Observer { items: List<NearbyItem?>? ->
-            mNearbyItems.clear()
-            items?.let {
-                mNearbyItems.addAll(items)
-                setDistance()
-                mNearbyItems.sortBy { it?.distance }
-                mNearbyAdapter.notifyDataSetChanged()
-            }
-        }
-        nearbyViewModel.items.observe(viewLifecycleOwner, nearbyObserver)
-    }
-
-    private fun setDistance() {
-        for (item in mNearbyItems) {
-            item?.apply {
-                distance =
-                    DistanceCalculator.distance(mLatitude, mLongitude, item.lat, item.lon)
-                        .roundToInt()
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val rootView = inflater.inflate(R.layout.fragment_nearby, container, false)
-        val nearbyRecyclerView = rootView.findViewById<RecyclerView>(R.id.nearby_recycler_view)
-        nearbyRecyclerView.setLayoutManager(LinearLayoutManager(activity))
-        nearbyRecyclerView.itemAnimator?.let {
-            it.changeDuration = 0
+    ): View = ComposeView(requireContext()).apply {
+        id = R.id.nearby_compose_view
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        setContent {
+            OpenTopoTheme(dynamicColor = false) {
+                val items by nearbyViewModel.items.observeAsState(emptyList())
+                val sortedItems = remember(items, mLatitude, mLongitude) {
+                    sortNearbyItems(items, mLatitude, mLongitude)
+                }
+                NearbyScreen(
+                    items = sortedItems,
+                    onArticleClick = ::openArticle,
+                    onMapClick = { mListener?.showNearbyPlace(it) }
+                )
+            }
         }
-        nearbyRecyclerView.setAdapter(mNearbyAdapter)
-        return rootView
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mListener?.setUpNavigation(true)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -142,18 +123,14 @@ class NearbyFragment : Fragment(), NearbyAdapter.OnItemClickListener {
         mListener = null
     }
 
-    override fun onItemClick(index: Int) {
-        val uri = mNearbyItems[index]?.url?.let { Uri.parse(it) } ?: Uri.EMPTY
+    private fun openArticle(item: NearbyItem) {
+        val uri = item.url?.let { Uri.parse(it) } ?: Uri.EMPTY
         val browserIntent = Intent(Intent.ACTION_VIEW, uri)
         try {
             startActivity(browserIntent)
         } catch (e: ActivityNotFoundException) {
             Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT).show()
         }
-    }
-
-    override fun onMapItemClick(index: Int) {
-        mListener?.showNearbyPlace(mNearbyItems[index])
     }
 
     interface OnFragmentInteractionListener {

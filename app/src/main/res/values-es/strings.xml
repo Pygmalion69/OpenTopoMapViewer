@@ -189,4 +189,5 @@ Esto no se puede deshacer.</string>
     <string name="clear_map_cache_progress">Borrando la caché de mapas…</string>
     <string name="clear_map_cache_success">Caché de mapas borrada.</string>
     <string name="clear_map_cache_failure">No se pudo borrar la caché de mapas. Inténtalo de nuevo.</string>
+    <string name="nearby_show_on_map">Mostrar en el mapa</string>
 </resources>

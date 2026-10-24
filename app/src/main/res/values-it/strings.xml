@@ -189,4 +189,5 @@ L\'azione è irreversibile.</string>
     <string name="clear_map_cache_progress">Svuotamento della cache delle mappe…</string>
     <string name="clear_map_cache_success">Cache delle mappe svuotata.</string>
     <string name="clear_map_cache_failure">Impossibile svuotare la cache delle mappe. Riprova.</string>
+    <string name="nearby_show_on_map">Mostra sulla mappa</string>
 </resources>
