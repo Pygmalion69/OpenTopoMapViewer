@@ -189,4 +189,5 @@ Cette action est irréversible.</string>
     <string name="clear_map_cache_progress">Suppression du cache des cartes…</string>
     <string name="clear_map_cache_success">Cache des cartes vidé.</string>
     <string name="clear_map_cache_failure">Impossible de vider le cache des cartes. Veuillez réessayer.</string>
+    <string name="nearby_show_on_map">Afficher sur la carte</string>
 </resources>

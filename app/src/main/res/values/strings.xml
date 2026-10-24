@@ -202,4 +202,5 @@ This cannot be undone.</string>
     <string name="clear_map_cache_progress">Clearing map cache…</string>
     <string name="clear_map_cache_success">Map cache cleared.</string>
     <string name="clear_map_cache_failure">Could not clear the map cache. Please try again.</string>
+    <string name="nearby_show_on_map">Show on map</string>
 </resources>

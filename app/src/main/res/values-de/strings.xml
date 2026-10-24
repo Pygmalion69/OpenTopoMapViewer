@@ -189,4 +189,5 @@ Dies kann nicht rückgängig gemacht werden.</string>
     <string name="clear_map_cache_progress">Karten-Cache wird geleert…</string>
     <string name="clear_map_cache_success">Karten-Cache geleert.</string>
     <string name="clear_map_cache_failure">Der Karten-Cache konnte nicht geleert werden. Bitte erneut versuchen.</string>
+    <string name="nearby_show_on_map">Auf der Karte anzeigen</string>
 </resources>

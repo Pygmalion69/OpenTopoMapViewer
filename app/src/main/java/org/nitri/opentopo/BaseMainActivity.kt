@@ -140,8 +140,10 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         val statusBarBackground = findViewById<View>(R.id.status_bar_background)
 
         ViewCompat.setOnApplyWindowInsetsListener(mainContainer) { _, insets ->
-            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val topInset = systemBarsInsets.top
+            val safeInsets = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val topInset = safeInsets.top
             if (topInset > 0) {
                 statusBarBackground.visibility = View.VISIBLE
                 statusBarBackground.updateLayoutParams {
@@ -150,11 +152,18 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             } else {
                 statusBarBackground.visibility = View.GONE
             }
+            // Shared by the toolbar, fragment content and Play ad container. Children
+            // receive consumed insets so they must not add this protection again.
             mainContainer.updatePadding(
-                bottom = systemBarsInsets.bottom
+                left = safeInsets.left,
+                right = safeInsets.right,
+                bottom = safeInsets.bottom
             )
             WindowInsetsCompat.CONSUMED
         }
+
+        // FragmentManager has already restored both the current screen and back stack.
+        mapFragment = supportFragmentManager.findFragmentByTag(MAP_FRAGMENT_TAG) as? MapFragment
 
         handler = Handler(mainLooper)
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
@@ -176,13 +185,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
                 REQUEST_LOCATION_PERMISSION
             )
         } else {
-            addMapFragment()
-        }
-        if (savedInstanceState != null) {
-            mapFragment = supportFragmentManager.getFragment(
-                savedInstanceState,
-                MAP_FRAGMENT_TAG
-            ) as MapFragment?
+            initializeMapIfNeeded()
         }
         windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController?.let {
@@ -287,6 +290,14 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         applyFullscreen()
     }
 
+    private fun initializeMapIfNeeded() {
+        // A restored map can be on the back stack (isAdded == false) while Nearby
+        // or GPX details occupies the container. Do not replace that current screen.
+        if (supportFragmentManager.findFragmentById(R.id.map_container) == null) {
+            addMapFragment()
+        }
+    }
+
     private fun addMapFragment() {
         if (mapFragmentAdded()) {
             return
@@ -352,8 +363,9 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            // Location is optional: the map can restore its viewport or show the fallback.
-            addMapFragment()
+            // Location is optional; initialize only if no screen was restored while
+            // the permission request was outstanding.
+            initializeMapIfNeeded()
         }
     }
 
@@ -415,6 +427,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             onBackPressedDispatcher.onBackPressed()
+            return true
         }
         return super.onOptionsItemSelected(item)
     }
