@@ -162,6 +162,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         if (intent != null && intent.data != null) {
             handleIntent(intent)
         }
+        addMapFragment()
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -175,8 +176,6 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 REQUEST_LOCATION_PERMISSION
             )
-        } else {
-            addMapFragment()
         }
         if (savedInstanceState != null) {
             mapFragment = supportFragmentManager.getFragment(
@@ -354,6 +353,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             // Location is optional: the map can restore its viewport or show the fallback.
             addMapFragment()
+            mapFragment?.restartLocationUpdates()
         }
     }
 

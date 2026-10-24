@@ -138,7 +138,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
 
         override fun onZoom(event: ZoomEvent): Boolean {
-            onUserMapInteraction()
+            resumeFollowAfterInteraction()
             return false
         }
     }
@@ -170,6 +170,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     private var gpxViewModel: GpxViewModel? = null
     private var gestureOverlay: GestureOverlay? = null
 
+    private var initialViewport: MapViewport? = null
     private var firstFixZoom = DEFAULT_ZOOM
     private var awaitingFirstFix = false
     private var explicitViewport = false
@@ -392,7 +393,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         rotationGestureOverlay?.isEnabled = true
         gestureOverlay = GestureOverlay(object : GestureCallback {
             override fun onUserMapInteraction() {
-                awaitingFirstFix = false
                 this@MapFragment.onUserMapInteraction()
             }
         })
@@ -413,6 +413,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             }
         })
         mapView.addMapListener(DelayedMapListener(dragListener))
+        mapView.setOnTouchListener { _, event ->
+            if (event.actionMasked == android.view.MotionEvent.ACTION_DOWN) onUserMapInteraction()
+            false
+        }
         copyrightView = view?.findViewById(R.id.copyrightView)
         setBaseMap()
         locationOverlay?.enableMyLocation()
@@ -493,8 +497,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val viewport = MapViewport.select(restored, persisted, known)
         firstFixZoom = viewport.clampedZoom(mapView.minZoomLevel, mapView.maxZoomLevel)
         mapView.controller.setZoom(firstFixZoom)
-        mapView.controller.setCenter(GeoPoint(viewport.latitude, viewport.longitude))
-        awaitingFirstFix = restored == null && persisted == null && known == null
+        initialViewport = viewport.copy(zoom = firstFixZoom)
+        // MapController.setCenter queues until first layout; seed the projection now.
+        mapView.setExpectedCenter(GeoPoint(viewport.latitude, viewport.longitude))
+        awaitingFirstFix = savedInstanceState?.getBoolean(STATE_PENDING_FIX)
+            ?: if (restored != null) awaitingFirstFix
+            else if (persisted != null) sharedPreferences.getBoolean(STATE_PENDING_FIX, false)
+            else known == null
         explicitViewport = false
 
         // Consume navigation arguments once; recreation should restore the viewed viewport.
@@ -512,7 +521,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         }
         listener?.setGpx()
         listener?.setKml()
-        if (awaitingFirstFix) centerOnFirstFix()
         if (!explicitViewport && sharedPreferences.getBoolean(PREF_FOLLOW, false)) enableFollow()
 
         setKeepScreenOn(sharedPreferences.getBoolean(PREF_KEEP_SCREEN_ON, false))
@@ -645,27 +653,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         listener?.clearGpx()
     }
 
-    private fun centerOnFirstFix() {
-        val startupMap = mapView
-        val startupOverlay = locationOverlay
-        startupOverlay?.runOnFirstFix {
-            activity?.runOnUiThread {
-                if (view == null || mapView !== startupMap) return@runOnUiThread
-                if (awaitingFirstFix) {
-                    startupOverlay.myLocation?.let { startupMap.controller.animateTo(it) }
-                }
-                awaitingFirstFix = false
-            }
-        }
-    }
-
     private fun animateToLatLon(lat: Double, lon: Double) {
         awaitingFirstFix = false
         explicitViewport = true
-        mapHandler.postDelayed({
-            disableFollow()
-            mapView.controller.animateTo(GeoPoint(lat, lon))
-        }, 500)
+        disableFollow()
+        initialViewport = MapViewport(lat, lon, mapView.zoomLevelDouble)
+        if (mapView.isLayoutOccurred) mapView.controller.animateTo(GeoPoint(lat, lon))
+        else mapView.setExpectedCenter(GeoPoint(lat, lon))
     }
 
     private fun setBaseMap() {
@@ -790,14 +784,23 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     private fun saveMapCenterPrefs() {
         if (!mapViewInitialized) return
-        val center = mapView.mapCenter
+        val viewport = viewportForSaving() ?: return
+        val center = GeoPoint(viewport.latitude, viewport.longitude)
         mapCenterState = GeoPoint(center.latitude, center.longitude)
-        zoomState = mapView.zoomLevelDouble
+        zoomState = viewport.zoom
         sharedPreferences.edit {
+            putBoolean(STATE_PENDING_FIX, awaitingFirstFix)
             putFloat(PREF_LATITUDE, center.latitude.toFloat())
             putFloat(PREF_LONGITUDE, center.longitude.toFloat())
             putFloat(PREF_ZOOM, zoomState.toFloat())
         }
+    }
+
+    private fun viewportForSaving(): MapViewport? {
+        val initialized = initialViewport ?: return null
+        if (!mapView.isLayoutOccurred) return initialized
+        return MapViewport.restore(mapView.mapCenter.latitude, mapView.mapCenter.longitude,
+            mapView.zoomLevelDouble)
     }
 
     @SuppressLint("MissingPermission")
@@ -839,6 +842,16 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         compassOverlay?.enableCompass()
         scaleBarOverlay?.enableScaleBar()
         mapView.invalidate()
+        restartLocationUpdates()
+    }
+
+    @SuppressLint("MissingPermission")
+    fun restartLocationUpdates() {
+        val host = activity ?: return
+        if (!isResumed || !mapViewInitialized) return
+        if (host.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            host.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
+        locationOverlay?.enableMyLocation()
         locationManager?.let {
             try {
                 it.requestLocationUpdates(
@@ -864,7 +877,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onPause() {
-        awaitingFirstFix = false
         if (::mapView.isInitialized) {
             saveMapCenterPrefs()
         }
@@ -886,8 +898,9 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
 
     override fun onSaveInstanceState(outState: Bundle) {
         Log.d(TAG, "onSaveInstanceState()")
-        if (::mapView.isInitialized) {
-            mapCenterState = mapView.mapCenter as GeoPoint
+        viewportForSaving()?.let { viewport ->
+            outState.putBoolean(STATE_PENDING_FIX, awaitingFirstFix)
+            mapCenterState = GeoPoint(viewport.latitude, viewport.longitude)
             mapCenterState?.let {
                 outState.putDouble(STATE_LATITUDE, it.latitude)
                 outState.putDouble(STATE_LONGITUDE, it.longitude)
@@ -900,7 +913,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                     )
                 )
             }
-            zoomState = mapView.zoomLevelDouble
+            zoomState = viewport.zoom
             outState.putDouble(STATE_ZOOM, zoomState)
         }
         super.onSaveInstanceState(outState)
@@ -1281,6 +1294,13 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 return@runOnUiThread
             }
 
+            val fix = MapViewport.restore(location.latitude, location.longitude, DEFAULT_ZOOM)
+                ?: return@runOnUiThread
+            if (awaitingFirstFix && initialViewport != null) {
+                awaitingFirstFix = false
+                initialViewport = fix.copy(zoom = mapView.zoomLevelDouble)
+                mapView.setExpectedCenter(GeoPoint(fix.latitude, fix.longitude))
+            }
             syncMapRotationPreference()
             locationViewModel?.currentLocation?.postValue(location)
             if (mapRotation) {
@@ -1341,7 +1361,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onDestroyView() {
-        awaitingFirstFix = false
+        initialViewport = null
         cacheRevisionJob?.cancel()
         mapView.tileProvider.detach()
         super.onDestroyView()
@@ -1360,6 +1380,11 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onUserMapInteraction() {
+        awaitingFirstFix = false
+        resumeFollowAfterInteraction()
+    }
+
+    private fun resumeFollowAfterInteraction() {
         if (followEnabled && ::mapHandler.isInitialized) {
             // follow disabled by gesture -> re-enable with delay
             mapHandler.removeCallbacksAndMessages(null)
@@ -1534,6 +1559,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         private const val PARAM_LONGITUDE = "longitude"
         private const val STATE_LATITUDE = "latitude"
         private const val STATE_LONGITUDE = "longitude"
+        private const val STATE_PENDING_FIX = "pending_first_fix"
         private const val STATE_ZOOM = "zoom"
         private const val PREF_BASE_MAP = "base_map"
         private const val PREF_OPEN_TOPO_MAP_SOURCE = "open_topo_map_source"
