@@ -42,7 +42,7 @@
     <string name="freemap_sk" translatable="false">Freemap.sk</string>
     <string name="freemap_sk_copyright" translatable="false">© Freemap.sk</string>
     <string name="top_o_map" translatable="false">Top-O-Map</string>
-    <string name="top_o_map_copyright" translatable="false">© Top-O-Map (top-o-map.de)</string>
+    <string name="top_o_map_copyright" translatable="false">© OpenStreetMap contributors, Copernicus/Sonny elevation, style based on OpenTopoMap, and Top-O-Map</string>
     <string name="open_street_map">OpenStreetMap</string>
     <string name="lonvia_hiking">Lonvia Hiking</string>
     <string name="lonvia_cycling">Lonvia Cycling</string>

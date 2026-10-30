@@ -713,12 +713,12 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             )
 
             OTM_SOURCE_TOP_O_MAP -> XYTileSource(
-                "Top-O-Map",
-                1,
-                17,
+                "Top-O-Map-HD",
+                0,
+                18,
                 256,
                 ".png",
-                arrayOf("https://tile.top-o-map.de/"),
+                arrayOf("https://tile.top-o-map.com/tom2x/"),
                 getString(R.string.top_o_map_copyright)
             )
 
