@@ -190,4 +190,9 @@ Dit kan niet ongedaan worden gemaakt.</string>
     <string name="clear_map_cache_success">Kaartcache gewist.</string>
     <string name="clear_map_cache_failure">De kaartcache kon niet worden gewist. Probeer het opnieuw.</string>
     <string name="nearby_show_on_map">Op kaart tonen</string>
+
+    <string name="offline_map_catalogue">Offline kaarten downloaden</string>
+    <string name="offline_map_catalogue_summary">Bekijk en download OpenTopoMap-pakketten voor Europa en importeer daarna het ZIP-bestand hieronder.</string>
+    <string name="request_offline_map">Offline kaart aanvragen</string>
+    <string name="request_offline_map_summary">Vraag op GitHub een pakket aan voor een regio in Europa.</string>
 </resources>
