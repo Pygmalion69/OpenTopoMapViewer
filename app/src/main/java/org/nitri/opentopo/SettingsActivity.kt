@@ -65,6 +65,7 @@ import org.nitri.opentopo.ui.color.DEFAULT_MARKER_COLOR
 import org.nitri.opentopo.ui.color.DEFAULT_GPX_TRACK_COLOR
 import org.nitri.opentopo.ui.theme.OpenTopoTheme
 import org.nitri.opentopo.util.MapCache
+import org.nitri.opentopo.util.OfflineMapLinks
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
 import org.nitri.opentopo.view.SingleChoiceDialogFragment
@@ -153,6 +154,19 @@ class SettingsActivity : AppCompatActivity() {
             }
 
             val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            mapOf(
+                "offline_map_catalogue" to OfflineMapLinks.CATALOGUE_URL,
+                "request_offline_map" to OfflineMapLinks.REQUEST_URL
+            ).forEach { (key, url) ->
+                findPreference<Preference>(key)?.setOnPreferenceClickListener {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    } catch (_: ActivityNotFoundException) {
+                        Toast.makeText(requireContext(), R.string.no_browser_found, Toast.LENGTH_SHORT).show()
+                    }
+                    true
+                }
+            }
             val apiKey = prefs.getString(PREF_ORS_API_KEY, null)
             val currentProfile = prefs.getString(PREF_ORS_PROFILE, "driving-car")
 
@@ -276,6 +290,13 @@ class SettingsActivity : AppCompatActivity() {
                     true
                 }
             }
+        }
+
+        override fun onResume() {
+            super.onResume()
+            val showOfflineMaps = OfflineMapLinks.isInEurope(requireContext())
+            findPreference<Preference>("offline_map_catalogue")?.isVisible = showOfflineMaps
+            findPreference<Preference>("request_offline_map")?.isVisible = showOfflineMaps
         }
 
         override fun onPreferenceTreeClick(preference: Preference): Boolean {

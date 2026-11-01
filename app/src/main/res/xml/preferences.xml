@@ -75,6 +75,18 @@
             app:title="@string/clear_map_cache" />
 
         <Preference
+            app:key="offline_map_catalogue"
+            app:title="@string/offline_map_catalogue"
+            app:summary="@string/offline_map_catalogue_summary"
+            app:isPreferenceVisible="false" />
+
+        <Preference
+            app:key="request_offline_map"
+            app:title="@string/request_offline_map"
+            app:summary="@string/request_offline_map_summary"
+            app:isPreferenceVisible="false" />
+
+        <Preference
             app:key="import_tiles"
             app:title="@string/import_offline_tiles_title"
             app:summary="@string/import_offline_tiles_summary"/>
