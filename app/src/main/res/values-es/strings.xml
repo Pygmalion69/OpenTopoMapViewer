@@ -190,4 +190,9 @@ Esto no se puede deshacer.</string>
     <string name="clear_map_cache_success">Caché de mapas borrada.</string>
     <string name="clear_map_cache_failure">No se pudo borrar la caché de mapas. Inténtalo de nuevo.</string>
     <string name="nearby_show_on_map">Mostrar en el mapa</string>
+
+    <string name="offline_map_catalogue">Descargar mapas sin conexión</string>
+    <string name="offline_map_catalogue_summary">Consulta y descarga paquetes OpenTopoMap para Europa e importa después el archivo ZIP aquí abajo.</string>
+    <string name="request_offline_map">Solicitar un mapa sin conexión</string>
+    <string name="request_offline_map_summary">Solicita en GitHub un paquete para una región de Europa.</string>
 </resources>

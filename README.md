@@ -60,6 +60,8 @@ Routing, elevation and place search use the [ORS Android Client](https://github.
 
 ## Importing offline map tiles
 
+Ready-made packages for regions in **Europe** are available in the [offline map catalogue](https://opentopomap.nitri.org/offline/). If your region is missing, [request an offline map package](https://github.com/Pygmalion69/OpenTopoMapViewer/issues/new?template=offline_map_request.md).
+
 Use **Settings → Cache → Import offline tiles** to import an OpenTopoMap tile ZIP through Android's file picker. There is no need to copy files into Android's protected app directories or extract the ZIP on the device.
 
 ### Prepare the ZIP

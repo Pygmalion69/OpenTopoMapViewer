@@ -5,10 +5,11 @@ import android.net.Uri
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.osmdroid.tileprovider.modules.DatabaseFileArchive
 import org.osmdroid.tileprovider.modules.SqlTileWriter
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.MapTileIndex
-import java.io.InputStream
+import java.io.IOException
 import java.util.zip.ZipInputStream
 
 private const val TAG = "TileImporter"
@@ -58,7 +59,9 @@ private fun importZipLocked(context: Context, uri: Uri): ImportResult {
         val writer = SqlTileWriter()
         // Do not close the SQLite connection shared by active map providers.
         
-        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+        val stream = context.contentResolver.openInputStream(uri)
+            ?: throw IOException("Unable to open ZIP file")
+        stream.use { inputStream ->
             ZipInputStream(inputStream).use { zis ->
                 var entry = zis.nextEntry
                 while (entry != null) {
@@ -81,17 +84,19 @@ private fun importZipLocked(context: Context, uri: Uri): ImportResult {
                                 
                                 val index = MapTileIndex.getTileIndex(z, x, y)
                                 
-                                // SqlTileWriter.saveFile reads the inputStream. 
-                                // We provide a wrapper that doesn't close the ZipInputStream.
-                                val entryWrapper = object : InputStream() {
-                                    override fun read(): Int = zis.read()
-                                    override fun read(b: ByteArray): Int = zis.read(b)
-                                    override fun read(b: ByteArray, off: Int, len: Int): Int = zis.read(b, off, len)
-                                    // Do not close zis
-                                    override fun close() {}
-                                }
-                                
-                                writer.saveFile(tileSource, index, entryWrapper, Long.MAX_VALUE)
+                                val bytes = zis.readBytes()
+                                // osmdroid 6.1.20 returns false even after a successful insert.
+                                writer.saveFile(tileSource, index, bytes.inputStream(), Long.MAX_VALUE)
+                                val key = SqlTileWriter.getPrimaryKeyParameters(
+                                    SqlTileWriter.getIndex(index), tileSource
+                                )
+                                val stored = writer.getTileCursor(
+                                    key, arrayOf(DatabaseFileArchive.COLUMN_TILE, SqlTileWriter.COLUMN_EXPIRES)
+                                )?.use { cursor ->
+                                    cursor.moveToFirst() && cursor.getLong(1) == Long.MAX_VALUE &&
+                                        bytes.contentEquals(cursor.getBlob(0))
+                                } == true
+                                if (!stored) throw IOException("Tile could not be verified in the cache")
                                 imported++
                                 if (imported % 100 == 0) {
                                     Log.d(TAG, "Imported $imported tiles...")

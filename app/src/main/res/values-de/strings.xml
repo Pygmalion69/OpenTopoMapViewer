@@ -190,4 +190,9 @@ Dies kann nicht rückgängig gemacht werden.</string>
     <string name="clear_map_cache_success">Karten-Cache geleert.</string>
     <string name="clear_map_cache_failure">Der Karten-Cache konnte nicht geleert werden. Bitte erneut versuchen.</string>
     <string name="nearby_show_on_map">Auf der Karte anzeigen</string>
+
+    <string name="offline_map_catalogue">Offline-Karten herunterladen</string>
+    <string name="offline_map_catalogue_summary">OpenTopoMap-Pakete für Europa ansehen und herunterladen. Anschließend die ZIP-Datei unten importieren.</string>
+    <string name="request_offline_map">Offline-Karte anfragen</string>
+    <string name="request_offline_map_summary">Ein Paket für eine Region in Europa auf GitHub anfragen.</string>
 </resources>
