@@ -16,6 +16,9 @@ import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.Insets
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -114,6 +117,9 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        isFullscreen = savedInstanceState?.getBoolean(PREF_FULLSCREEN)
+            ?: sharedPreferences.getBoolean(PREF_FULLSCREEN, false)
         // Migrate before super restores fragments and their tile providers.
         OpenTopoMapSourceMigration.run(PreferenceManager.getDefaultSharedPreferences(this))
         super.onCreate(savedInstanceState)
@@ -143,7 +149,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             val safeInsets = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             )
-            val topInset = safeInsets.top
+            val topInset = if (isFullscreen) 0 else safeInsets.top
             if (topInset > 0) {
                 statusBarBackground.visibility = View.VISIBLE
                 statusBarBackground.updateLayoutParams {
@@ -155,10 +161,18 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             // Shared by the toolbar, fragment content and Play ad container. Children
             // receive consumed insets so they must not add this protection again.
             mainContainer.updatePadding(
-                left = safeInsets.left,
-                right = safeInsets.right,
-                bottom = safeInsets.bottom
+                left = if (isFullscreen) 0 else safeInsets.left,
+                top = 0,
+                right = if (isFullscreen) 0 else safeInsets.right,
+                bottom = if (isFullscreen) 0 else safeInsets.bottom
             )
+            // Only map overlays need cutout protection in fullscreen. Keep the map
+            // itself edge-to-edge, and keep child screens from applying insets twice.
+            ViewCompat.dispatchApplyWindowInsets(mapContainer, WindowInsetsCompat.Builder()
+                .setInsets(WindowInsetsCompat.Type.displayCutout(),
+                    if (isFullscreen) insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+                    else Insets.NONE)
+                .build())
             WindowInsetsCompat.CONSUMED
         }
 
@@ -196,7 +210,6 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         window.statusBarColor = ContextCompat.getColor(this, R.color.colorPrimary)
         actionBar = supportActionBar
 
-        isFullscreen = sharedPreferences.getBoolean(PREF_FULLSCREEN, false)
         applyFullscreen()
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
@@ -262,6 +275,22 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
         // Return early if windowInsetsController is null
         val insetsController = windowInsetsController ?: return
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes = window.attributes.apply {
+                layoutInDisplayCutoutMode = if (isFullscreen) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                    else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                } else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+            }
+        }
+        // Constrain directly to the window in fullscreen; an ActionBar hide must
+        // never leave a toolbar-sized reservation in any layout variant.
+        findViewById<Toolbar>(R.id.toolbar).visibility = if (isFullscreen) View.GONE else View.VISIBLE
+        mapContainer.updateLayoutParams<ConstraintLayout.LayoutParams> {
+            topToTop = if (isFullscreen) ConstraintLayout.LayoutParams.PARENT_ID else ConstraintLayout.LayoutParams.UNSET
+            topToBottom = if (isFullscreen) ConstraintLayout.LayoutParams.UNSET else R.id.toolbar
+        }
         if (isFullscreen) {
             insetsController.hide(WindowInsetsCompat.Type.systemBars())
             actionBar?.hide()
@@ -275,8 +304,8 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             if (mapFragment?.isAdded == true) {
                 mapFragment?.showZoomControls(true)
             }
-            ViewCompat.requestApplyInsets(window.decorView)
         }
+        ViewCompat.requestApplyInsets(window.decorView)
 
         // Persist the fullscreen state preference
         PreferenceManager.getDefaultSharedPreferences(this).edit().apply {
@@ -434,6 +463,7 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(PREF_FULLSCREEN, isFullscreen)
         if (!TextUtils.isEmpty(gpxViewModel.gpxUriString)) {
             outState.putString(GPX_URI_STATE, gpxViewModel.gpxUriString)
         }

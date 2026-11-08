@@ -14,11 +14,21 @@ class ClickableCompassOverlay(
     private val onCompassClickListener: OnCompassClickListener
 ) : CompassOverlay(context, orientationProvider, mapView) {
 
+    private var centerX = 35f
+    private var centerY = 35f
+
+    override fun setCompassCenter(x: Float, y: Float) {
+        centerX = x
+        centerY = y
+        super.setCompassCenter(x, y)
+    }
 
     override fun onSingleTapConfirmed(e: MotionEvent, mapView: MapView): Boolean {
         val reuse = Point()
         mapView.projection.rotateAndScalePoint(e.x.toInt(), e.y.toInt(), reuse)
-        if (reuse.x < mCompassFrameCenterX * 2 && reuse.y < mCompassFrameCenterY * 2) {
+        if (kotlin.math.abs(reuse.x - centerX * mScale) <= mCompassFrameCenterX &&
+            kotlin.math.abs(reuse.y - centerY * mScale) <= mCompassFrameCenterY
+        ) {
             onCompassClickListener.onCompassClicked()
             return true
         }

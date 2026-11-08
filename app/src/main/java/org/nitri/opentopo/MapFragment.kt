@@ -28,6 +28,7 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.ViewCompat
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.WindowInsetsCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
@@ -372,10 +373,22 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             setScaleBarOffset(scaleBarMargin, scaleBarMargin)
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(mapView) { _, insets ->
-            val safeInsets = insets.getInsets(
-                WindowInsetsCompat.Type.systemBars() or
-                        WindowInsetsCompat.Type.displayCutout()
+        ViewCompat.setOnApplyWindowInsetsListener(requireView()) { _, insets ->
+            val safeInsets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+            val density = resources.displayMetrics.density
+            compassOverlay?.setCompassCenter(
+                35f + safeInsets.left / density,
+                35f + safeInsets.top / density
+            )
+            copyrightView?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                leftMargin = safeInsets.left
+                topMargin = safeInsets.top
+                rightMargin = safeInsets.right
+                bottomMargin = safeInsets.bottom
+            }
+            mapView.zoomController.display.setAdditionalPixelMargins(
+                safeInsets.left.toFloat(), safeInsets.top.toFloat(),
+                safeInsets.right.toFloat(), safeInsets.bottom.toFloat()
             )
 
             scaleBarOverlay?.setScaleBarOffset(
@@ -384,10 +397,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
             )
 
             mapView.invalidate()
-            insets
+            WindowInsetsCompat.CONSUMED
         }
 
-        ViewCompat.requestApplyInsets(mapView)
+        ViewCompat.requestApplyInsets(requireActivity().window.decorView)
 
         rotationGestureOverlay = RotationGestureOverlay(mapView)
         rotationGestureOverlay?.isEnabled = true

@@ -33,6 +33,7 @@ class MainActivity : BaseMainActivity() {
         recordInstallationDiagnostics(this)
 
         adViewContainer = findViewById(R.id.ad_view_container)
+        adViewContainer.visibility = if (isFullscreen) View.GONE else View.VISIBLE
 //        val backgroundScope = CoroutineScope(Dispatchers.IO)
 //        backgroundScope.launch {
 //            MobileAds.initialize(this@MainActivity) {}
@@ -148,7 +149,7 @@ class MainActivity : BaseMainActivity() {
 
     override fun toggleFullscreen() {
         super.toggleFullscreen()
-        adView?.visibility = if (isFullscreen) View.GONE else View.VISIBLE
+        adViewContainer.visibility = if (isFullscreen) View.GONE else View.VISIBLE
     }
 
     override fun isPrivacyOptionsRequired(): Boolean {
