@@ -192,7 +192,11 @@ class OverlayHelper(
             tracks.forEach { track ->
                 val trackOverlay = TrackOverlay(track, trackColor)
                 trackOverlays.add(trackOverlay)
-                mMapView?.overlays?.add(0, trackOverlay)
+                mMapView?.overlays?.let { overlays ->
+                    // All rasters must remain below tracks, including a staged local layer.
+                    val index = overlays.indexOfLast { it is TilesOverlay } + 1
+                    overlays.add(index, trackOverlay)
+                }
             }
         }
 

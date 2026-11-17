@@ -305,6 +305,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private var cacheRevisionJob: Job? = null
+    private var debugLocalLayer: org.nitri.opentopo.overlay.DebugLocalLayer? = null
 
     fun initializeMapView() {
 
@@ -438,6 +439,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         compassOverlay?.enableCompass()
         mapView.visibility = View.VISIBLE
         overlayHelper = OverlayHelper(hostActivity, mapView, parentFragmentManager)
+        debugLocalLayer = org.nitri.opentopo.overlay.DebugLocalLayer(mapView).also { it.start() }
         setTilesOverlay()
     }
 
@@ -823,7 +825,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         // val basePath = Configuration.getInstance().osmdroidBasePath
         val cache = Configuration.getInstance().osmdroidTileCache
         Log.d(TAG, "Cache: " + cache.absolutePath)
-        val preferredMaxZoom = readMaxZoomLevel()
+        val preferredMaxZoom = maxOf(readMaxZoomLevel(), debugLocalLayer?.maxZoom?.toDouble() ?: 0.0)
         if (preferredMaxZoom != maxZoomLevel) {
             maxZoomLevel = preferredMaxZoom
             mapView.maxZoomLevel = maxZoomLevel
@@ -1376,6 +1378,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     override fun onDestroyView() {
         initialViewport = null
         cacheRevisionJob?.cancel()
+        debugLocalLayer?.destroy()
+        debugLocalLayer = null
         mapView.tileProvider.detach()
         super.onDestroyView()
         mapViewInitialized = false
