@@ -93,6 +93,13 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/local_maps">
+        <Preference
+            app:key="local_maps"
+            app:title="@string/local_maps"
+            app:summary="@string/local_explanation" />
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/kml_header">
         <SwitchPreferenceCompat
             app:key="kml_enabled"

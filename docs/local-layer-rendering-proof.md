@@ -169,7 +169,13 @@ screenshots, artifacts, build output, flavor directories and other files were le
 alone. The commit includes only these six prototype files; no sample ZIP or GPX
 is included.
 
-## Step 2 findings
+## Step 2 implementation
+
+Managed package import, storage, validation and removal are documented in
+[local-map-packages.md](local-map-packages.md). The debug fixture above remains
+separate from the production catalog; Step 2 does not add map layer controls.
+
+## Step 2 findings (recorded at the Step 1 baseline)
 
 Keep package identity distinct from tile-source prefixes. Production work needs
 atomic staging/validation and replacement, explicit ownership of layer providers,

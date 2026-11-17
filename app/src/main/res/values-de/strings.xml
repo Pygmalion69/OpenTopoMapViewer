@@ -195,4 +195,20 @@ Dies kann nicht rückgängig gemacht werden.</string>
     <string name="offline_map_catalogue_summary">OpenTopoMap-Pakete für Europa ansehen und herunterladen. Anschließend die ZIP-Datei unten importieren.</string>
     <string name="request_offline_map">Offline-Karte anfragen</string>
     <string name="request_offline_map_summary">Ein Paket für eine Region in Europa auf GitHub anfragen.</string>
+    <string name="local_maps">Lokale Karten</string>
+    <string name="local_import">Lokale Karte importieren</string>
+    <string name="local_back">Zurück</string>
+    <string name="local_explanation">XYZ-Kachel-ZIPs getrennt vom Hintergrund-Cache verwalten. Ein Import ändert die Karte nicht.</string>
+    <string name="local_empty">Keine lokalen Karten installiert.</string>
+    <string name="local_details">%1$d Kacheln · Zoomstufen: %2$s</string>
+    <string name="local_remove">Entfernen</string>
+    <string name="local_remove_confirm">%1$s (%2$s) von diesem Gerät entfernen? Die ursprüngliche ZIP bleibt erhalten.</string>
+    <string name="local_copying">Kopieren… %1$d KiB</string>
+    <string name="local_validating">Prüfen… %1$d / %2$d Einträge</string>
+    <string name="local_imported">Lokale Karte importiert.</string>
+    <string name="local_cancelled">Import abgebrochen.</string>
+    <string name="local_open_error">Dieses Dokument kann nicht geöffnet werden. Warte auf das Ende des Downloads oder kopiere es in einen verfügbaren Ordner und versuche den Import erneut.</string>
+    <string name="local_invalid_error">Ungültige oder nicht unterstützte XYZ-ZIP. Verwende lesbare PNG-Kacheln mit 256 × 256 Pixeln innerhalb der dokumentierten Grenzen und versuche es erneut.</string>
+    <string name="local_storage_error">Kein Zugriff auf den lokalen Kartenspeicher. Prüfe den freien Speicherplatz und versuche es erneut.</string>
+    <string name="local_unnamed">Lokale Karte</string>
 </resources>

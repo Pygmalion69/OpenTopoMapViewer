@@ -195,4 +195,20 @@ Esto no se puede deshacer.</string>
     <string name="offline_map_catalogue_summary">Consulta y descarga paquetes OpenTopoMap para Europa e importa después el archivo ZIP aquí abajo.</string>
     <string name="request_offline_map">Solicitar un mapa sin conexión</string>
     <string name="request_offline_map_summary">Solicita en GitHub un paquete para una región de Europa.</string>
+    <string name="local_maps">Mapas locales</string>
+    <string name="local_import">Importar mapa local</string>
+    <string name="local_back">Atrás</string>
+    <string name="local_explanation">Gestiona ZIP de teselas XYZ por separado de la caché de fondo. Importar no cambia el mapa.</string>
+    <string name="local_empty">No hay mapas locales instalados.</string>
+    <string name="local_details">%1$d teselas · Niveles de zoom: %2$s</string>
+    <string name="local_remove">Eliminar</string>
+    <string name="local_remove_confirm">¿Eliminar %1$s (%2$s) de este dispositivo? Se conservará el ZIP original.</string>
+    <string name="local_copying">Copiando… %1$d KiB</string>
+    <string name="local_validating">Validando… %1$d / %2$d entradas</string>
+    <string name="local_imported">Mapa local importado.</string>
+    <string name="local_cancelled">Importación cancelada.</string>
+    <string name="local_open_error">No se puede abrir este documento. Espera a que termine la descarga o cópialo a una carpeta disponible y vuelve a importar el mapa local.</string>
+    <string name="local_invalid_error">ZIP XYZ no válido o no compatible. Usa teselas PNG legibles de 256 × 256 dentro de los límites documentados e inténtalo de nuevo.</string>
+    <string name="local_storage_error">No se puede acceder al almacenamiento de mapas locales. Comprueba el espacio libre e inténtalo de nuevo.</string>
+    <string name="local_unnamed">Mapa local</string>
 </resources>

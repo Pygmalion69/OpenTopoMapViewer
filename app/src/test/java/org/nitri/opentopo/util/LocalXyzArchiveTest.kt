@@ -11,8 +11,7 @@ class LocalXyzArchiveTest {
         val file = File.createTempFile("local-xyz", ".zip")
         try {
             ZipOutputStream(file.outputStream()).use { zip ->
-                listOf("OpenTopoMap/15/1/2.png", "OpenTopoMap/18/8/9.png",
-                    "OpenTopoMap/18/999999/9.png", "other/20/1/1.png").forEach {
+                listOf("OpenTopoMap/15/1/2.png", "OpenTopoMap/18/8/9.png").forEach {
                     zip.putNextEntry(ZipEntry(it))
                     zip.write(byteArrayOf(1, 2, 3))
                     zip.closeEntry()
@@ -31,6 +30,21 @@ class LocalXyzArchiveTest {
             LocalXyzArchive(file).use { assertNotNull(it.read(15, 1, 2)) }
         } finally {
             file.delete()
+        }
+    }
+
+    @Test fun acceptsBarePathsAndOtherSingleRoots() {
+        listOf("2/1/1.png", "Antonio/2/1/1.png").forEach { path ->
+            val file = File.createTempFile("local-xyz", ".zip")
+            try {
+                ZipOutputStream(file.outputStream()).use {
+                    it.putNextEntry(ZipEntry(path)); it.write(byteArrayOf(7)); it.closeEntry()
+                }
+                LocalXyzArchive(file, "stable-id").use {
+                    assertEquals("stable-id", it.sourceId)
+                    assertArrayEquals(byteArrayOf(7), it.read(2, 1, 1))
+                }
+            } finally { file.delete() }
         }
     }
 
