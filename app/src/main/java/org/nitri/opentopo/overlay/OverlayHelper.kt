@@ -439,7 +439,9 @@ class OverlayHelper(
                 loadingBackgroundColor = Color.TRANSPARENT
                 setColorFilter(tileOverlayAlphaFilter)
             }
-            mMapView?.overlays?.add(0, tilesOverlay)
+            // Local raster is always first; route tiles belong above it.
+            val localIndex = mMapView?.overlays?.indexOfFirst { it is TilesOverlay } ?: -1
+            mMapView?.overlays?.add(if (localIndex >= 0) localIndex + 1 else 0, tilesOverlay)
         }
         mMapView?.invalidate()
     }

@@ -184,7 +184,7 @@ Dies kann nicht rückgängig gemacht werden.</string>
 
     <string name="clear_map_cache">Karten-Cache leeren</string>
     <string name="clear_map_cache_title">Karten-Cache leeren?</string>
-    <string name="clear_map_cache_message">Alle zwischengespeicherten Kartenkacheln einschließlich importierter Kacheln löschen? Für die Offline-Nutzung müssen Karten erneut heruntergeladen oder importiert werden.</string>
+    <string name="clear_map_cache_message">Alle Kacheln im Hintergrundkarten-Cache löschen, einschließlich der mit „Offline-Kacheln importieren“ hinzugefügten Kacheln? Separat verwaltete lokale Karten bleiben erhalten. Hintergrundkarten müssen erneut heruntergeladen werden.</string>
     <string name="clear_map_cache_confirm">Cache leeren</string>
     <string name="clear_map_cache_progress">Karten-Cache wird geleert…</string>
     <string name="clear_map_cache_success">Karten-Cache geleert.</string>
@@ -211,4 +211,9 @@ Dies kann nicht rückgängig gemacht werden.</string>
     <string name="local_invalid_error">Ungültige oder nicht unterstützte XYZ-ZIP. Verwende lesbare PNG-Kacheln mit 256 × 256 Pixeln innerhalb der dokumentierten Grenzen und versuche es erneut.</string>
     <string name="local_storage_error">Kein Zugriff auf den lokalen Kartenspeicher. Prüfe den freien Speicherplatz und versuche es erneut.</string>
     <string name="local_unnamed">Lokale Karte</string>
+    <string name="local_map">Lokale Karte</string>
+    <string name="local_show_on_map">Auf Karte anzeigen</string>
+    <string name="local_visible">Sichtbar</string>
+    <string name="local_opacity">Deckkraft: %1$d%%</string>
+    <string name="local_unavailable">Diese lokale Karte ist nicht verfügbar. Die Hintergrundkarte bleibt nutzbar.</string>
 </resources>

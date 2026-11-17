@@ -184,7 +184,7 @@ Esto no se puede deshacer.</string>
 
     <string name="clear_map_cache">Borrar la caché de mapas</string>
     <string name="clear_map_cache_title">¿Borrar la caché de mapas?</string>
-    <string name="clear_map_cache_message">¿Eliminar todas las teselas de mapas almacenadas en caché, incluidas las importadas? Será necesario descargar o importar los mapas de nuevo para usarlos sin conexión.</string>
+    <string name="clear_map_cache_message">¿Eliminar todas las teselas de la caché de fondo, incluidas las añadidas con Importar teselas sin conexión? Los mapas locales gestionados por separado se conservan. Los mapas de fondo deberán descargarse de nuevo.</string>
     <string name="clear_map_cache_confirm">Borrar caché</string>
     <string name="clear_map_cache_progress">Borrando la caché de mapas…</string>
     <string name="clear_map_cache_success">Caché de mapas borrada.</string>
@@ -211,4 +211,9 @@ Esto no se puede deshacer.</string>
     <string name="local_invalid_error">ZIP XYZ no válido o no compatible. Usa teselas PNG legibles de 256 × 256 dentro de los límites documentados e inténtalo de nuevo.</string>
     <string name="local_storage_error">No se puede acceder al almacenamiento de mapas locales. Comprueba el espacio libre e inténtalo de nuevo.</string>
     <string name="local_unnamed">Mapa local</string>
+    <string name="local_map">Mapa local</string>
+    <string name="local_show_on_map">Mostrar en el mapa</string>
+    <string name="local_visible">Visible</string>
+    <string name="local_opacity">Opacidad: %1$d%%</string>
+    <string name="local_unavailable">Este mapa local no está disponible. El mapa de fondo sigue funcionando.</string>
 </resources>

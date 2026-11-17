@@ -197,7 +197,7 @@ This cannot be undone.</string>
 
     <string name="clear_map_cache">Clear map cache</string>
     <string name="clear_map_cache_title">Clear map cache?</string>
-    <string name="clear_map_cache_message">Delete all cached map tiles, including imported tiles? Maps will need to be downloaded or imported again for offline use.</string>
+    <string name="clear_map_cache_message">Delete all background-cache tiles, including tiles added with Import offline tiles? Separately managed local maps are kept. Background maps will need to be downloaded again.</string>
     <string name="clear_map_cache_confirm">Clear cache</string>
     <string name="clear_map_cache_progress">Clearing map cache…</string>
     <string name="clear_map_cache_success">Map cache cleared.</string>
@@ -224,4 +224,9 @@ This cannot be undone.</string>
     <string name="local_invalid_error">Invalid or unsupported XYZ ZIP. Use readable 256 × 256 PNG tiles within the documented limits, then try again.</string>
     <string name="local_storage_error">Cannot access local map storage. Check free space and try again.</string>
     <string name="local_unnamed">Local map</string>
+    <string name="local_map">Local map</string>
+    <string name="local_show_on_map">Show on map</string>
+    <string name="local_visible">Visible</string>
+    <string name="local_opacity">Opacity: %1$d%%</string>
+    <string name="local_unavailable">This local map is unavailable. The background map remains usable.</string>
 </resources>

@@ -1,6 +1,11 @@
 # Local XYZ rendering proof — #104, Step 1
 
-Branch: feature/local-layer. Prototype only; no production import or layer UI.
+Branch: feature/local-layer. Historical Step 1 proof.
+Step 3 retires the enabled-marker/debug activation below. Use Settings → Local maps
+→ Import local map → Show on map, then layers → Local map for visibility and
+opacity. See [local-map-packages.md](local-map-packages.md) for the managed flow
+and its separate validation record. The staging commands below apply only to the
+old prototype.
 
 ## Storage and provider
 

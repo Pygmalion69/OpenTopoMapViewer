@@ -184,7 +184,7 @@ Dit kan niet ongedaan worden gemaakt.</string>
 
     <string name="clear_map_cache">Kaartcache wissen</string>
     <string name="clear_map_cache_title">Kaartcache wissen?</string>
-    <string name="clear_map_cache_message">Alle kaarttegels in de cache verwijderen, inclusief geïmporteerde tegels? Kaarten moeten opnieuw worden gedownload of geïmporteerd voor offline gebruik.</string>
+    <string name="clear_map_cache_message">Alle tegels in de achtergrondcache verwijderen, inclusief tegels toegevoegd met Offline tegels importeren? Afzonderlijk beheerde lokale kaarten blijven behouden. Achtergrondkaarten moeten opnieuw worden gedownload.</string>
     <string name="clear_map_cache_confirm">Cache wissen</string>
     <string name="clear_map_cache_progress">Kaartcache wordt gewist…</string>
     <string name="clear_map_cache_success">Kaartcache gewist.</string>
@@ -211,4 +211,9 @@ Dit kan niet ongedaan worden gemaakt.</string>
     <string name="local_invalid_error">Ongeldig of niet-ondersteund XYZ-ZIP-bestand. Gebruik leesbare PNG-tegels van 256 × 256 binnen de gedocumenteerde limieten en probeer opnieuw.</string>
     <string name="local_storage_error">Geen toegang tot de opslag voor lokale kaarten. Controleer de vrije ruimte en probeer opnieuw.</string>
     <string name="local_unnamed">Lokale kaart</string>
+    <string name="local_map">Lokale kaart</string>
+    <string name="local_show_on_map">Tonen op de kaart</string>
+    <string name="local_visible">Zichtbaar</string>
+    <string name="local_opacity">Dekking: %1$d%%</string>
+    <string name="local_unavailable">Deze lokale kaart is niet beschikbaar. De achtergrondkaart blijft bruikbaar.</string>
 </resources>

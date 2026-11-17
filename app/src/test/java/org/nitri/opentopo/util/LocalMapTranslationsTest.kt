@@ -18,8 +18,10 @@ class LocalMapTranslationsTest {
                 node.attributes.getNamedItem("name").nodeValue to node.textContent
             }
         }
-        val base = strings(File(res, "values")).filterKeys { it.startsWith("local_") }
-        assertEquals(16, base.size)
+        val base = strings(File(res, "values")).filterKeys {
+            it.startsWith("local_") || it == "clear_map_cache_message"
+        }
+        assertEquals(22, base.size)
         val arguments = Regex("%[0-9]+\\$[ds]")
         res.listFiles()!!.filter { it.name.startsWith("values") && File(it, "strings.xml").exists() }
             .forEach { directory ->

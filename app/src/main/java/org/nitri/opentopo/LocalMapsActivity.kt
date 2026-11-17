@@ -37,7 +37,13 @@ class LocalMapsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent { OpenTopoTheme(dynamicColor = false) {
-            LocalMapsScreen(model, onBack = { finish() })
+            LocalMapsScreen(model, onBack = { finish() }, onShow = { id ->
+                org.nitri.opentopo.util.LocalMapPreferences(this).select(id, navigate = true)
+                startActivity(android.content.Intent(this, MainActivity::class.java).apply {
+                    addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                })
+                finish()
+            })
         } }
     }
 }
@@ -140,6 +146,8 @@ internal class LocalMapsViewModel(application: Application) : AndroidViewModel(a
         job = viewModelScope.launch {
             try {
                 repository.remove(id)
+                val preferences = org.nitri.opentopo.util.LocalMapPreferences(getApplication<Application>())
+                if (preferences.id == id) preferences.clear()
                 mutableState.update { it.copy(packages = repository.list()) }
             } catch (e: Exception) {
                 if (e is CancellationException) throw e
@@ -152,7 +160,7 @@ internal class LocalMapsViewModel(application: Application) : AndroidViewModel(a
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LocalMapsScreen(model: LocalMapsViewModel, onBack: () -> Unit) {
+private fun LocalMapsScreen(model: LocalMapsViewModel, onBack: () -> Unit, onShow: (String) -> Unit) {
     val state by model.state.collectAsState()
     var pendingRemoval by rememberSaveable { mutableStateOf<String?>(null) }
     var picking by rememberSaveable { mutableStateOf(false) }
@@ -190,6 +198,9 @@ private fun LocalMapsScreen(model: LocalMapsViewModel, onBack: () -> Unit) {
                         // Full ID disambiguates even packages whose name and coverage are identical.
                         Text(p.id, style = MaterialTheme.typography.bodySmall)
                         p.attribution?.let { Text(it) }
+                        TextButton(enabled = !state.busy, onClick = { onShow(p.id) }) {
+                            Text(stringResource(R.string.local_show_on_map))
+                        }
                         TextButton(enabled = !state.busy, onClick = { pendingRemoval = p.id }) {
                             Text(stringResource(R.string.local_remove))
                         }
