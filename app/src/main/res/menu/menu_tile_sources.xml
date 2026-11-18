@@ -31,4 +31,5 @@
             android:id="@+id/lonvia_cycling"
             android:title="@string/lonvia_cycling" />
     </group>
+    <item android:id="@+id/local_map" android:title="@string/local_map" />
 </menu>

@@ -305,6 +305,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     private var cacheRevisionJob: Job? = null
+    private var localMapLayer: org.nitri.opentopo.overlay.LocalMapLayer? = null
 
     fun initializeMapView() {
 
@@ -438,6 +439,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         compassOverlay?.enableCompass()
         mapView.visibility = View.VISIBLE
         overlayHelper = OverlayHelper(hostActivity, mapView, parentFragmentManager)
+        localMapLayer = org.nitri.opentopo.overlay.LocalMapLayer(
+            mapView, { readMaxZoomLevel() }, { setCopyrightNotice() },
+            { disableFollow(); awaitingFirstFix = false; explicitViewport = true }
+        ).also { it.refresh() }
         setTilesOverlay()
     }
 
@@ -767,6 +772,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
                 copyrightStringBuilder.append(overlayCopyRightNotice)
             }
         }
+        localMapLayer?.attribution?.let {
+            if (copyrightStringBuilder.isNotEmpty()) copyrightStringBuilder.append(", ")
+            copyrightStringBuilder.append(it)
+        }
         val copyRightNotice = copyrightStringBuilder.toString()
         if (!TextUtils.isEmpty(copyRightNotice)) {
             copyrightView?.text = copyRightNotice
@@ -823,14 +832,6 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         // val basePath = Configuration.getInstance().osmdroidBasePath
         val cache = Configuration.getInstance().osmdroidTileCache
         Log.d(TAG, "Cache: " + cache.absolutePath)
-        val preferredMaxZoom = readMaxZoomLevel()
-        if (preferredMaxZoom != maxZoomLevel) {
-            maxZoomLevel = preferredMaxZoom
-            mapView.maxZoomLevel = maxZoomLevel
-        }
-        if (mapView.zoomLevelDouble > maxZoomLevel) {
-            mapView.controller.setZoom(maxZoomLevel)
-        }
         val preferredBaseMap = sharedPreferences.getInt(PREF_BASE_MAP, BASE_MAP_OTM)
         val preferredOpenTopoMapSource = readOpenTopoMapSource()
         if (preferredBaseMap != baseMap || preferredOpenTopoMapSource != openTopoMapSource) {
@@ -855,6 +856,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         compassOverlay?.enableCompass()
         scaleBarOverlay?.enableScaleBar()
         mapView.invalidate()
+        localMapLayer?.refresh()
         restartLocationUpdates()
     }
 
@@ -890,6 +892,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     }
 
     override fun onPause() {
+        localMapLayer?.pause()
         if (::mapView.isInitialized) {
             saveMapCenterPrefs()
         }
@@ -1237,6 +1240,10 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
      * @return
      */
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
+        if (menuItem.itemId == R.id.local_map) {
+            localMapLayer?.controls()
+            return true
+        }
         if (!menuItem.isChecked) {
             menuItem.isChecked = true
             val itemId = menuItem.itemId
@@ -1376,6 +1383,8 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
     override fun onDestroyView() {
         initialViewport = null
         cacheRevisionJob?.cancel()
+        localMapLayer?.destroy()
+        localMapLayer = null
         mapView.tileProvider.detach()
         super.onDestroyView()
         mapViewInitialized = false

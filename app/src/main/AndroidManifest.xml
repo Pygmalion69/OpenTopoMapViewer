@@ -18,6 +18,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".LocalMapsActivity"
+            android:exported="false"
+            android:label="@string/local_maps" />
+        <activity
             android:name=".MarkerListActivity"
             android:parentActivityName=".MainActivity"
             android:exported="false"

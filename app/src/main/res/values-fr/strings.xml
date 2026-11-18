@@ -184,7 +184,7 @@ Cette action est irréversible.</string>
 
     <string name="clear_map_cache">Vider le cache des cartes</string>
     <string name="clear_map_cache_title">Vider le cache des cartes ?</string>
-    <string name="clear_map_cache_message">Supprimer toutes les tuiles cartographiques en cache, y compris les tuiles importées ? Les cartes devront être téléchargées ou importées à nouveau pour une utilisation hors connexion.</string>
+    <string name="clear_map_cache_message">Supprimer toutes les tuiles du cache de fond, y compris celles ajoutées avec Importer des tuiles hors ligne ? Les cartes locales gérées séparément sont conservées. Les fonds de carte devront être téléchargés à nouveau.</string>
     <string name="clear_map_cache_confirm">Vider le cache</string>
     <string name="clear_map_cache_progress">Suppression du cache des cartes…</string>
     <string name="clear_map_cache_success">Cache des cartes vidé.</string>
@@ -195,4 +195,25 @@ Cette action est irréversible.</string>
     <string name="offline_map_catalogue_summary">Parcourez et téléchargez les paquets OpenTopoMap pour l’Europe, puis importez le fichier ZIP ci-dessous.</string>
     <string name="request_offline_map">Demander une carte hors ligne</string>
     <string name="request_offline_map_summary">Demandez sur GitHub un paquet pour une région en Europe.</string>
+    <string name="local_maps">Cartes locales</string>
+    <string name="local_import">Importer une carte locale</string>
+    <string name="local_back">Retour</string>
+    <string name="local_explanation">Gérez les ZIP de tuiles XYZ séparément du cache de fond. L’importation ne modifie pas la carte.</string>
+    <string name="local_empty">Aucune carte locale installée.</string>
+    <string name="local_details">%1$d tuiles · Niveaux de zoom : %2$s</string>
+    <string name="local_remove">Supprimer</string>
+    <string name="local_remove_confirm">Supprimer %1$s (%2$s) de cet appareil ? Le ZIP original sera conservé.</string>
+    <string name="local_copying">Copie… %1$d Kio</string>
+    <string name="local_validating">Vérification… %1$d / %2$d entrées</string>
+    <string name="local_imported">Carte locale importée.</string>
+    <string name="local_cancelled">Importation annulée.</string>
+    <string name="local_open_error">Impossible d’ouvrir ce document. Attendez la fin du téléchargement ou copiez-le dans un dossier disponible, puis réessayez l’importation.</string>
+    <string name="local_invalid_error">ZIP XYZ invalide ou non pris en charge. Utilisez des tuiles PNG lisibles de 256 × 256 dans les limites documentées, puis réessayez.</string>
+    <string name="local_storage_error">Impossible d’accéder au stockage des cartes locales. Vérifiez l’espace libre et réessayez.</string>
+    <string name="local_unnamed">Carte locale</string>
+    <string name="local_map">Carte locale</string>
+    <string name="local_show_on_map">Afficher sur la carte</string>
+    <string name="local_visible">Visible</string>
+    <string name="local_opacity">Opacité : %1$d%%</string>
+    <string name="local_unavailable">Cette carte locale est indisponible. Le fond de carte reste utilisable.</string>
 </resources>
