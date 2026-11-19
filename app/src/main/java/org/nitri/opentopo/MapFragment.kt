@@ -259,6 +259,7 @@ class MapFragment : Fragment(), LocationListener, PopupMenu.OnMenuItemClickListe
         val maxCacheSize = sharedPreferences.getInt(CacheSettingsFragment.PREF_CACHE_SIZE, CacheSettingsFragment.DEFAULT_CACHE_SIZE)
         configuration.tileFileSystemCacheMaxBytes =
             maxCacheSize.toLong() * 1024 * 1024
+        configuration.tileFileSystemCacheTrimBytes = configuration.tileFileSystemCacheMaxBytes * 9 / 10
 
         // Persist the effective osmdroid settings so a later load() won't re-enable SQLite
         sharedPreferences.edit(commit = true) {

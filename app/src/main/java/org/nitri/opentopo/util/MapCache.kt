@@ -73,6 +73,8 @@ object MapCache {
     }
 
     class GuardedWriter : SqlTileWriter() {
+        internal fun activeDatabase() = getDb()
+
         private val createdGeneration = generation
         override fun saveFile(source: ITileSource, index: Long, stream: InputStream, expiration: Long?): Boolean =
             synchronized(lock) {

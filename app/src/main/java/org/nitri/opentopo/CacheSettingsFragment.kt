@@ -225,6 +225,7 @@ class CacheSettingsFragment : DialogFragment() {
             configuration.osmdroidTileCache = newCacheDir
             configuration.tileFileSystemCacheMaxBytes =
                 newCacheSize.toLong() * 1024 * 1024
+            configuration.tileFileSystemCacheTrimBytes = configuration.tileFileSystemCacheMaxBytes * 9 / 10
             // Remove any leftover sqlite files to avoid SqlTileWriter using them
             Utils.clearOsmdroidSqliteCache(appContext)
             configuration.save(appContext, defaultPrefs)
