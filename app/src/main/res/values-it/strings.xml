@@ -184,7 +184,7 @@ L\'azione è irreversibile.</string>
 
     <string name="clear_map_cache">Svuota la cache delle mappe</string>
     <string name="clear_map_cache_title">Svuotare la cache delle mappe?</string>
-    <string name="clear_map_cache_message">Eliminare tutte le tessere delle mappe nella cache, comprese quelle importate? Per utilizzare le mappe offline sarà necessario scaricarle o importarle nuovamente.</string>
+    <string name="clear_map_cache_message">Eliminare tutte le tessere nella cache di sfondo, comprese quelle aggiunte con Importa tessere offline? Le mappe locali gestite separatamente vengono conservate. Le mappe di sfondo dovranno essere scaricate di nuovo.</string>
     <string name="clear_map_cache_confirm">Svuota cache</string>
     <string name="clear_map_cache_progress">Svuotamento della cache delle mappe…</string>
     <string name="clear_map_cache_success">Cache delle mappe svuotata.</string>
@@ -195,4 +195,25 @@ L\'azione è irreversibile.</string>
     <string name="offline_map_catalogue_summary">Sfoglia e scarica i pacchetti OpenTopoMap per l’Europa, poi importa il file ZIP qui sotto.</string>
     <string name="request_offline_map">Richiedi una mappa offline</string>
     <string name="request_offline_map_summary">Richiedi su GitHub un pacchetto per una regione in Europa.</string>
+    <string name="local_maps">Mappe locali</string>
+    <string name="local_import">Importa mappa locale</string>
+    <string name="local_back">Indietro</string>
+    <string name="local_explanation">Gestisci gli ZIP di tessere XYZ separatamente dalla cache di sfondo. L’importazione non cambia la mappa.</string>
+    <string name="local_empty">Nessuna mappa locale installata.</string>
+    <string name="local_details">%1$d tessere · Livelli di zoom: %2$s</string>
+    <string name="local_remove">Rimuovi</string>
+    <string name="local_remove_confirm">Rimuovere %1$s (%2$s) da questo dispositivo? Lo ZIP originale sarà conservato.</string>
+    <string name="local_copying">Copia… %1$d KiB</string>
+    <string name="local_validating">Verifica… %1$d / %2$d voci</string>
+    <string name="local_imported">Mappa locale importata.</string>
+    <string name="local_cancelled">Importazione annullata.</string>
+    <string name="local_open_error">Impossibile aprire questo documento. Attendi il completamento del download o copialo in una cartella disponibile, poi riprova a importare la mappa locale.</string>
+    <string name="local_invalid_error">ZIP XYZ non valido o non supportato. Usa tessere PNG leggibili da 256 × 256 entro i limiti documentati, poi riprova.</string>
+    <string name="local_storage_error">Impossibile accedere alla memoria delle mappe locali. Controlla lo spazio libero e riprova.</string>
+    <string name="local_unnamed">Mappa locale</string>
+    <string name="local_map">Mappa locale</string>
+    <string name="local_show_on_map">Mostra sulla mappa</string>
+    <string name="local_visible">Visibile</string>
+    <string name="local_opacity">Opacità: %1$d%%</string>
+    <string name="local_unavailable">Questa mappa locale non è disponibile. La mappa di sfondo rimane utilizzabile.</string>
 </resources>

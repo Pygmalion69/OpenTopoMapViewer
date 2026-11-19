@@ -184,7 +184,7 @@ Dit kan niet ongedaan worden gemaakt.</string>
 
     <string name="clear_map_cache">Kaartcache wissen</string>
     <string name="clear_map_cache_title">Kaartcache wissen?</string>
-    <string name="clear_map_cache_message">Alle kaarttegels in de cache verwijderen, inclusief geïmporteerde tegels? Kaarten moeten opnieuw worden gedownload of geïmporteerd voor offline gebruik.</string>
+    <string name="clear_map_cache_message">Alle tegels in de achtergrondcache verwijderen, inclusief tegels toegevoegd met Offline tegels importeren? Afzonderlijk beheerde lokale kaarten blijven behouden. Achtergrondkaarten moeten opnieuw worden gedownload.</string>
     <string name="clear_map_cache_confirm">Cache wissen</string>
     <string name="clear_map_cache_progress">Kaartcache wordt gewist…</string>
     <string name="clear_map_cache_success">Kaartcache gewist.</string>
@@ -195,4 +195,25 @@ Dit kan niet ongedaan worden gemaakt.</string>
     <string name="offline_map_catalogue_summary">Bekijk en download OpenTopoMap-pakketten voor Europa en importeer daarna het ZIP-bestand hieronder.</string>
     <string name="request_offline_map">Offline kaart aanvragen</string>
     <string name="request_offline_map_summary">Vraag op GitHub een pakket aan voor een regio in Europa.</string>
+    <string name="local_maps">Lokale kaarten</string>
+    <string name="local_import">Lokale kaart importeren</string>
+    <string name="local_back">Terug</string>
+    <string name="local_explanation">Beheer ZIP-bestanden met XYZ-tegels apart van de achtergrondcache. Importeren verandert de kaart niet.</string>
+    <string name="local_empty">Geen lokale kaarten geïnstalleerd.</string>
+    <string name="local_details">%1$d tegels · Zoomniveaus: %2$s</string>
+    <string name="local_remove">Verwijderen</string>
+    <string name="local_remove_confirm">%1$s (%2$s) van dit apparaat verwijderen? Het oorspronkelijke ZIP-bestand blijft behouden.</string>
+    <string name="local_copying">Kopiëren… %1$d KiB</string>
+    <string name="local_validating">Controleren… %1$d / %2$d items</string>
+    <string name="local_imported">Lokale kaart geïmporteerd.</string>
+    <string name="local_cancelled">Import geannuleerd.</string>
+    <string name="local_open_error">Dit document kan niet worden geopend. Wacht tot de download klaar is of kopieer het naar een beschikbare map en probeer de lokale kaart opnieuw te importeren.</string>
+    <string name="local_invalid_error">Ongeldig of niet-ondersteund XYZ-ZIP-bestand. Gebruik leesbare PNG-tegels van 256 × 256 binnen de gedocumenteerde limieten en probeer opnieuw.</string>
+    <string name="local_storage_error">Geen toegang tot de opslag voor lokale kaarten. Controleer de vrije ruimte en probeer opnieuw.</string>
+    <string name="local_unnamed">Lokale kaart</string>
+    <string name="local_map">Lokale kaart</string>
+    <string name="local_show_on_map">Tonen op de kaart</string>
+    <string name="local_visible">Zichtbaar</string>
+    <string name="local_opacity">Dekking: %1$d%%</string>
+    <string name="local_unavailable">Deze lokale kaart is niet beschikbaar. De achtergrondkaart blijft bruikbaar.</string>
 </resources>

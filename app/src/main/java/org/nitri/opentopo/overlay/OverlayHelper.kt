@@ -192,7 +192,11 @@ class OverlayHelper(
             tracks.forEach { track ->
                 val trackOverlay = TrackOverlay(track, trackColor)
                 trackOverlays.add(trackOverlay)
-                mMapView?.overlays?.add(0, trackOverlay)
+                mMapView?.overlays?.let { overlays ->
+                    // All rasters must remain below tracks, including a staged local layer.
+                    val index = overlays.indexOfLast { it is TilesOverlay } + 1
+                    overlays.add(index, trackOverlay)
+                }
             }
         }
 
@@ -435,7 +439,9 @@ class OverlayHelper(
                 loadingBackgroundColor = Color.TRANSPARENT
                 setColorFilter(tileOverlayAlphaFilter)
             }
-            mMapView?.overlays?.add(0, tilesOverlay)
+            // Local raster is always first; route tiles belong above it.
+            val localIndex = mMapView?.overlays?.indexOfFirst { it is TilesOverlay } ?: -1
+            mMapView?.overlays?.add(if (localIndex >= 0) localIndex + 1 else 0, tilesOverlay)
         }
         mMapView?.invalidate()
     }

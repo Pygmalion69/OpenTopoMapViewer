@@ -153,6 +153,11 @@ class SettingsActivity : AppCompatActivity() {
                 }
             }
 
+            findPreference<Preference>("local_maps")?.setOnPreferenceClickListener {
+                startActivity(Intent(requireContext(), LocalMapsActivity::class.java))
+                true
+            }
+
             val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
             mapOf(
                 "offline_map_catalogue" to OfflineMapLinks.CATALOGUE_URL,

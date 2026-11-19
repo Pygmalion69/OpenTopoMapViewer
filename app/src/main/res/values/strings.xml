@@ -197,7 +197,7 @@ This cannot be undone.</string>
 
     <string name="clear_map_cache">Clear map cache</string>
     <string name="clear_map_cache_title">Clear map cache?</string>
-    <string name="clear_map_cache_message">Delete all cached map tiles, including imported tiles? Maps will need to be downloaded or imported again for offline use.</string>
+    <string name="clear_map_cache_message">Delete all background-cache tiles, including tiles added with Import offline tiles? Separately managed local maps are kept. Background maps will need to be downloaded again.</string>
     <string name="clear_map_cache_confirm">Clear cache</string>
     <string name="clear_map_cache_progress">Clearing map cache…</string>
     <string name="clear_map_cache_success">Map cache cleared.</string>
@@ -208,4 +208,25 @@ This cannot be undone.</string>
     <string name="offline_map_catalogue_summary">Browse and download OpenTopoMap packages for Europe, then import the ZIP file below.</string>
     <string name="request_offline_map">Request an offline map</string>
     <string name="request_offline_map_summary">Request a package for a region in Europe on GitHub.</string>
+    <string name="local_maps">Local maps</string>
+    <string name="local_import">Import local map</string>
+    <string name="local_back">Back</string>
+    <string name="local_explanation">Manage XYZ tile ZIPs separately from the background cache. Importing does not change the map.</string>
+    <string name="local_empty">No local maps installed.</string>
+    <string name="local_details">%1$d tiles · Zooms: %2$s</string>
+    <string name="local_remove">Remove</string>
+    <string name="local_remove_confirm">Remove %1$s (%2$s) from this device? The original ZIP will be kept.</string>
+    <string name="local_copying">Copying… %1$d KiB</string>
+    <string name="local_validating">Validating… %1$d / %2$d entries</string>
+    <string name="local_imported">Local map imported.</string>
+    <string name="local_cancelled">Import cancelled.</string>
+    <string name="local_open_error">Cannot open this document. Wait for the download to finish or copy it to an available folder, then try Import local map again.</string>
+    <string name="local_invalid_error">Invalid or unsupported XYZ ZIP. Use readable 256 × 256 PNG tiles within the documented limits, then try again.</string>
+    <string name="local_storage_error">Cannot access local map storage. Check free space and try again.</string>
+    <string name="local_unnamed">Local map</string>
+    <string name="local_map">Local map</string>
+    <string name="local_show_on_map">Show on map</string>
+    <string name="local_visible">Visible</string>
+    <string name="local_opacity">Opacity: %1$d%%</string>
+    <string name="local_unavailable">This local map is unavailable. The background map remains usable.</string>
 </resources>
