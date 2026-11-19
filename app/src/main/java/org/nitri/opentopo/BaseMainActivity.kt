@@ -18,7 +18,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.graphics.Insets
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -158,20 +157,25 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
             } else {
                 statusBarBackground.visibility = View.GONE
             }
-            // Shared by the toolbar, fragment content and Play ad container. Children
-            // receive consumed insets so they must not add this protection again.
+            // Keep the viewport edge-to-edge; only the toolbar and bottom controls
+            // need safe-area protection in normal mode.
+            // Let the map draw behind landscape cutouts; protect the toolbar
+            // controls rather than shrinking the entire map viewport.
             mainContainer.updatePadding(
-                left = if (isFullscreen) 0 else safeInsets.left,
+                left = 0,
                 top = 0,
-                right = if (isFullscreen) 0 else safeInsets.right,
+                right = 0,
                 bottom = if (isFullscreen) 0 else safeInsets.bottom
             )
-            // Only map overlays need cutout protection in fullscreen. Keep the map
-            // itself edge-to-edge, and keep child screens from applying insets twice.
+            toolbar.updatePadding(
+                left = if (isFullscreen) 0 else safeInsets.left,
+                right = if (isFullscreen) 0 else safeInsets.right
+            )
+            // Forward cutout information to map overlays in both modes, without
+            // applying it to the map viewport itself.
             ViewCompat.dispatchApplyWindowInsets(mapContainer, WindowInsetsCompat.Builder()
                 .setInsets(WindowInsetsCompat.Type.displayCutout(),
-                    if (isFullscreen) insets.getInsets(WindowInsetsCompat.Type.displayCutout())
-                    else Insets.NONE)
+                    insets.getInsets(WindowInsetsCompat.Type.displayCutout()))
                 .build())
             WindowInsetsCompat.CONSUMED
         }
@@ -277,11 +281,9 @@ open class BaseMainActivity : AppCompatActivity(), MapFragment.OnFragmentInterac
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes = window.attributes.apply {
-                layoutInDisplayCutoutMode = if (isFullscreen) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
-                    else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                } else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+                layoutInDisplayCutoutMode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
         }
         // Constrain directly to the window in fullscreen; an ActionBar hide must
