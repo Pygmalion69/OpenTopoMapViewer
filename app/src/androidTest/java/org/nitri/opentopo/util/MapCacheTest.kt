@@ -74,6 +74,69 @@ class MapCacheTest {
         assertEquals(before, originals.map { it.readBytes().toList() })
     }
 
+    @Test fun importReportsSeparatePhasesAndPartialResults() = runBlocking {
+        val zip = File(testRoot, "progress.zip")
+        ZipOutputStream(zip.outputStream()).use { output ->
+            repeat(101) { index ->
+                output.putNextEntry(ZipEntry("8/$index/0.png"))
+                output.write(byteArrayOf(1, 2, 3))
+                output.closeEntry()
+            }
+            output.putNextEntry(ZipEntry("invalid.png"))
+            output.write(1)
+            output.closeEntry()
+        }
+        val progress = mutableListOf<TileImportProgress>()
+        val result = importOpenTopoMapZipToSqliteCache(context, Uri.fromFile(zip)) { progress.add(it) }
+        assertNull(result.error)
+        assertEquals(101, result.imported)
+        assertEquals(1, result.skipped)
+        assertEquals(TileImportPhase.PREPARING, progress.first().phase)
+        assertTrue(progress.any { it.phase == TileImportPhase.IMPORTING && it.processed == 100L && it.total == 102L })
+        assertEquals(TileImportProgress(TileImportPhase.FINISHING, 101, 102, 102), progress.last())
+    }
+
+    @Test fun metadataEntriesDoNotFailImport() = runBlocking {
+        val zip = File(testRoot, "metadata.zip")
+        ZipOutputStream(zip.outputStream()).use { output ->
+            for (path in listOf("1/0/0.png", "metadata.png", "notes/readme.txt", "metadata/icon.png")) {
+                output.putNextEntry(ZipEntry(path))
+                output.write(byteArrayOf(1, 2, 3))
+                output.closeEntry()
+            }
+        }
+        val result = importOpenTopoMapZipToSqliteCache(context, Uri.fromFile(zip))
+        assertNull(result.error)
+        assertEquals(1, result.imported)
+        assertEquals(0, result.failedTiles)
+        assertEquals(2, result.skipped)
+    }
+
+    @Test fun rejectedSqliteWriteIsReportedAsTileFailure() = runBlocking {
+        val database = MapCache.GuardedWriter().activeDatabase()!!
+        database.execSQL("CREATE TRIGGER reject_import BEFORE INSERT ON tiles BEGIN SELECT RAISE(IGNORE); END")
+        try {
+            val zip = File(testRoot, "rejected.zip")
+            ZipOutputStream(zip.outputStream()).use { output ->
+                output.putNextEntry(ZipEntry("1/0/0.png"))
+                output.write(byteArrayOf(1, 2, 3))
+                output.closeEntry()
+            }
+            val result = importOpenTopoMapZipToSqliteCache(context, Uri.fromFile(zip))
+            assertEquals(0, result.imported)
+            assertEquals(1, result.failedTiles)
+            assertEquals(0, result.skipped)
+        } finally {
+            database.execSQL("DROP TRIGGER reject_import")
+        }
+    }
+
+    @Test fun invalidZipDoesNotProduceTiles() = runBlocking {
+        val file = File(testRoot, "invalid.zip").apply { writeText("not a zip") }
+        val result = importOpenTopoMapZipToSqliteCache(context, Uri.fromFile(file))
+        assertEquals(0, result.imported)
+    }
+
     @Test fun cancellingConfirmationLeavesTilesUntouched() {
         val writer = MapCache.GuardedWriter()
         writer.saveFile(downloaded, tile, byteArrayOf(1).inputStream(), Long.MAX_VALUE)

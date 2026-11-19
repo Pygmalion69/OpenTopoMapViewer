@@ -229,4 +229,21 @@ This cannot be undone.</string>
     <string name="local_visible">Visible</string>
     <string name="local_opacity">Opacity: %1$d%%</string>
     <string name="local_unavailable">This local map is unavailable. The background map remains usable.</string>
+    <string name="tile_import_title">Importing offline map…</string>
+    <string name="tile_import_preparing">Phase 1 of 2 — Preparing import and calculating cache requirements</string>
+    <string name="tile_import_importing">Phase 2 of 2 — Importing tiles</string>
+    <string name="tile_import_finishing">Finishing import…</string>
+    <string name="tile_import_count">%1$d tiles imported · %2$d / %3$d entries processed</string>
+    <string name="tile_import_count_simple">%1$d tiles imported</string>
+    <string name="tile_import_must_finish">Please wait for the import to finish.</string>
+    <string name="tile_import_completed">Map import completed</string>
+    <string name="tile_import_success">Successfully imported %1$d tiles.</string>
+    <string name="tile_import_failed_title">Map import failed</string>
+    <string name="tile_import_error">The map could not be imported completely. Check the ZIP and available storage, then try again. %1$d tiles were imported before the error.</string>
+    <string name="tile_import_storage_error">Not enough storage to complete the import. %1$d tiles were imported before the error.</string>
+    <string name="tile_import_invalid_error">The ZIP is damaged or invalid. %1$d tiles were imported before the error.</string>
+    <string name="tile_import_cache_error">The map cache is unavailable or could not be configured. %1$d tiles were imported before the error.</string>
+    <string name="tile_import_document_error">The ZIP could not be opened or read. Check that the file is accessible. %1$d tiles were imported before the error.</string>
+    <string name="tile_import_partial">The import was incomplete: %1$d tiles were imported and %2$d could not be imported. Check the ZIP and available storage.</string>
+    <string name="tile_import_empty">No tiles were found in the ZIP. Check the file and try again.</string>
 </resources>

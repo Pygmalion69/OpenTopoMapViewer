@@ -6,6 +6,9 @@ import androidx.preference.PreferenceManager
 import org.nitri.opentopo.CacheSettingsFragment
 import org.osmdroid.config.Configuration
 import android.util.Log
+import android.database.sqlite.SQLiteFullException
+import android.database.sqlite.SQLiteException
+import java.util.zip.ZipException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.osmdroid.tileprovider.modules.DatabaseFileArchive
@@ -23,12 +26,28 @@ data class ImportResult(
     val imported: Int,
     val skipped: Int,
     val skippedSamples: List<String>,
-    val error: String? = null
+    val error: String? = null,
+    val failedTiles: Int = 0,
+    val failure: TileImportFailure? = null
+)
+
+enum class TileImportFailure { STORAGE, INVALID_ZIP, CACHE, DOCUMENT, UNKNOWN }
+
+private class ImportException(val failure: TileImportFailure, message: String, cause: Throwable? = null) : IOException(message, cause)
+
+enum class TileImportPhase { PREPARING, IMPORTING, FINISHING }
+
+data class TileImportProgress(
+    val phase: TileImportPhase,
+    val imported: Int = 0,
+    val processed: Long = 0,
+    val total: Long? = null
 )
 
 suspend fun importOpenTopoMapZipToSqliteCache(
     context: Context,
-    uri: Uri
+    uri: Uri,
+    onProgress: (TileImportProgress) -> Unit = {}
 ): ImportResult {
     val requestedGeneration = MapCache.generation
     val requestedDuringClear = MapCache.clearing.value
@@ -38,9 +57,9 @@ suspend fun importOpenTopoMapZipToSqliteCache(
             if (requestedDuringClear || MapCache.clearing.value ||
                 requestedGeneration != MapCache.generation
             ) {
-                ImportResult(0, 0, emptyList(), context.getString(org.nitri.opentopo.R.string.clear_map_cache_progress))
+                ImportResult(0, 0, emptyList(), context.getString(org.nitri.opentopo.R.string.clear_map_cache_progress), failure = TileImportFailure.CACHE)
             } else {
-                importZipLocked(context, uri)
+                importZipLocked(context, uri, onProgress)
             }
         }
     }
@@ -54,11 +73,11 @@ private const val CACHE_INCREMENT_MIB = 100L
  * 1 KiB per entry for SQLite rows/indexes, then allow 25% on existing and incoming
  * data. Counting overlapping tiles again is deliberately conservative.
  */
-private fun prepareCacheForImport(context: Context, uri: Uri, writer: MapCache.GuardedWriter) {
+private fun prepareCacheForImport(context: Context, uri: Uri, writer: MapCache.GuardedWriter): Long {
     var compressedBytes = 0L
     var tileBytes = 0L
     var tileCount = 0L
-    val input = context.contentResolver.openInputStream(uri) ?: throw IOException("Unable to open ZIP file")
+    val input = context.contentResolver.openInputStream(uri) ?: throw ImportException(TileImportFailure.DOCUMENT, "Unable to open ZIP file")
     val counted = object : FilterInputStream(input) {
         override fun read(): Int = super.read().also { if (it >= 0) compressedBytes++ }
         override fun read(buffer: ByteArray, offset: Int, length: Int): Int =
@@ -80,10 +99,10 @@ private fun prepareCacheForImport(context: Context, uri: Uri, writer: MapCache.G
     }
 
     val configuration = Configuration.getInstance()
-    val database = writer.activeDatabase() ?: throw IOException("Tile cache is unavailable")
+    val database = writer.activeDatabase() ?: throw ImportException(TileImportFailure.CACHE, "Tile cache is unavailable")
     val dbFile = File(database.path)
     val expected = File(configuration.osmdroidTileCache, SqlTileWriter.DATABASE_FILENAME)
-    if (dbFile.canonicalFile != expected.canonicalFile) throw IOException("Active tile cache does not match the configured cache")
+    if (dbFile.canonicalFile != expected.canonicalFile) throw ImportException(TileImportFailure.CACHE, "Active tile cache does not match the configured cache")
     val existing = listOf(dbFile, File(dbFile.path + "-wal"), File(dbFile.path + "-journal"))
         .fold(0L) { total, file -> Math.addExact(total, file.length()) }
     val incoming = Math.addExact(tileBytes, Math.multiplyExact(tileCount, 1024L))
@@ -98,14 +117,14 @@ private fun prepareCacheForImport(context: Context, uri: Uri, writer: MapCache.G
     // Free space is separate from the cache limit. Include headroom for SQLite growth.
     val diskNeeded = Math.addExact(incoming, Math.addExact(incoming, 3) / 4)
     if (diskNeeded > dbFile.parentFile!!.usableSpace) {
-        throw IOException("Not enough free storage to import this map")
+        throw ImportException(TileImportFailure.STORAGE, "Not enough free storage to import this map")
     }
 
     if (required > current) {
         val newMb = rounded / MIB
-        if (newMb > Int.MAX_VALUE) throw IOException("Map package is too large for the cache setting")
+        if (newMb > Int.MAX_VALUE) throw ImportException(TileImportFailure.CACHE, "Map package is too large for the cache setting")
         if (!prefs.edit().putInt(CacheSettingsFragment.PREF_CACHE_SIZE, newMb.toInt()).commit()) {
-            throw IOException("Unable to save the expanded cache size")
+            throw ImportException(TileImportFailure.CACHE, "Unable to save the expanded cache size")
         }
         configuration.tileFileSystemCacheMaxBytes = rounded
     } else {
@@ -115,11 +134,18 @@ private fun prepareCacheForImport(context: Context, uri: Uri, writer: MapCache.G
     configuration.tileFileSystemCacheTrimBytes = maxOf(configuration.tileFileSystemCacheTrimBytes, max - max / 10)
     configuration.save(context.applicationContext, prefs)
     Log.d(TAG, "ZIP $compressedBytes bytes, tiles $tileBytes bytes, cache $existing bytes; limit $max bytes")
+    return tileCount
 }
 
-private fun importZipLocked(context: Context, uri: Uri): ImportResult {
+private fun importZipLocked(context: Context, uri: Uri, onProgress: (TileImportProgress) -> Unit): ImportResult {
     var imported = 0
     var skipped = 0
+    var failedTiles = 0
+    // Callbacks run on the IO thread and must only publish lightweight, thread-safe state.
+    // An observer must never abort an import or affect an SQLite write.
+    fun report(progress: TileImportProgress) {
+        try { onProgress(progress) } catch (e: Exception) { Log.w(TAG, "Progress observer failed", e) }
+    }
     val skippedSamples = mutableListOf<String>()
 
     val tileSource = XYTileSource(
@@ -134,10 +160,13 @@ private fun importZipLocked(context: Context, uri: Uri): ImportResult {
     return try {
         val writer = MapCache.GuardedWriter()
         // Do not close the SQLite connection shared by active map providers.
-        prepareCacheForImport(context, uri, writer)
-        
+        report(TileImportProgress(TileImportPhase.PREPARING))
+        val total = prepareCacheForImport(context, uri, writer)
+        var processed = 0L
+        report(TileImportProgress(TileImportPhase.IMPORTING, total = total))
+
         val stream = context.contentResolver.openInputStream(uri)
-            ?: throw IOException("Unable to open ZIP file")
+            ?: throw ImportException(TileImportFailure.DOCUMENT, "Unable to open ZIP file")
         stream.use { inputStream ->
             ZipInputStream(inputStream).use { zis ->
                 var entry = zis.nextEntry
@@ -173,31 +202,48 @@ private fun importZipLocked(context: Context, uri: Uri): ImportResult {
                                     cursor.moveToFirst() && cursor.getLong(1) == Long.MAX_VALUE &&
                                         bytes.contentEquals(cursor.getBlob(0))
                                 } == true
-                                if (!stored) throw IOException("Tile could not be verified in the cache")
+                                if (!stored) throw IllegalStateException("Tile could not be verified in the cache")
                                 imported++
                                 if (imported % 100 == 0) {
                                     Log.d(TAG, "Imported $imported tiles...")
                                 }
-                            } catch (e: Exception) {
-                                if (Configuration.getInstance().osmdroidTileCache.usableSpace < MIB) {
-                                    throw IOException("Not enough free storage to complete the import", e)
-                                }
+                            } catch (e: NumberFormatException) {
                                 skipped++
                                 if (skippedSamples.size < 5) skippedSamples.add(path)
-                                Log.w(TAG, "Failed to parse or save tile: $path", e)
+                                Log.w(TAG, "Ignoring non-tile entry: $path", e)
+                            } catch (e: Exception) {
+                                if (e is SQLiteFullException || Configuration.getInstance().osmdroidTileCache.usableSpace < MIB) {
+                                    throw ImportException(TileImportFailure.STORAGE, "Not enough free storage to complete the import", e)
+                                }
+                                if (e is IOException || e is SecurityException) throw e
+                                failedTiles++
+                                Log.e(TAG, "Failed to read or save tile: $path", e)
                             }
                         } else {
                             skipped++
                             if (skippedSamples.size < 5) skippedSamples.add(path)
+                        }
+                        processed++
+                        if (processed % 100L == 0L || processed == total) {
+                            report(TileImportProgress(TileImportPhase.IMPORTING, imported, processed, total))
                         }
                     }
                     entry = zis.nextEntry
                 }
             }
         }
-        ImportResult(imported, skipped, skippedSamples)
+        report(TileImportProgress(TileImportPhase.FINISHING, imported, processed, total))
+        ImportResult(imported, skipped, skippedSamples, failedTiles = failedTiles)
     } catch (e: Exception) {
         Log.e(TAG, "ZIP import failed", e)
-        ImportResult(imported, skipped, skippedSamples, e.message ?: "Unknown error")
+        val failure = when (e) {
+            is ImportException -> e.failure
+            is SQLiteFullException -> TileImportFailure.STORAGE
+            is SQLiteException -> TileImportFailure.CACHE
+            is ZipException -> TileImportFailure.INVALID_ZIP
+            is SecurityException, is IOException -> TileImportFailure.DOCUMENT
+            else -> TileImportFailure.UNKNOWN
+        }
+        ImportResult(imported, skipped, skippedSamples, e.message ?: "Unknown error", failedTiles, failure)
     }
 }

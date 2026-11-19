@@ -1,5 +1,6 @@
 package org.nitri.opentopo
 
+import android.app.Application
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -14,6 +15,7 @@ import android.view.Window
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +24,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.AlertDialog as ComposeAlertDialog
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,7 +53,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.edit
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentContainerView
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.preference.Preference
@@ -56,6 +64,8 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.nitri.opentopo.analytics.AnalyticsNames
 import org.nitri.opentopo.analytics.AnalyticsProvider
 import org.nitri.opentopo.ui.color.APP_COLOR_PALETTE
@@ -68,9 +78,13 @@ import org.nitri.opentopo.util.MapCache
 import org.nitri.opentopo.util.OfflineMapLinks
 import org.nitri.opentopo.util.Utils
 import org.nitri.opentopo.util.importOpenTopoMapZipToSqliteCache
+import org.nitri.opentopo.util.TileImportFailure
+import org.nitri.opentopo.util.TileImportPhase
+import org.nitri.opentopo.util.TileImportProgress
 import org.nitri.opentopo.view.SingleChoiceDialogFragment
 
 class SettingsActivity : AppCompatActivity() {
+    private val importModel: TileImportViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +104,7 @@ class SettingsActivity : AppCompatActivity() {
                 SettingsScreen(
                     onBack = { onBackPressedDispatcher.onBackPressed() }
                 )
+                TileImportDialog(importModel)
             }
         }
     }
@@ -110,25 +125,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         private fun importZip(uri: Uri) {
-            val context = context ?: return
-            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            
-            Toast.makeText(context, R.string.import_started, Toast.LENGTH_SHORT).show()
-            
-            lifecycleScope.launch {
-                val result = importOpenTopoMapZipToSqliteCache(context, uri)
-                if (result.error != null) {
-                    Toast.makeText(context, getString(R.string.import_failed, result.error), Toast.LENGTH_LONG).show()
-                } else if (result.imported > 0) {
-                    Toast.makeText(context, getString(R.string.import_success, result.imported), Toast.LENGTH_LONG).show()
-                    Log.d("SettingsFragment", "Imported ${result.imported}, skipped ${result.skipped}")
-                    if (result.skippedSamples.isNotEmpty()) {
-                        Log.d("SettingsFragment", "Skipped samples: ${result.skippedSamples.joinToString()}")
-                    }
-                } else {
-                    Toast.makeText(context, R.string.import_no_tiles, Toast.LENGTH_LONG).show()
-                }
-            }
+            (requireActivity() as SettingsActivity).importModel.start(uri)
         }
 
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -497,6 +494,96 @@ class SettingsActivity : AppCompatActivity() {
         const val PREF_MARKER_LABEL_MIN_ZOOM = "marker_label_min_zoom"
         const val PREF_LONG_PRESS_TO_ADD_MARKER = "long_press_to_add_marker"
         const val RESULT_CACHE_SETTINGS_CHANGED = RESULT_FIRST_USER + 1
+    }
+}
+
+internal sealed interface TileImportState {
+    data object Idle : TileImportState
+    data class Running(val progress: TileImportProgress) : TileImportState
+    data class Success(val imported: Int) : TileImportState
+    data class Failure(val message: Int, val imported: Int = 0, val skipped: Int = 0) : TileImportState
+}
+
+internal class TileImportViewModel(application: Application) : AndroidViewModel(application) {
+    private val mutableState = MutableStateFlow<TileImportState>(TileImportState.Idle)
+    val state = mutableState.asStateFlow()
+
+    fun start(uri: Uri) {
+        if (mutableState.value != TileImportState.Idle) return
+        mutableState.value = TileImportState.Running(TileImportProgress(TileImportPhase.PREPARING))
+        viewModelScope.launch {
+            val context = getApplication<Application>()
+            try {
+                // The document picker also grants temporary access for this activity session.
+                try { context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+                catch (e: SecurityException) { Log.w("TileImport", "Could not persist document access", e) }
+                val result = importOpenTopoMapZipToSqliteCache(context, uri) {
+                    mutableState.value = TileImportState.Running(it)
+                }
+                Log.d("TileImport", "Imported ${result.imported}, skipped ${result.skipped}; samples: ${result.skippedSamples}")
+                mutableState.value = when {
+                    result.error != null -> TileImportState.Failure(when (result.failure) {
+                        TileImportFailure.STORAGE -> R.string.tile_import_storage_error
+                        TileImportFailure.INVALID_ZIP -> R.string.tile_import_invalid_error
+                        TileImportFailure.CACHE -> R.string.tile_import_cache_error
+                        TileImportFailure.DOCUMENT -> R.string.tile_import_document_error
+                        else -> R.string.tile_import_error
+                    }, result.imported, result.failedTiles)
+                    result.failedTiles > 0 -> TileImportState.Failure(R.string.tile_import_partial, result.imported, result.failedTiles)
+                    result.imported == 0 -> TileImportState.Failure(R.string.tile_import_empty)
+                    else -> TileImportState.Success(result.imported)
+                }
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                Log.e("TileImport", "Import failed", e)
+                mutableState.value = TileImportState.Failure(R.string.tile_import_error)
+            }
+        }
+    }
+
+    fun dismiss() { if (mutableState.value !is TileImportState.Running) mutableState.value = TileImportState.Idle }
+}
+
+@Composable
+private fun TileImportDialog(model: TileImportViewModel) {
+    val state by model.state.collectAsState()
+    when (val current = state) {
+        TileImportState.Idle -> Unit
+        is TileImportState.Running -> ComposeAlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.tile_import_title)) },
+            text = {
+                Column {
+                    val progress = current.progress
+                    Text(stringResource(when (progress.phase) {
+                        TileImportPhase.PREPARING -> R.string.tile_import_preparing
+                        TileImportPhase.IMPORTING -> R.string.tile_import_importing
+                        TileImportPhase.FINISHING -> R.string.tile_import_finishing
+                    }))
+                    if (progress.phase == TileImportPhase.IMPORTING && progress.total != null && progress.total > 0) {
+                        LinearProgressIndicator(progress = { (progress.processed.toFloat() / progress.total).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp))
+                        Text(stringResource(R.string.tile_import_count, progress.imported, progress.processed, progress.total))
+                    } else {
+                        LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp))
+                        if (progress.imported > 0) Text(stringResource(R.string.tile_import_count_simple, progress.imported))
+                    }
+                    Text(stringResource(R.string.tile_import_must_finish), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+                }
+            },
+            confirmButton = {}
+        )
+        is TileImportState.Success -> ComposeAlertDialog(
+            onDismissRequest = model::dismiss,
+            title = { Text(stringResource(R.string.tile_import_completed)) },
+            text = { Text(stringResource(R.string.tile_import_success, current.imported)) },
+            confirmButton = { TextButton(onClick = model::dismiss) { Text(stringResource(android.R.string.ok)) } }
+        )
+        is TileImportState.Failure -> ComposeAlertDialog(
+            onDismissRequest = model::dismiss,
+            title = { Text(stringResource(R.string.tile_import_failed_title)) },
+            text = { Text(stringResource(current.message, current.imported, current.skipped)) },
+            confirmButton = { TextButton(onClick = model::dismiss) { Text(stringResource(android.R.string.ok)) } }
+        )
     }
 }
 
