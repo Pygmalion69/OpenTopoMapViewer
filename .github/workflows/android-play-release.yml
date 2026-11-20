@@ -129,7 +129,7 @@ jobs:
           echo "AAB_PATH=$AAB" >> "$GITHUB_ENV"
 
       - name: Upload signed Play release bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: OpenTopoMapViewer-play-release
           path: ${{ env.AAB_PATH }}
