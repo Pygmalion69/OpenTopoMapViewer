@@ -44,11 +44,13 @@ When an [OpenRouteService](https://openrouteservice.org/) API key is configured:
 ### Offline use and customization
 
 - Import an OpenTopoMap tile ZIP into the offline cache
-- Configure the tile-cache location and maximum cache size
+- Import local XYZ tile ZIPs as independent overlays with visibility and opacity controls
+- Locate imported local maps with **Show on map** and use them offline
+- Configure the tile-cache location and maximum cache size; clear the background cache in the app
 - Light and dark theme support
 - English, German, Spanish, French, Italian and Dutch interface translations
 
-See [Importing offline map tiles](#importing-offline-map-tiles) below for the required archive layout and import workflow.
+See [Local map overlays](#local-map-overlays) for independent local maps, or [Importing offline map tiles](#importing-offline-map-tiles) for OpenTopoMap background-cache packages.
 
 Routing, elevation and place search use the [ORS Android Client](https://github.com/Pygmalion69/ors-android-client). See [How to Enable Basic Routing with OpenRouteService (ORS) in OpenTopoMap Viewer](https://pygmalion.nitri.org/how-to-enable-basic-routing-with-openrouteservice-ors-in-opentopomap-viewer-1818.html) for setup instructions.
 
@@ -101,7 +103,51 @@ Create a new ZIP containing the `OpenTopoMap` directory directly at its root. Me
 - Imported tiles are stored in the shared map cache and given a non-expiring timestamp. They can be displayed while online as well as offline; connecting to the internet does not automatically replace them with newer online tiles. Import a newer ZIP to update them.
 - Keep the original ZIP so you can import it again if the cache is removed. Imported tiles are cache contents, not a separate permanent offline map layer.
 - **Clear map cache** also deletes imported tiles. Applying **Cache settings** clears the SQLite cache too, so configure those settings before importing. Do not rename the tile-cache directory to switch between online and offline maps.
-- There is currently no independent switch to temporarily hide imported tiles while using the same OpenTopoMap source.
+- This background-cache import has no independent visibility switch. To show and hide a map separately from the background, use [Local map overlays](#local-map-overlays).
+
+## Local map overlays
+
+Import a prepared XYZ tile ZIP as an independent overlay, for example a historical map exported from QGIS. It can be displayed above any selected base map, together with hiking/cycling overlays, GPX tracks, markers and your location.
+
+### Import and display a local map
+
+1. Open **Settings → Local maps → Import local map** and select the ZIP through Android's file picker. Progress is shown while the package is copied and validated; you can cancel the import.
+2. Tap **Show on map** beside the installed package. This selects it and moves the map to its coverage. Importing alone does not change the displayed map.
+3. On the map, open **Layers → Local map** to select an installed package, toggle **Visible**, or adjust **Opacity** from 0% to 100%. Initial opacity is 65%. Selecting here keeps the current map position, except for any necessary zoom-limit adjustment.
+4. Test the required area and zoom levels in airplane mode before heading outdoors. The local map works offline; the background needs its own cached tiles for offline use.
+
+One local map can be displayed at a time. Selection, visibility and opacity are remembered across restarts. Missing local tiles leave the background visible, and GPX tracks and markers remain above the raster. Showing a local map allows its available higher zoom levels without changing your saved maximum-zoom preference.
+
+Local maps are stored separately from the background map cache: **Clear map cache** and cache-size eviction do not remove them. Remove an individual package through **Settings → Local maps**. The app keeps its own copy, so the source ZIP can be moved or deleted after import. Keep a copy elsewhere for reinstallation or device transfer: local maps are excluded from Android backup.
+
+### Required XYZ ZIP layout
+
+Use **Web Mercator XYZ tiles (EPSG:3857)** as **256 × 256 PNG images**. Paths must start at the ZIP root in either of these forms:
+
+```text
+{z}/{x}/{y}.png
+{map-name}/{z}/{x}/{y}.png
+```
+
+For example, `15/17846/12351.png` or `Caperrino/15/17846/12351.png`. The optional map directory can have any name; it does **not** need to be called `OpenTopoMap`. Use only one common enclosing directory, and preserve all numeric zoom, X and Y names. Each tile coordinate must occur only once.
+
+XYZ Y coordinates start at the north and increase southward. **TMS/inverted-Y tiles are not converted automatically.** Only tiles and zoom levels included in the ZIP can be displayed. An optional UTF-8 `attribution.txt` at the ZIP root, outside the map directory, supplies the map credit displayed by the app.
+
+Current limits include **512 MiB per ZIP**, **50,000 entries** including directories, and **2 MiB per PNG tile**. ZIP64, encrypted and split archives are unsupported. These limits are independent of the configured background-cache size. See [local map package documentation](docs/local-map-packages.md#input-contract-and-limits) for the full format and limits.
+
+### Creating a package in QGIS
+
+For example, a WMS map can be rendered into an offline XYZ package:
+
+1. Add the WMS layer to QGIS and make the layers you want to export visible. The tile generator renders the current project, so hide layers you do not want included.
+2. In the **Processing Toolbox**, find **Generate XYZ tiles (Directory)** under **Raster tools**.
+3. Choose a small area of interest and the required minimum and maximum zoom levels. Select **PNG**, set tile width and height to **256**, and leave **Use inverted tile Y axis (TMS convention)** unchecked. Use a transparent background where appropriate.
+4. Generate into a directory, then ZIP its numeric zoom directories directly, or include them under one map directory as shown above. Avoid extra nested folders and omit any generated HTML preview or unrelated images.
+5. Import the ZIP using **Import local map**, then tap **Show on map**.
+
+See the [QGIS tile generator documentation](https://docs.qgis.org/3.44/en/docs/user_manual/processing_algs/qgis/rastertools.html#generate-xyz-tiles-directory). Start with a small extent: adding higher zoom levels increases tile counts rapidly. Check the source provider's terms for offline use and preserve the required attribution.
+
+The app reads the prepared XYZ package; direct WMS connections and direct GeoTIFF import are not supported.
 
 ## Forks and third-party distributions
 
